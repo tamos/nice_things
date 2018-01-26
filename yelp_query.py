@@ -164,7 +164,7 @@ def query_api(term, location):
     pprint.pprint(response, indent=2)
     return response
 
-def yelp_run_query(term, location):
+def yelp_run_query(term, location, request_count = REQUEST_COUNT):
     '''
     This function takes the Yelp API documentation code designed to be run
     from the command line, and turns it into a function which returns results
@@ -180,8 +180,8 @@ def yelp_run_query(term, location):
     
     
     # These next few lines are We Can's code, all else is Yelp
-    # Decrement our request count
-    REQUEST_COUNT -= 1
+    # Decrement our request count and let us know
+    #print('\n Remaining Queries: ', request_count - 1)
     # Set input values
     #input_value_tuple = namedtuple('inputs', ('term', 'location'))
     #input_values = input_value_tuple(term, location)
@@ -196,7 +196,7 @@ def yelp_run_query(term, location):
                 error.read(),
             )
         )
-    return return_val
+    return return_val#, request_count -= 1
 
 
 # -------- Business Joins ------ 
