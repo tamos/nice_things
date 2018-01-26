@@ -205,7 +205,7 @@ def yelp_run_query(term, location):
 
 
 # https://www.yelp.com/developers/documentation/v3/business_match
-# Lets us provide incomplete info and yelp will match it for us
+#  provide incomplete info and yelp will match it w/ 1 or 10 options
     
 
 # ----- Autocomplete ----------
@@ -216,6 +216,20 @@ def yelp_run_query(term, location):
 # https://www.yelp.com/developers/documentation/v3/autocomplete
     
 
+# ------ Reviews --------
+    
+# https://www.yelp.com/developers/documentation/v3/business_reviews
+    
+
+
+# ------- Detailed business data -------
+    
+# https://www.yelp.com/developers/documentation/v3/business
 
 
 
+
+# ---------- Transaction type -----
+    
+# can check for restos that do delivery, etc. Most interesting is reservations
+# https://www.yelp.com/developers/documentation/v3/transactions_search
