@@ -35,7 +35,7 @@ import pprint
 import requests
 import sys
 import urllib
-# Next import from Tyler 
+# Next import from We Can
 from collections import namedtuple
 
 
@@ -58,20 +58,22 @@ except ImportError:
 # It now uses private keys to authenticate requests (API Key)
 # You can find it on
 # https://www.yelp.com/developers/v3/manage_app
-    
+  
+ # Import out API key (We Can)
 from api_keys import yelp
 API_KEY= yelp
+REQUEST_COUNT = 24990
 
 
-# API constants, you shouldn't have to change these.
+# API constants
 API_HOST = 'https://api.yelp.com'
 SEARCH_PATH = '/v3/businesses/search'
 BUSINESS_PATH = '/v3/businesses/'  # Business ID will come after slash.
 
 
-# Defaults for our simple example.
-DEFAULT_TERM = 'dinner'
-DEFAULT_LOCATION = 'San Francisco, CA'
+# Defaults 
+DEFAULT_TERM = 'bar'
+DEFAULT_LOCATION = 'Chicago, IL'
 SEARCH_LIMIT = 3
 
 
@@ -176,12 +178,16 @@ def yelp_run_query(term, location):
         JSON dictionary of request result
     '''
     
-    # These two lines are tyler's code, all else is Yelp
-    input_value_tuple = namedtuple('inputs', ('term', 'location'))
-    input_values = input_value_tuple(term, location)
+    
+    # These next few lines are We Can's code, all else is Yelp
+    # Decrement our request count
+    REQUEST_COUNT -= 1
+    # Set input values
+    #input_value_tuple = namedtuple('inputs', ('term', 'location'))
+    #input_values = input_value_tuple(term, location)
     
     try:
-        return_val = query_api(input_values.term, input_values.location)
+        return_val = query_api(term, location)
     except HTTPError as error:
         sys.exit(
             'Encountered HTTP error {0} on {1}:\n {2}\nAbort program.'.format(
@@ -191,3 +197,25 @@ def yelp_run_query(term, location):
             )
         )
     return return_val
+
+
+# -------- Business Joins ------ 
+    
+# Yelp business matching 
+
+
+# https://www.yelp.com/developers/documentation/v3/business_match
+# Lets us provide incomplete info and yelp will match it for us
+    
+
+# ----- Autocomplete ----------
+
+# yelp also has autocomplete functionality
+    
+
+# https://www.yelp.com/developers/documentation/v3/autocomplete
+    
+
+
+
+
