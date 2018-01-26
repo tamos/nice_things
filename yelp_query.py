@@ -35,6 +35,8 @@ import pprint
 import requests
 import sys
 import urllib
+# Next import from Tyler 
+from collections import namedtuple
 
 
 # This client code can run on Python 2.x or 3.x.  Your imports can be
@@ -160,13 +162,12 @@ def query_api(term, location):
     pprint.pprint(response, indent=2)
     return response
 
-from collections import namedtuple
-
 def yelp_run_query(term, location):
     '''
     This function takes the Yelp API documentation code designed to be run
     from the command line, and turns it into a function which returns results
-    rather than printing to the terminal.
+    rather than printing to the terminal. All code is from Yelp, unless 
+    otherwise noted. 
     
     Inputs:
         term: a term for which to search, string, e.g., "bars"
@@ -190,29 +191,3 @@ def yelp_run_query(term, location):
             )
         )
     return return_val
-
-def main():
-    parser = argparse.ArgumentParser()
-
-    parser.add_argument('-q', '--term', dest='term', default=DEFAULT_TERM,
-                        type=str, help='Search term (default: %(default)s)')
-    parser.add_argument('-l', '--location', dest='location',
-                        default=DEFAULT_LOCATION, type=str,
-                        help='Search location (default: %(default)s)')
-
-    input_values = parser.parse_args()
-
-    try:
-        query_api(input_values.term, input_values.location)
-    except HTTPError as error:
-        sys.exit(
-            'Encountered HTTP error {0} on {1}:\n {2}\nAbort program.'.format(
-                error.code,
-                error.url,
-                error.read(),
-            )
-        )
-
-
-if __name__ == '__main__':
-    main()
