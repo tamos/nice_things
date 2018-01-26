@@ -163,10 +163,22 @@ def query_api(term, location):
 from collections import namedtuple
 
 def yelp_run_query(term, location):
-
+    '''
+    This function takes the Yelp API documentation code designed to be run
+    from the command line, and turns it into a function which returns results
+    rather than printing to the terminal.
+    
+    Inputs:
+        term: a term for which to search, string, e.g., "bars"
+        location: a place in which to search, string, e.g., "Chicago"
+    Outputs:
+        JSON dictionary of request result
+    '''
+    
+    # These two lines are tyler's code, all else is Yelp
     input_value_tuple = namedtuple('inputs', ('term', 'location'))
     input_values = input_value_tuple(term, location)
-
+    
     try:
         return_val = query_api(input_values.term, input_values.location)
     except HTTPError as error:
