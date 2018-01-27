@@ -17,7 +17,6 @@ import pprint
 import requests
 import sys
 import urllib
-import yelpapi as yp
 
 from api_keys import yelp
 API_KEY= yelp
@@ -86,7 +85,7 @@ class YelpAPIRequester(object):
         return response.json()
     
     
-    def search(self, term, location = DEFAULT_CITY + ", " +DEFAULT_STATE):
+    def search(self, term, location = DEFAULT_CITY + ", " + DEFAULT_STATE):
         """Query the Search API by a search term and location.
     
         Args:
