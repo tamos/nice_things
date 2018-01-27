@@ -164,7 +164,7 @@ def query_api(term, location):
     pprint.pprint(response, indent=2)
     return response
 
-def yelp_run_query(term, location, request_count = REQUEST_COUNT):
+def yelp_run_query(term, location):#, request_count = REQUEST_COUNT):
     '''
     This function takes the Yelp API documentation code designed to be run
     from the command line, and turns it into a function which returns results
