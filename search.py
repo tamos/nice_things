@@ -3,6 +3,19 @@ from jellyfish import jaro_distance
 import numpy as np
 from collections import namedtuple
 from queue import PriorityQueue
+# This package that was deprecated. We updated it and submitted a pull
+# request to the author, this is the updated package. 
+from yelpapi import YelpAPI
+# Our API key is stored in a separate file
+import api_keys
+
+
+def go():
+    """
+    This function ties it all together.
+    """
+    
+
 
 
 ##### STEP 1 #####
@@ -67,7 +80,15 @@ def match_places(coordinates, places_set):
 
 ##### STEP 4 #####
 # Query Yelp based on user input
-
+        
+default_term = "bars"
+default_lat = 41.8369
+default_lon = -87.6847
+        # this is how the yelp api works
+#yelp_api = YelpAPI(api_keys.yelp)
+#search_results = yelp_api.search_query(term = default_term, \
+                                       #latitude = default_lat,\
+                                       #longitude = default_lon)
 
 
 ##### STEP 5 #####
@@ -93,16 +114,11 @@ def name_distance(yelp_result, candidates, threshold = 0.75):
     for i in candidates:
         eligible_matches.put((1 - jaro_distance(yelp_result, i), i))
     match = eligible_matches.get()[1]
-    if match > threshold:
+    if match >= threshold:
         return match
     else:
         return None
         
             
-    
-    
-    
-
-
 ##### STEP 6 #####
 # Return results
