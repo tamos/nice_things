@@ -7,16 +7,33 @@ from yelpapi import YelpAPI
 # Our API key is stored in a separate file
 import api_keys
 
+default_term = "bars"
+default_lat = 41.8369
+default_lon = -87.6847
 
-def go():
+# empty set for now
+places_set = set()
+inputs = {'location': (default_lat, default_lon), 'price': 1, 'type':1}
+
+def go(inputs, places_set):
     """
     This function ties it all together.
     """
     pass
+    # some pseudocode
+    #yelp_api = YelpAPI(api_keys.yelp)
+    #inputs['location'] = trunc_coordinates(inputs['location'])
+    #search_results = yelp_api.search_query(term = default_term, \
+                                      # latitude = default_lat,\
+                                       #longitude = default_lon)
+    #if match_places(inputs['location'], places_set):
+        #query_results = query(inputs_to_query)
+        #result_names = [i['name']for i in search_results['businesses']]
+        #for i in result_names:
+            #if name_distance(i, query_results.name):
+                #add the query result to the yelp result
+            # return to the user the results
     
-    
-
-
 
 ##### STEP 1 #####
 # Get user inputs
