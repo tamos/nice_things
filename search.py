@@ -37,6 +37,21 @@ def trunc_coordinates(coordinates):
 
 # Places set contains tuples of latitudes and longitudes.  
 
+def match_places(coordinates, places_set):
+	"""
+	This function checks whether the user's now-truncated coordinates 
+	are contained within the set of longitude/latitude coordinates.
+
+	Inputs:
+		- coordinates: a tuple (longitude, latitude)
+
+	Outputs: 
+		- a boolean 
+	"""
+	if coordinates in places_set:	
+		return True
+	else:
+		return False
 
 ##### STEP 3 #####
 # If user input in places set then query the database
