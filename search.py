@@ -73,6 +73,8 @@ def name_distance(yelp_result, candidates, threshold = 0.75):
         
     """
     eligible_matches = PriorityQueue()
+    # for now candidates and yelp_result are simple strings
+    # we can make that more complex if needed
     for i in candidates:
         eligible_matches.put((1 - jaro_distance(yelp_result, i), i))
     match = eligible_matches.get()[1]
