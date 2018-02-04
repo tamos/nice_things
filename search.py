@@ -8,6 +8,7 @@ from queue import PriorityQueue
 from yelpapi import YelpAPI
 # Our API key is stored in a separate file
 import api_keys
+import pandas as pd
 
 
 def go():
@@ -68,6 +69,24 @@ def match_places(coordinates, places_set):
 
 ##### STEP 3 #####
 # If user input in places set then query the database
+
+def cdp_health_query(csv_path, query_dict):
+	"""
+    Intakes a query in form of a dictionary and filter the given pandas data
+    frame accordingly
+    Inputs:
+        csv_path: string, pathname to CSV to turn into pandas DataFrame
+        query_dict: dictionary represeting query with:
+        	keys - strings of field names
+        	values - strings or floats of values to match
+    """
+	cdp_health_df = pd.read_csv(csv_path, index_col="Inspection ID",
+                                low_memory=False)
+	for key, value in query_dict.items():
+		df_filter = cdp_health_df[key] == value
+		cdp_health_df = cdp_health_df[df_filter]
+
+	return cdp_health_df
 
 # Using "place" as a parameter query flags table. Then go to health, labour,
 # environmental, etc. tables and query those tables. 
