@@ -1,4 +1,9 @@
 ######### Structure & Steps ##########
+from jellyfish import jaro_distance
+import numpy as np
+from collections import namedtuple
+from queue import PriorityQueue
+
 
 ##### STEP 1 #####
 # Get user inputs
@@ -35,6 +40,19 @@
 ##### STEP 5 #####
 # Match Yelp results with database 
 
+def name_distance(yelp_result, candidates, threshold = 0.75):
+    """In: yelp_results (string)
+    candidates (list of strings)
+    Out: distance between strings
+    """
+    eligible_matches = PriorityQueue()
+    for i in candidates:
+        eligible_matches.put((1 - jaro_distance(yelp_result, i), i))
+    return eligible_matches.get()[1]
+            
+    
+    
+    
 
 
 ##### STEP 6 #####
