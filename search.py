@@ -14,7 +14,7 @@ def go():
     """
     This function ties it all together.
     """
-    pass
+    
 
 
 
@@ -99,7 +99,7 @@ def name_distance(yelp_result, candidates, threshold = 0.75):
     for i in candidates:
         eligible_matches.put((1 - jaro_distance(yelp_result, i), i))
     match = eligible_matches.get()[1]
-    if match > threshold:
+    if match >= threshold:
         return match
     else:
         return None
