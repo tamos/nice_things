@@ -13,6 +13,24 @@ from queue import PriorityQueue
 	# Price: 1, 2, 3, 4 (Ex. $ is 1, $$ is 2)
 	# Type: 1, 2, 3 (Ex. Restaurant is 1, Bar is 2)
 
+def trunc_coordinates(coordinates):
+	"""
+	This function truncates longitude and latitude coordinates of a user's
+	location.
+
+	Inputs:
+		- coordinates: a tuple (longitude, latitude)
+
+	Outputs:
+		- coordinates: a tuple (longitude, latitude) with values truncated
+
+	"""
+	l = []
+	for coordinate in coordinates:
+		l.append('%.3f'%(coordinate))
+	new_coordinates = tuple(l)
+	return new_coordinates
+
 
 ##### STEP 2 #####
 # Match user inputs with places set
