@@ -1,7 +1,5 @@
 ######### Structure & Steps ##########
 from jellyfish import jaro_distance
-import numpy as np
-from collections import namedtuple
 from queue import PriorityQueue
 # This package that was deprecated. We updated it and submitted a pull
 # request to the author, this is the updated package. 
@@ -14,6 +12,8 @@ def go():
     """
     This function ties it all together.
     """
+    pass
+    
     
 
 
