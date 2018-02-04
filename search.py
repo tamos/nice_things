@@ -59,14 +59,18 @@ def trunc_coordinates(coordinates):
 # Match Yelp results with database 
 
 def name_distance(yelp_result, candidates, threshold = 0.75):
-    """ This function calculates the Jaro distance between two strings. 
+    """ 
+    This function calculates the Jaro distance between two strings. 
     If this is above the threshold, it returns the best match.
+    
     Inputs:
         - yelp_results: A yelp result (name) as a string (string)
         - candidates: A list of candidate matching names (strings)
+        
     Outputs:
         - match: the best match for the yelp_result (string)
         If there is no match above the threshold, then None
+        
     """
     eligible_matches = PriorityQueue()
     for i in candidates:
