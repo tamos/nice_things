@@ -41,7 +41,8 @@ def get_user_inputs():
 	application.
 
 	Input:
-		- Location: a tuple of floats (longitude and latitude)
+		- Longitude: a float
+		- Latittude: a float
 		- Price: an integer 1, 2, 3, 4 (Ex. $ is 1, $$ is 2)
 		- Type: a string (ex. "restaurant" or "bar")
 
@@ -161,21 +162,7 @@ def join_by_name_distance(yelp_result, candidates, threshold = 0.75):
     else:
         return None
 
-##### STEP 4 #####
-def rank_matches(match_list):
-	"""
-	This function ranks the matches to be returned to the user.
-
-	Inputs:
-		- match_list: a list of lists of matched businesses and
-					  relevant attributes
-	Outputs:
-		- ranked_match_list: a list of lists of ranked matched
-							 businesses and relevant attributes
-	"""
-	return ranked_match_list
-
-##### STEP 5 ##### 
+##### STEP 4 ##### 
 def final_result(ranked_match_list):
 	"""
 	# This function may not be necessary
@@ -194,7 +181,7 @@ def final_result(ranked_match_list):
 	return final_result
 
 ##### Auxilary Functions to be sorted #####
-
++
 def pull_cdp_health_api(input_dict, output_csv=None, limit=None,
 						legal_dict_inputs=LEGAL_DICT_INPUTS):
 	"""
