@@ -31,7 +31,7 @@ def go(inputs, places_set):
     """
     pass
 
-##### STEP 1 #####
+##### STEP 0 #####
 def get_user_inputs():
 	"""
 	!!! This step will actually need to be completed in views !!! 
@@ -52,6 +52,40 @@ def get_user_inputs():
 	"""
 	pass
 	return user_pref_dict
+
+##### STEP 1 #####
+def geo_code_coordinates():
+	"""
+	This function takes an address as a string and geocodes the string
+	into a longitude and latitude coordinate.
+
+	Input:
+		- address: a string that represents address of a business
+
+	Output:
+		- coordinate: a float representing longitude or latitude coordinate
+	"""
+	return coordinate
+
+def trunc_coordinates(coordinate, n):
+    """
+    This function truncates a coordinate of a user's location.
+
+    Inputs:
+        - coordinate: a float (longitude or latitude)
+
+    Outputs:
+        - new_coordinate: a float (longitude or latitude) truncated
+	
+	Citation: 
+		https://stackoverflow.com/questions/783897/truncating-floats-in-python
+    """
+    s = '{}'.format(coordinate)
+    if 'e' in s or 'E' in s:
+        return '{0:.{1}f}'.format(coordinate, n)
+    i, p, d = s.partition('.')
+    new_coordinate = '.'.join([i, (d+'0'*n)[:n]])
+    return new_coordinate
 
 ##### STEP 2A #####	
 LEGAL_DICT_INPUTS = {"inspection_id", "dba_name", "aka_name", "license_",
@@ -256,27 +290,6 @@ def pull_cdp_health_api(input_dict, output_csv=None, limit=None,
 		df.to_csv(output_csv)
 
 	return df
-
-
-def trunc_coordinates(coordinate, n):
-    """
-    This function truncates a coordinate of a user's location.
-
-    Inputs:
-        - coordinate: a float (longitude or latitude)
-
-    Outputs:
-        - new_coordinate: a float (longitude or latitude) truncated
-	
-	Citation: 
-		https://stackoverflow.com/questions/783897/truncating-floats-in-python
-    """
-    s = '{}'.format(coordinate)
-    if 'e' in s or 'E' in s:
-        return '{0:.{1}f}'.format(coordinate, n)
-    i, p, d = s.partition('.')
-    new_coordinate = '.'.join([i, (d+'0'*n)[:n]])
-    return new_coordinate
 
 ### This function is removed for now - not currently in use ###
 def match_places(coordinates, places_set):
