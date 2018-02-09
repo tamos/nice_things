@@ -48,23 +48,25 @@ def go(inputs, places_set):
     # Price: 1, 2, 3, 4 (Ex. $ is 1, $$ is 2)
     # Type: 1, 2, 3 (Ex. Restaurant is 1, Bar is 2)
 
-def trunc_coordinates(coordinates):
+def trunc_coordinates(coordinate, n):
     """
-    This function truncates longitude and latitude coordinates of a user's
-    location.
+    This function truncates a coordinate of a user's location.
 
     Inputs:
-        - coordinates: a tuple (longitude, latitude)
+        - coordinate: a float (longitude or latitude)
 
     Outputs:
-        - coordinates: a tuple (longitude, latitude) with values truncated
-
+        - new_coordinate: a float (longitude or latitude) truncated
+	
+	Citation: 
+		https://stackoverflow.com/questions/783897/truncating-floats-in-python
     """
-    l = []
-    for coordinate in coordinates:
-        l.append('%.3f'%(coordinate))
-    new_coordinates = tuple(l)
-    return new_coordinates
+    s = '{}'.format(coordinate)
+    if 'e' in s or 'E' in s:
+        return '{0:.{1}f}'.format(coordinate, n)
+    i, p, d = s.partition('.')
+    new_coordinate = '.'.join([i, (d+'0'*n)[:n]])
+    return new_coordinate
 
 
 ##### STEP 2 #####
