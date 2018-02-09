@@ -19,12 +19,102 @@ default_lon = -87.6847
 places_set = set()
 inputs = {'location': (default_lat, default_lon), 'price': 1, 'type': 1}
 
-
 def go(inputs, places_set):
     """
-    This function ties it all together.
+    This function ties all of the steps together.
+
+    Input:
+    	-
+    Output:
+    	- 
+
     """
     pass
+
+##### STEP 1 #####
+def get_user_inputs():
+	"""
+	!!! This step will actually need to be completed in views !!! 
+
+	This function gets the python dictionary that contains the
+	preferences the user has input into the front-end of the
+	application.
+
+	Input:
+		- Location: a tuple of floats (longitude and latitude)
+		- Price: an integer 1, 2, 3, 4 (Ex. $ is 1, $$ is 2)
+		- Type: a string (ex. "restaurant" or "bar")
+
+	Output:
+		- user_pref_dict: a dictionary that maps the keys (location, price,
+		type) to the values input by the user.
+	"""
+	pass
+	return user_pref_dict
+
+##### STEP 2A #####	
+LEGAL_DICT_INPUTS = {"inspection_id", "dba_name", "aka_name", "license_",
+					 "facility_type", "risk", "address", "city", "state",
+					 "zip", "inspection_date", "inspection_type", "results",
+					 "violations", "latitude", "longitude", "location",
+					 "location_city","location_address", "location_zip",
+					 "location_state"}
+
+def query_database(user_pref_dict):
+	"""
+	This function queries the database containing FLAGS, FOOD,
+	and WAGES tables and returns a list of relevant business names
+	and accompanying attributes of that business.
+
+	Input:
+		- user_pref_dict: a dictionary containing user's preferences on
+						  Location, price, and type of business they are
+						  looking for
+	Output:
+		- database_list: list of lists containing results from querying the
+						 database. Each list contains the following:
+						- business name: string 
+						- longitude: float
+						- latitude: float
+						- business type: a string (ex. "restaurant" or "bar")
+	"""
+	pass
+	database_list =[]
+	return database_list
+
+##### STEP 2B #####
+def query_yelp(user_pref_dict):
+	"""
+	This function queries YELP using the Yelp API and returns a list of
+	relevant business names and accompanying attributes of that business.
+
+	Input:
+		- user_pref_dict: a dictionary containing user's preferences on
+						  Location, price, and type of business they are
+						  looking for
+	Output:
+		- yelp_list: list of lists containing results from querying the
+						 database. Each list contains the following:
+						- business name: string 
+						- longitude: float
+						- latitude: float
+						- business type: a string (ex. "restaurant" or "bar")
+
+	"""
+            
+	default_term = "bars"
+	default_lat = 41.8369
+	default_lon = -87.6847
+	yelp_list = []
+	return yelp_list
+
+    # this is how the yelp api works
+
+	#yelp_api = YelpAPI(api_keys.yelp)
+	#search_results = yelp_api.search_query(term = default_term, \
+                                       #latitude = default_lat,\
+                                       #longitude = default_lon)
+
     # some pseudocode
     #yelp_api = YelpAPI(api_keys.yelp)
     #inputs['location'] = trunc_coordinates(inputs['location'])
@@ -38,68 +128,72 @@ def go(inputs, places_set):
             #if name_distance(i, query_results.name):
                 #add the query result to the yelp result
             # return to the user the results
-    
 
-##### STEP 1 #####
-# Get user inputs
-
-# User input form - a python dictionary with the keys and values:
-    # Location: named tuple of floats
-    # Price: 1, 2, 3, 4 (Ex. $ is 1, $$ is 2)
-    # Type: 1, 2, 3 (Ex. Restaurant is 1, Bar is 2)
-
-def trunc_coordinates(coordinate, n):
-    """
-    This function truncates a coordinate of a user's location.
-
-    Inputs:
-        - coordinate: a float (longitude or latitude)
-
-    Outputs:
-        - new_coordinate: a float (longitude or latitude) truncated
-	
-	Citation: 
-		https://stackoverflow.com/questions/783897/truncating-floats-in-python
-    """
-    s = '{}'.format(coordinate)
-    if 'e' in s or 'E' in s:
-        return '{0:.{1}f}'.format(coordinate, n)
-    i, p, d = s.partition('.')
-    new_coordinate = '.'.join([i, (d+'0'*n)[:n]])
-    return new_coordinate
-
-
-##### STEP 2 #####
-# Match user inputs with places set
-
-# Places set contains tuples of latitudes and longitudes.  
-
-def match_places(coordinates, places_set):
-    """
-    This function checks whether the user's now-truncated coordinates
-    are contained within the set of longitude/latitude coordinates.
-
-    Inputs:
-        - coordinates: a tuple (longitude, latitude)
-
-    Outputs:
-        - a boolean
-    """
-    if coordinates in places_set:
-        return True
-    else:
-        return False
 
 ##### STEP 3 #####
-# If user input in places set then query the database
+def join_by_name_distance(yelp_result, candidates, threshold = 0.75):
+    """ 
+    ### Kevin's suggestion: change match to match_list 
+    ### Edit: function needs to match on yelp_list and database_list
 
-LEGAL_DICT_INPUTS = {"inspection_id", "dba_name", "aka_name", "license_",
-					 "facility_type", "risk", "address", "city", "state",
-					 "zip", "inspection_date", "inspection_type", "results",
-					 "violations", "latitude", "longitude", "location",
-					 "location_city","location_address", "location_zip",
-					 "location_state"}
+    This function calculates the Jaro distance between two strings. 
+    If this is above the threshold, it returns the best match.
+    
+    Inputs:
+        - yelp_results: A yelp result (name) as a string (string)
+        - candidates: A list of candidate matching names (strings)
+        
+    Outputs:
+        - match: best match for the yelp_result (string)
+        If there is no match above the threshold, then None
+        
+    """
+    yelp_result = yelp_list
+    #match_list = []
+    eligible_matches = PriorityQueue()
+    # for now candidates and yelp_result are simple strings
+    # we can make that more complex if needed
+    for i in candidates:
+        eligible_matches.put((1 - jaro_distance(yelp_result, i), i))
+    match = eligible_matches.get()[1]
+    if match >= threshold:
+        return match
+    else:
+        return None
 
+##### STEP 4 #####
+def rank_matches(match_list):
+	"""
+	This function ranks the matches to be returned to the user.
+
+	Inputs:
+		- match_list: a list of lists of matched businesses and
+					  relevant attributes
+	Outputs:
+		- ranked_match_list: a list of lists of ranked matched
+							 businesses and relevant attributes
+	"""
+	return ranked_match_list
+
+##### STEP 5 ##### 
+def final_result(ranked_match_list):
+	"""
+	# This function may not be necessary
+
+	This functions takes the ranked_match_list and transforms it into
+	an appropriate form to be delivered to Django.
+
+	Input:
+		- ranked_match_list: a list of lists of ranked matched
+							 businesses and relevant attributes
+
+	Output:
+		- final_result: TBD
+	"""
+
+	return final_result
+
+##### Auxilary Functions to be sorted #####
 
 def pull_cdp_health_api(input_dict, output_csv=None, limit=None,
 						legal_dict_inputs=LEGAL_DICT_INPUTS):
@@ -176,56 +270,41 @@ def pull_cdp_health_api(input_dict, output_csv=None, limit=None,
 
 	return df
 
-# Using "place" as a parameter query flags table. Then go to health, labour,
-# environmental, etc. tables and query those tables. 
-	# flags JOIN health -> returns healthcode data
-	# flags JOIN labour -> returns labour data
-	# flags JOIN environment -> returns env data
-		# put returned flags data into a queue and have a function match
-		# the flags with businesses
-		
 
-##### STEP 4 #####
-# Query Yelp based on user input
-        
-default_term = "bars"
-default_lat = 41.8369
-default_lon = -87.6847
-        # this is how the yelp api works
-#yelp_api = YelpAPI(api_keys.yelp)
-#search_results = yelp_api.search_query(term = default_term, \
-                                       #latitude = default_lat,\
-                                       #longitude = default_lon)
-
-
-##### STEP 5 #####
-# Match Yelp results with database 
-
-def name_distance(yelp_result, candidates, threshold = 0.75):
-    """ 
-    This function calculates the Jaro distance between two strings. 
-    If this is above the threshold, it returns the best match.
-    
-    Inputs:
-        - yelp_results: A yelp result (name) as a string (string)
-        - candidates: A list of candidate matching names (strings)
-        
-    Outputs:
-        - match: the best match for the yelp_result (string)
-        If there is no match above the threshold, then None
-        
+def trunc_coordinates(coordinate, n):
     """
-    eligible_matches = PriorityQueue()
-    # for now candidates and yelp_result are simple strings
-    # we can make that more complex if needed
-    for i in candidates:
-        eligible_matches.put((1 - jaro_distance(yelp_result, i), i))
-    match = eligible_matches.get()[1]
-    if match >= threshold:
-        return match
+    This function truncates a coordinate of a user's location.
+
+    Inputs:
+        - coordinate: a float (longitude or latitude)
+
+    Outputs:
+        - new_coordinate: a float (longitude or latitude) truncated
+	
+	Citation: 
+		https://stackoverflow.com/questions/783897/truncating-floats-in-python
+    """
+    s = '{}'.format(coordinate)
+    if 'e' in s or 'E' in s:
+        return '{0:.{1}f}'.format(coordinate, n)
+    i, p, d = s.partition('.')
+    new_coordinate = '.'.join([i, (d+'0'*n)[:n]])
+    return new_coordinate
+
+### This function is removed for now - not currently in use ###
+def match_places(coordinates, places_set):
+    """
+    This function checks whether the user's now-truncated coordinates
+    are contained within the set of longitude/latitude coordinates.
+
+    Inputs:
+        - coordinates: a tuple (longitude, latitude)
+
+    Outputs:
+        - a boolean
+    """
+    if coordinates in places_set:
+        return True
     else:
-        return None
-        
-            
-##### STEP 6 #####
-# Return results
+        return False
+
