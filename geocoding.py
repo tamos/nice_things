@@ -48,9 +48,10 @@ def get_whd(google_key, file_location = 'datasets/whd/whd_whisard.csv', default_
     print('here')
     for i in location_list_results:
         print(i)
-        whd.full_address.iloc[rowindex] = i[0]
-        whd.latitude.iloc[rowindex] = i.latitude
-        whd.longitude.iloc[rowindex] = i.longitude
+        if type(i) != str:
+            whd.full_address.iloc[rowindex] = i[0]
+            whd.latitude.iloc[rowindex] = i.latitude
+            whd.longitude.iloc[rowindex] = i.longitude
         rowindex += 1
     return whd
     
@@ -79,9 +80,12 @@ def geo_code_address(google_key, address_list, limit = 200):
         print("looking for address", i, "\n")
         try:
             location  = geolocator.geocode(i)
+            lat = location.latitude
+            lon = location.longitude
+            place = location[0]
         except:
-            try_again.append(location)
-            location = 'PLACEHOLDER'
+            try_again.append(place)
+            location =  'PLACEHOLDER'
         loc_list.append(location) 
         #try_again.append('PLACEHOLDER')
         time.sleep(5)
