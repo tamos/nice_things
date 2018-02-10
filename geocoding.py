@@ -42,17 +42,17 @@ def get_whd(google_key, file_location = 'datasets/whd/whd_whisard.csv', default_
     location_list_results, failures = geo_code_address(google_key, address_list, 20)
     # write these into the pandas df
     rowindex = 0
-    whd['full_address'] = 0
-    whd['latitude'] = 0
-    whd['longitude'] = 0
+    whd['full_address'] = [i[0] for i in location_list_results]
+    whd['latitude'] = [i[1] for i in location_list_results]
+    whd['longitude'] = [i[2] for i in location_list_results]
     print('here')
-    for i in location_list_results:
-        print(i)
-        if type(i) != str:
-            whd.full_address.iloc[rowindex] = i[0]
-            whd.latitude.iloc[rowindex] = i.latitude
-            whd.longitude.iloc[rowindex] = i.longitude
-        rowindex += 1
+    #for i in location_list_results:
+        #print(i)
+        #if type(i) == str:
+            #whd.loc[:,('full_address',rowindex)] = i[0]
+            #whd.latitude.iloc[rowindex] = i.latitude
+            #whd.longitude.iloc[rowindex] = i.longitude
+        #rowindex += 1
     return whd
     
 # define geocoding function
@@ -85,12 +85,16 @@ def geo_code_address(google_key, address_list, limit = 200):
             place = location[0]
         except:
             try_again.append(place)
-            location =  'PLACEHOLDER'
-        loc_list.append(location) 
-        #try_again.append('PLACEHOLDER')
+            lat = 0
+            lon = 0
+            place = 0
+        loc_list.append((place, lat, lon)) 
         time.sleep(5)
         if counter == limit:
             break
+            #return loc_list, try_again
+    #if len(try_again) > 0:
+        #return geo_code_address(google_key, try_again, limit - counter)
     return loc_list, try_again
     
 whd_df = get_whd(google_key = google_key)
