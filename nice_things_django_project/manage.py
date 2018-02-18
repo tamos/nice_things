@@ -4,6 +4,9 @@ import sys
 import pandas as pd
 from dateutil import parser
 import pytz
+# import sys
+sys.path.insert(0, '../')
+import geocoding
 
 # To load the Django app, as per https://stackoverflow.com/questions/25537905/
 # django-1-7-throws-django-core-exceptions-
@@ -51,6 +54,11 @@ def update_wages_table(csv_path="../bls_chicago.csv"):
         st_cd = row["st_cd"]
         zip_cd = row["zip_cd"]
         case_violtn_cnt = row["case_violtn_cnt"]
+        google_query = "{}, {}, {}".format(street_addr_1_txt, cty_nm, st_cd)
+        address, google_longitude, google_latitude = \
+            geocoding.geo_code_single_address(google_query)
+        longitude = google_longitude
+        latitude = google_latitude
 
         # Squirt the data into the db:
         obj, created = Wages.objects.get_or_create(
@@ -61,7 +69,9 @@ def update_wages_table(csv_path="../bls_chicago.csv"):
             cty_nm=cty_nm,
             st_cd=st_cd,
             zip_cd=zip_cd,
-            case_violtn_cnt=case_violtn_cnt)
+            case_violtn_cnt=case_violtn_cnt,
+            longitude=longitude,
+            latitude=latitude)
 
 
 def update_food_table(csv_path="../cdp_food_dump.csv"):
