@@ -6,7 +6,6 @@ from queue import PriorityQueue
 from yelpapi import YelpAPI
 # Our API key is stored in a separate file
 import api_keys
-import cdp_tokens
 import requests
 import pandas as pd
 import io
@@ -283,7 +282,7 @@ def pull_cdp_health_api(input_dict, output_csv=None, limit=None,
         concatenate_url += api_string_to_add
 
     # Get into API (with app tokens, there's no throttling limit):
-    app_token = cdp_tokens.APP_TOKEN
+    app_token = api_keys.CDP_APP_TOKEN
     socrata_headers = {'X-App-Token': app_token}
     r = requests.get(url=concatenate_url, headers=socrata_headers)
 

@@ -5,20 +5,24 @@ Created on Fri Feb  9 12:34:16 2018
 
 @author: ty
 
+Modified on Sab Feb 17 22:10:17 2018 by Sasha
+
 This file contains functions for geocoding our address data.
 """
 from geopy.geocoders import GoogleV3
 import pandas as pd
 import time
-from api_keys import google_key as GOOGLE_KEY
+from api_keys import GOOGLE_KEY as GOOGLE_KEY
 from collections import namedtuple
+from random import uniform
 
 DEFAULT_LAT = 41.7830867
 DEFAULT_LON = -87.6040276
 
-geocoded_address = namedtuple('geocode_address', ['address', 'lat', 'lon'] )
+geocoded_address = namedtuple('geocode_address', ['address', 'lat', 'lon'])
 
-def get_whd(file_location = 'datasets/whd/whd_whisard.csv', default_city = 'Chicago'):
+
+def get_whd(file_location = 'datasets/whd/whd_whisard.csv', default_city='Chicago'):
     """
     This function gets the Wages and Hourly data and geocodes it. 
     WHD data comes from: https://www.dol.gov/whd/
@@ -32,7 +36,7 @@ def get_whd(file_location = 'datasets/whd/whd_whisard.csv', default_city = 'Chic
         - whd: a pandas dataframe with the whd data and geocoded coordinates
     """
     
-    whd = pd.read_csv(file_location, low_memory = False)
+    whd = pd.read_csv(file_location, low_memory=False)
     whd = whd[list(whd.columns[1:9])]
     whd = whd[whd.cty_nm == default_city]
     whd = whd[0:10]
@@ -53,9 +57,10 @@ def get_whd(file_location = 'datasets/whd/whd_whisard.csv', default_city = 'Chic
     whd['latitude'] = [i[1] for i in location_list_results]
     whd['longitude'] = [i[2] for i in location_list_results]
     return whd
-    
+
+
 # define geocoding function
-def geo_code_address(address_list, limit = 200):
+def geo_code_address(address_list, limit=200):
     """
     This function takes a list of addresses as strings and returns the 
     location as a geopy Location instance. 
@@ -69,7 +74,7 @@ def geo_code_address(address_list, limit = 200):
         - try_again: a list of location strings
             indicating failed geo coding requests
     """
-    geolocator = GoogleV3(api_key = GOOGLE_KEY)
+    geolocator = GoogleV3(api_key=GOOGLE_KEY)
     loc_list = []
     try_again = []
     counter = 0
@@ -78,7 +83,7 @@ def geo_code_address(address_list, limit = 200):
         counter += 1
         print("looking for address", i, "\n")
         try:
-            location  = geolocator.geocode(i)
+            location = geolocator.geocode(i)
             lat = location.latitude
             lon = location.longitude
             place = location[0]
@@ -88,11 +93,32 @@ def geo_code_address(address_list, limit = 200):
             lat = DEFAULT_LAT
             lon = DEFAULT_LON
             place = i
-        oc_list.append(geocoded_address(place, lat, lon)) 
+        #loc_list.append(geocoded_address(place, lat, lon))
         time.sleep(5)
         if counter == limit:
             break
     return loc_list, try_again
+
+
+def geo_code_single_address(address_str):
+    """
+    Takes an address and outputs Google's address, and latitude, longitude
+    coordinates
+
+    :param address_str: string, address, e.g. "1234 U. st., Chicago, IL"
+
+    :return: tuple of address string, latitude float, and longitude float,
+    e.g. ("1234 U. st., Chicago, IL", -12.12134, 53.345345)
+    """
+    geolocator = GoogleV3(api_key=GOOGLE_KEY)
+    location = geolocator.geocode(address_str)
+    address = location.address
+    lat = location.latitude
+    lon = location.longitude
+    time.sleep(uniform(0, 5))
+
+    return address, lat, lon
+
 
 '''
 Please keep for the moment, just as reference
