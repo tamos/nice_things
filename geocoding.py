@@ -10,11 +10,20 @@ This file contains functions for geocoding our address data.
 from geopy.geocoders import GoogleV3
 import pandas as pd
 import time
-from api_keys import google_key
+from api_keys import google_key as GOOGLE_KEY
+from collections import namedtuple
 
-def get_whd(google_key, file_location = 'datasets/whd/whd_whisard.csv', default_city = 'Chicago'):
+DEFAULT_LAT = 41.7830867
+DEFAULT_LON = -87.6040276
+
+geocoded_address = namedtuple('geocode_address', ['address', 'lat', 'lon'] )
+
+def get_whd(file_location = 'datasets/whd/whd_whisard.csv', default_city = 'Chicago'):
     """
-    This function gets the whd data and geocodes it. 
+    This function gets the Wages and Hourly data and geocodes it. 
+    WHD data comes from: https://www.dol.gov/whd/
+    
+    
     Inputs:
         - google_key: the google api key, as a string
         - file_location: the location of the file to use
@@ -25,7 +34,6 @@ def get_whd(google_key, file_location = 'datasets/whd/whd_whisard.csv', default_
     
     whd = pd.read_csv(file_location, low_memory = False)
     whd = whd[list(whd.columns[1:9])]
-    #whd = whd[keep_cols]
     whd = whd[whd.cty_nm == default_city]
     whd = whd[0:10]
     whd.zip_cd = whd.zip_cd.astype(int)
@@ -39,24 +47,15 @@ def get_whd(google_key, file_location = 'datasets/whd/whd_whisard.csv', default_
         address = " ".join([street, city, state, zip_code])
         address_list.append(address)
     # run the geocode on all the addresses
-    location_list_results, failures = geo_code_address(google_key, address_list, 20)
+    location_list_results, failures = geo_code_address(address_list, 20)
     # write these into the pandas df
-    rowindex = 0
     whd['full_address'] = [i[0] for i in location_list_results]
     whd['latitude'] = [i[1] for i in location_list_results]
     whd['longitude'] = [i[2] for i in location_list_results]
-    print('here')
-    #for i in location_list_results:
-        #print(i)
-        #if type(i) == str:
-            #whd.loc[:,('full_address',rowindex)] = i[0]
-            #whd.latitude.iloc[rowindex] = i.latitude
-            #whd.longitude.iloc[rowindex] = i.longitude
-        #rowindex += 1
     return whd
     
 # define geocoding function
-def geo_code_address(google_key, address_list, limit = 200):
+def geo_code_address(address_list, limit = 200):
     """
     This function takes a list of addresses as strings and returns the 
     location as a geopy Location instance. 
@@ -70,7 +69,7 @@ def geo_code_address(google_key, address_list, limit = 200):
         - try_again: a list of location strings
             indicating failed geo coding requests
     """
-    geolocator = GoogleV3(api_key = google_key)
+    geolocator = GoogleV3(api_key = GOOGLE_KEY)
     loc_list = []
     try_again = []
     counter = 0
@@ -83,21 +82,17 @@ def geo_code_address(google_key, address_list, limit = 200):
             lat = location.latitude
             lon = location.longitude
             place = location[0]
+            loc_list.append(geocoded_address(place, lat, lon)) 
         except:
             try_again.append(place)
-            lat = 0
-            lon = 0
-            place = 0
-        loc_list.append((place, lat, lon)) 
+            lat = DEFAULT_LAT
+            lon = DEFAULT_LON
+            place = i
+        oc_list.append(geocoded_address(place, lat, lon)) 
         time.sleep(5)
         if counter == limit:
             break
-            #return loc_list, try_again
-    #if len(try_again) > 0:
-        #return geo_code_address(google_key, try_again, limit - counter)
     return loc_list, try_again
-    
-whd_df = get_whd(google_key = google_key)
 
 '''
 Please keep for the moment, just as reference
