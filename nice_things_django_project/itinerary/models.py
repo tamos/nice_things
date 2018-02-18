@@ -39,20 +39,20 @@ class Food(models.Model):
     aka_name = models.CharField(max_length=200)
     license_num = models.PositiveIntegerField()
     facility_type = models.CharField(max_length=200)
-    '''risk = models.CharField(max_length=200)
-    address = models.CharField(max_length=200)
-    city = models.CharField(max_length=200)
-    state = models.CharField(max_length=2)
-    zip = models.IntegerField()
-    date = models.DateTimeField()
-    inspection_type = models.CharField(max_length=200)
-    result = models.CharField(max_length=200)
-    violations = models.TextField()
-    longitude = models.FloatField()
-    latitude = models.FloatField()
+    risk = models.CharField(max_length=200, default=None)
+    address = models.CharField(max_length=200, default=None)
+    city = models.CharField(max_length=200, default=None)
+    state = models.CharField(max_length=2, default=None)
+    zip = models.IntegerField(default=None)
+    inspection_date = models.DateTimeField(default=None)
+    inspection_type = models.CharField(max_length=200, default=None)
+    results = models.CharField(max_length=200, default=None)
+    violations = models.TextField(default=None)
+    longitude = models.FloatField(default=None)
+    latitude = models.FloatField(default=None)
     #longitude_trunc = models.ForeignKey(Flag, on_delete=models.CASCADE)
     #latitude_trunc = models.ForeignKey(Flag, on_delete=models.CASCADE)
-    flag_type = models.CharField(max_length=200)'''
+    #flag_type = models.CharField(max_length=200, default=None)
 
 
 class Wages(models.Model):
@@ -64,8 +64,9 @@ class Wages(models.Model):
     st_cd = models.CharField(max_length=2)
     zip_cd = models.CharField(max_length=200)
     case_violtn_cnt = models.PositiveIntegerField()
-    longitude_trunc = models.FloatField()
-    latitude_trunc = models.FloatField()
+    # Need to figure out coordinates, they don't come from the BLS CSV:
+    #longitude_trunc = models.FloatField()
+    #latitude_trunc = models.FloatField()
 
     '''naic_cd
     naics_code_description
