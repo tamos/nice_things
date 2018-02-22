@@ -115,7 +115,7 @@ def geo_code_single_address(address_str):
     address = location.address
     lat = location.latitude
     lon = location.longitude
-    time.sleep(uniform(0, 5))
+    time.sleep(uniform(4, 5))
 
     return address, lat, lon
 
