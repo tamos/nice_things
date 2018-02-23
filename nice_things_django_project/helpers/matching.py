@@ -13,7 +13,15 @@ from itertools import product
 import recordlinkage as rl
 import numpy as np
 # will need to change this directory path below
+import os
+from dateutil import parser
+from django.core.wsgi import get_wsgi_application
+os.chdir('../')
+os.environ['DJANGO_SETTINGS_MODULE'] = "nice_things_django_project.settings"
+application = get_wsgi_application()
 from itinerary.models import Food, Wages, Flag
+from django_pandas.managers import DataFrameManager
+
 
 default_term = "restaurants, Chinese"
 default_lat = 41.8369
@@ -116,7 +124,7 @@ def truncate_coordinate(coordinate):
     
     return trunc_coordinate
 
-def get_filtered_database_info(zip_filter, lat_filter, long_filter):
+def get_filtered_database_dfs(zip_filter, lat_filter, long_filter):
     """
 	This function takes the zip code, latitude, and longitude filters
 	and queries the database to obtain wage information based
@@ -131,78 +139,42 @@ def get_filtered_database_info(zip_filter, lat_filter, long_filter):
     	- wages_df: a pandas dataframe of wages information
     	- food_df: a pandas dataframe of food information
 	"""
-    Food_filtered = Food.objects.filter(zip__in=zip_filter, latitude__in=lat_filter, 
-    	longitude__in=long_filter)
+    # filter django object based on zip code and lat/long
+    food_filtered = Food.objects.filter(zip__in=zip_filter, 
+        latitude__range=(min(lat_filter), max(lat_filter)), 
+        longitude__range=(min(long_filter), max(long_filter)))
+    wages_filtered = Wages.objects.filter(zip__in=zip_filter, 
+        latitude__range=(min(lat_filter), max(lat_filter)), 
+        longitude__range=(min(long_filter), max(long_filter)))
+    
+    # cast as pandas dataframes if filtered result is not empty
+    if food_filtered:
+        food_df = food_filtered.to_dataframe(fieldnames=['zip', 'aka_name', 
+            'address', 'inspection_id', 'latitude', 'longitude'])
+    else:
+        continue
+    
+    if wages_filtered:
+        wages_df = wages_filtered.to_dataframe(fieldnames=['zip_cd', 'trade_nm', 
+            'street_addr_1_txt', 'case_id', 'latitude', 'longitude'])
+    else:
+        return yelp_results
 
-    Wages_filtered = Wages.objects.filter(zip__in=zip_filter, latitude__in=lat_filter, 
-    	longitude__in=long_filter)
+    #rename column names
+    food_df = food_df.rename(index=str, columns={"zip": "zip_code", 
+        "aka_name": "name", "address": "addr"})
+    wages_df = wages_df.rename(index=str, columns={"zip_cd": "zip_code", 
+        "trade_nm": "name", "street_addr_1_txt": "addr"})
+    
+    return food_df, wages_df
     
 
-
-def django_to_df_wages(food_df):
-    """
-    This function takes a django object from U.S. Department of 
-    Labour wages data and turns relevant columns of information for
-    specified businesses into a pandas dataframe.
-
-    Input:
-        - django_result
-    Output:
-        - dj_df: a pandas dataframe of Dept. of Labour wages data
-    """
-
-    dj_df = pd.DataFrame
-    zip_code = []
-    name = []
-    addr = []
-    case_id = []
-    for i in django_result:
-        zip_code.append(i.zip_cd)
-        name.append(i.trade_nm)
-        addr.append(i.street_addr_1_txt)
-        case_id.append(i.case_id)
-    dj_df['zip_code'] = zip_code
-    dj_df['name'] = name
-    dj_df['addr'] = addr
-    dj_df['case_id'] = case_id
-    return dj_df
-
-def django_to_df_food(wages_df):
-    """
-    This functions takes a django object from the City of Chicago
-    healthcode violations data and turnbs relevant columns of
-    information for specified businesses into a pandas dataframe.
-
-    Input:
-        - django_result:
-    Output:
-        - dj_df: a pandas dataframe of healthcode violations
-                 by business
-    """
-    dj_df = pd.DataFrame
-    zip_code = []
-    name = []
-    addr = []
-    inspection_id = []
-    for i in django_result:
-        zip_code.append(i.zip)
-        name.append(i.aka_name)
-        addr.append(i.address)
-        inspection_id.append(i.inspection_id)
-    dj_df['zip_code'] = zip_code
-    dj_df['name'] = name
-    dj_df['addr'] = addr
-    dj_df['inspection_id'] = inspection_id
-    
-    return dj_df
-
-
-def link_datasets(yelp_results, dj_df, thresholds):
+def link_datasets(yelp_results_df, dj_df, thresholds):
     """
 	This functions compares yelp results to django results 
     and produces the best matches based on computing the
-    Levenshtein distance (LD) between the zip_code, business 
-    name, and address strings. 
+    jaro-winkler score between the zip_code, business 
+    name, address strings, latitude, and longitude. 
 
     Inputs:
         - yelp_results: a pandas dataframe of yelp business
@@ -215,7 +187,7 @@ def link_datasets(yelp_results, dj_df, thresholds):
         - results: a dictionary with restaurants/businesses 
     """
     # create dictionary of all possible match combinations
-    zip_threshold, name_threshold, addr_threshold = thresholds
+    name_thresh, addr_thresh = thresholds
     results = dict()
     for i in product(['high','low'], repeat = 3):
         if i not in results:
@@ -226,7 +198,17 @@ def link_datasets(yelp_results, dj_df, thresholds):
     pairs = indexer.index(yelp_results, dj_df)
 
     # Comparison
+    compare = recordlinkage.Compare()
+    compare.numeric('zip_code', 'zip_code', method='linear', 
+        label='zip_score')
+    compare.string('name', 'name', method='jarowinkler', 
+        threshold=name_thresh, label='name')
+    compare.string('addr', 'addr', method='jarowinkler', 
+        threshold=addr_thresh, label='addr')
+    compare.geo('latitude', 'longitude', 'latitude', 'longitude', 
+        method='linear', label='coordinates')
 
+    features = compare_cl.compute(pairs, dj_df)
 
     # Classification
 
@@ -320,6 +302,64 @@ def best_matches(how_well, search_results, dj_df, thresholds):
 
         return   yelp_results
     
+
+def django_to_df_wages(food_df):
+    """
+    This function takes a django object from U.S. Department of 
+    Labour wages data and turns relevant columns of information for
+    specified businesses into a pandas dataframe.
+
+    Input:
+        - django_result
+    Output:
+        - dj_df: a pandas dataframe of Dept. of Labour wages data
+    """
+
+    dj_df = pd.DataFrame
+    zip_code = []
+    name = []
+    addr = []
+    case_id = []
+    for i in django_result:
+        zip_code.append(i.zip_cd)
+        name.append(i.trade_nm)
+        addr.append(i.street_addr_1_txt)
+        case_id.append(i.case_id)
+    dj_df['zip_code'] = zip_code
+    dj_df['name'] = name
+    dj_df['addr'] = addr
+    dj_df['case_id'] = case_id
+    return dj_df
+
+def django_to_df_food(wages_df):
+    """
+    This functions takes a django object from the City of Chicago
+    healthcode violations data and turnbs relevant columns of
+    information for specified businesses into a pandas dataframe.
+
+    Input:
+        - django_result:
+    Output:
+        - dj_df: a pandas dataframe of healthcode violations
+                 by business
+    """
+    dj_df = pd.DataFrame
+    zip_code = []
+    name = []
+    addr = []
+    inspection_id = []
+    for i in django_result:
+        zip_code.append(i.zip)
+        name.append(i.aka_name)
+        addr.append(i.address)
+        inspection_id.append(i.inspection_id)
+    dj_df['zip_code'] = zip_code
+    dj_df['name'] = name
+    dj_df['addr'] = addr
+    dj_df['inspection_id'] = inspection_id
+    
+    return dj_df
+
 
             
             

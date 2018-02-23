@@ -1,6 +1,7 @@
 import datetime
 from django.db import models
 from django.utils import timezone
+from django_pandas.managers import DataFrameManager
 
 
 class Flag(models.Model):
@@ -27,9 +28,10 @@ class Food(models.Model):
     violations = models.TextField(default=None)
     longitude = models.FloatField(default=None)
     latitude = models.FloatField(default=None)
-    #longitude_trunc = models.ForeignKey(Flag, on_delete=models.CASCADE)
-    #latitude_trunc = models.ForeignKey(Flag, on_delete=models.CASCADE)
+    longitude_trunc = models.ForeignKey(Flag, on_delete=models.CASCADE)
+    latitude_trunc = models.ForeignKey(Flag, on_delete=models.CASCADE)
     #flag_type = models.CharField(max_length=200, default=None)
+    objects = DataFrameManager()
 
 
 class Wages(models.Model):
@@ -44,7 +46,7 @@ class Wages(models.Model):
     # Need to figure out coordinates, they don't come from the BLS CSV:
     longitude = models.FloatField(default=None)
     latitude = models.FloatField(default=None)
-
+    objects = DataFrameManager()
     '''naic_cd
     naics_code_description
 
