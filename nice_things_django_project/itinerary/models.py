@@ -28,8 +28,8 @@ class Food(models.Model):
     violations = models.TextField(default=None)
     longitude = models.FloatField(default=None)
     latitude = models.FloatField(default=None)
-    longitude_trunc = models.ForeignKey(Flag, on_delete=models.CASCADE)
-    latitude_trunc = models.ForeignKey(Flag, on_delete=models.CASCADE)
+    #longitude_trunc = models.ForeignKey(Flag, on_delete=models.CASCADE, related_name = "food")
+    #latitude_trunc = models.ForeignKey(Flag, on_delete=models.CASCADE, related_name = "food")
     #flag_type = models.CharField(max_length=200, default=None)
     objects = DataFrameManager()
 
