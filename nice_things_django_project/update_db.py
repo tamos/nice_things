@@ -1,8 +1,8 @@
+#!/usr/bin/env python3
 import os
 import pandas as pd
 from dateutil import parser
 import pytz
-from helpers import geocoding
 
 # To load the Django app, as per https://stackoverflow.com/questions/25537905/
 # django-1-7-throws-django-core-exceptions-
@@ -13,13 +13,14 @@ application = get_wsgi_application()
 
 from itinerary.models import Food, Wages, Flag
 
-# Path change to import file_list:
-import sys
-sys.path.insert(0, '../')
+# Path change to import file_list, geocoding:
+path = "../"
+os.chdir(path)
 import file_list
+from helpers import geocoding
 
 
-def update_wages_table(csv_path=file_list.labor_stats):
+def update_wages_table(csv_path=file_list.labor_stats, geocode=False):
     """
     Updates the Wages table in the nice_things db.
 
@@ -36,7 +37,7 @@ def update_wages_table(csv_path=file_list.labor_stats):
                             "street_addr_1_txt": str,
                             "cty_nm": str,
                             "st_cd": str,
-                            "zip_cd": str,
+                            "zip_cd": int,
                             "case_violtn_cnt": int},
                      usecols=use_cols)
 
@@ -55,9 +56,16 @@ def update_wages_table(csv_path=file_list.labor_stats):
         st_cd = row["st_cd"]
         zip_cd = row["zip_cd"]
         case_violtn_cnt = row["case_violtn_cnt"]
-        google_query = "{}, {}, {}".format(street_addr_1_txt, cty_nm, st_cd)
-        address, google_longitude, google_latitude = \
-            geocoding.geo_code_single_address(google_query)
+
+        if geocode:
+            google_query = "{}, {}, {}".format(street_addr_1_txt, cty_nm, st_cd)
+            address, google_longitude, google_latitude = \
+                geocoding.geo_code_single_address(google_query)
+        # Empty placeholders if we are not geocoding. Necessary because
+        # db does not take nulls:
+        else:
+            google_longitude = 0.0
+            google_latitude = 0.0
         longitude = google_longitude
         latitude = google_latitude
 
