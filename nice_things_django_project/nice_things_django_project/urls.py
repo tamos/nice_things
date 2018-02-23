@@ -16,7 +16,9 @@ Including another URLconf
 from django.urls import include, path
 from django.contrib import admin
 
+# adapted from pa3
 urlpatterns = [
-    path('itinerary/', include('itinerary.urls')),
+    #path('itinerary/', include('itinerary.urls')),
     path('admin/', admin.site.urls),
+    path('', include('itinerary.urls')),
 ]
