@@ -151,22 +151,20 @@ def get_filtered_database_dfs(zip_filter, lat_filter, long_filter):
     if food_filtered:
         food_df = food_filtered.to_dataframe(fieldnames=['zip', 'aka_name', 
             'address', 'inspection_id', 'latitude', 'longitude'])
+        food_df = food_df.rename(index=str, columns={"zip": "zip_code", 
+            "aka_name": "name", "address": "addr"})
     else:
         continue
     
     if wages_filtered:
         wages_df = wages_filtered.to_dataframe(fieldnames=['zip_cd', 'trade_nm', 
             'street_addr_1_txt', 'case_id', 'latitude', 'longitude'])
+        wages_df = wages_df.rename(index=str, columns={"zip_cd": "zip_code", 
+            "trade_nm": "name", "street_addr_1_txt": "addr"})
     else:
         return yelp_results
 
-    #rename column names
-    food_df = food_df.rename(index=str, columns={"zip": "zip_code", 
-        "aka_name": "name", "address": "addr"})
-    wages_df = wages_df.rename(index=str, columns={"zip_cd": "zip_code", 
-        "trade_nm": "name", "street_addr_1_txt": "addr"})
-    
-    return food_df, wages_df
+    return yelp_results, food_df, wages_df
     
 
 def link_datasets(yelp_results_df, dj_df, thresholds):
