@@ -39,7 +39,7 @@ class Wages(models.Model):
     street_addr_1_txt = models.CharField(max_length=200)
     cty_nm = models.CharField(max_length=200)
     st_cd = models.CharField(max_length=2)
-    zip_cd = models.CharField(max_length=200)
+    zip_cd = models.IntegerField(default=None)
     case_violtn_cnt = models.PositiveIntegerField()
     # Need to figure out coordinates, they don't come from the BLS CSV:
     longitude = models.FloatField(default=None)

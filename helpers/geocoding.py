@@ -12,7 +12,7 @@ This file contains functions for geocoding our address data.
 from geopy.geocoders import GoogleV3
 import pandas as pd
 import time
-from api_keys import GOOGLE_KEY as GOOGLE_KEY
+from data.api_keys import GOOGLE_KEY as GOOGLE_KEY
 from collections import namedtuple
 from random import uniform
 

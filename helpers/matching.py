@@ -6,7 +6,7 @@ Created on Sat Feb 17 20:17:53 2018
 @author: ty
 """
 import pandas as pd
-from api_keys import yelp
+from data.api_keys import yelp
 from jellyfish import jaro_distance
 from yelpapi import YelpAPI
 from itertools import product
@@ -18,11 +18,12 @@ default_lat = 41.8369
 default_lon = -87.6847
 # this is how the yelp api works
 yelp_api = YelpAPI(yelp)
-search_results = yelp_api.search_query(term = default_term, \
-                                       latitude = default_lat,\
-                                       longitude = default_lon)
+search_results = yelp_api.search_query(term=default_term,
+                                       latitude=default_lat,
+                                       longitude=default_lon)
 
 # use region key to get lattitude, longitude
+
 
 def extract_yelp_data(search_results):
     """
@@ -47,6 +48,7 @@ def extract_yelp_data(search_results):
     yelp_results['names'] = names
     yelp_results['addr'] = addresses
     return yelp_results
+
 
 def django_to_df_wages(django_result):
     dj_df = pd.DataFrame
@@ -83,9 +85,11 @@ def django_to_df_food(django_result):
     dj_df['inspection_id'] = inspection_id
     return dj_df
 
+
 yelp_results = extract_yelp_data(search_results)
 dj_df = yelp_results.copy()
 dj_df['inspection_id'] = 0
+
 
 def compare_distance(yelp_results, dj_df, thresholds):
     """ 
@@ -130,7 +134,8 @@ def compare_distance(yelp_results, dj_df, thresholds):
             if y_tuple not in results[verdict_tuple]:
                 results[verdict_tuple][y_tuple] = (dj_zip, dj_name, dj_addr, dj_id)
     return results
-            
+
+
 def best_matches(how_well, search_results, dj_df, thresholds):
     # how well is tuple of High, High, Low, etc.
     yelp_results = extract_yelp_data(search_results)
@@ -138,9 +143,9 @@ def best_matches(how_well, search_results, dj_df, thresholds):
     results = compare_distance(yelp_results, dj_df, thresholds)
     # find the ones that match well enough
     if len(results[how_well]) > 0:
-        return results[how_well] # dictionary of tuples (yelp) (flags data)
+        return results[how_well]  # dictionary of tuples (yelp) (flags data)
     else:
-        return   yelp_results
+        return yelp_results
         
         
 
