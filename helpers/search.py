@@ -3,12 +3,11 @@ from jellyfish import jaro_distance
 from queue import PriorityQueue
 # This package that was deprecated. We updated it and submitted a pull
 # request to the author, this is the updated package. 
-from yelpapi import YelpAPI
 # Our API key is stored in a separate file
-import api_keys
 import requests
 import pandas as pd
 import io
+import data.api_keys
 
 default_term = "bars"
 default_lat = 41.8369
@@ -23,48 +22,48 @@ def go(inputs, places_set):
     This function ties all of the steps together.
 
     Input:
-    	-
+        -
     Output:
-    	- 
+        -
 
     """
     pass
 
 ##### STEP 0 #####
 def get_user_inputs():
-	"""
-	!!! This step will actually need to be completed in views !!! 
+    """
+    !!! This step will actually need to be completed in views !!!
 
-	This function gets the python dictionary that contains the
-	preferences the user has input into the front-end of the
-	application.
+    This function gets the python dictionary that contains the
+    preferences the user has input into the front-end of the
+    application.
 
-	Input:
-		- Longitude: a float
-		- Latittude: a float
-		- Price: an integer 1, 2, 3, 4 (Ex. $ is 1, $$ is 2)
-		- Type: a string (ex. "restaurant" or "bar")
+    Input:
+        - Longitude: a float
+        - Latittude: a float
+        - Price: an integer 1, 2, 3, 4 (Ex. $ is 1, $$ is 2)
+        - Type: a string (ex. "restaurant" or "bar")
 
-	Output:
-		- user_pref_dict: a dictionary that maps the keys (location, price,
-		type) to the values input by the user.
-	"""
-	pass
-	return user_pref_dict
+    Output:
+        - user_pref_dict: a dictionary that maps the keys (location, price,
+        type) to the values input by the user.
+    """
+    pass
+    return user_pref_dict
 
 ##### STEP 1 #####
 def geo_code_coordinates():
-	"""
-	This function takes an address as a string and geocodes the string
-	into a longitude and latitude coordinate.
+    """
+    This function takes an address as a string and geocodes the string
+    into a longitude and latitude coordinate.
 
-	Input:
-		- address: a string that represents address of a business
+    Input:
+        - address: a string that represents address of a business
 
-	Output:
-		- coordinate: a float representing longitude or latitude coordinate
-	"""
-	return coordinate
+    Output:
+        - coordinate: a float representing longitude or latitude coordinate
+    """
+    return coordinate
 
 def trunc_coordinates(coordinate, n):
     """
@@ -75,9 +74,9 @@ def trunc_coordinates(coordinate, n):
 
     Outputs:
         - new_coordinate: a float (longitude or latitude) truncated
-	
-	Citation: 
-		https://stackoverflow.com/questions/783897/truncating-floats-in-python
+
+    Citation:
+        https://stackoverflow.com/questions/783897/truncating-floats-in-python
     """
     s = '{}'.format(coordinate)
     if 'e' in s or 'E' in s:
@@ -88,64 +87,64 @@ def trunc_coordinates(coordinate, n):
 
 ##### STEP 2A #####	
 LEGAL_DICT_INPUTS = {"inspection_id", "dba_name", "aka_name", "license_",
-					 "facility_type", "risk", "address", "city", "state",
-					 "zip", "inspection_date", "inspection_type", "results",
-					 "violations", "latitude", "longitude", "location",
-					 "location_city","location_address", "location_zip",
-					 "location_state"}
+                     "facility_type", "risk", "address", "city", "state",
+                     "zip", "inspection_date", "inspection_type", "results",
+                     "violations", "latitude", "longitude", "location",
+                     "location_city","location_address", "location_zip",
+                     "location_state"}
 
 def query_database(user_pref_dict):
-	"""
-	This function queries the database containing FLAGS, FOOD,
-	and WAGES tables and returns a list of relevant business names
-	and accompanying attributes of that business.
+    """
+    This function queries the database containing FLAGS, FOOD,
+    and WAGES tables and returns a list of relevant business names
+    and accompanying attributes of that business.
 
-	Input:
-		- user_pref_dict: a dictionary containing user's preferences on
-						  Location, price, and type of business they are
-						  looking for
-	Output:
-		- database_list: list of lists containing results from querying the
-						 database. Each list contains the following:
-						- business name: string 
-						- longitude: float
-						- latitude: float
-						- business type: a string (ex. "restaurant" or "bar")
-	"""
-	pass
-	database_list =[]
-	return database_list
+    Input:
+        - user_pref_dict: a dictionary containing user's preferences on
+                          Location, price, and type of business they are
+                          looking for
+    Output:
+        - database_list: list of lists containing results from querying the
+                         database. Each list contains the following:
+                        - business name: string
+                        - longitude: float
+                        - latitude: float
+                        - business type: a string (ex. "restaurant" or "bar")
+    """
+    pass
+    database_list =[]
+    return database_list
 
 ##### STEP 2B #####
 def query_yelp(user_pref_dict):
-	"""
-	This function queries YELP using the Yelp API and returns a list of
-	relevant business names and accompanying attributes of that business.
+    """
+    This function queries YELP using the Yelp API and returns a list of
+    relevant business names and accompanying attributes of that business.
 
-	Input:
-		- user_pref_dict: a dictionary containing user's preferences on
-						  Location, price, and type of business they are
-						  looking for
-	Output:
-		- yelp_list: list of lists containing results from querying the
-						 database. Each list contains the following:
-						- business name: string 
-						- longitude: float
-						- latitude: float
-						- business type: a string (ex. "restaurant" or "bar")
+    Input:
+        - user_pref_dict: a dictionary containing user's preferences on
+                          Location, price, and type of business they are
+                          looking for
+    Output:
+        - yelp_list: list of lists containing results from querying the
+                         database. Each list contains the following:
+                        - business name: string
+                        - longitude: float
+                        - latitude: float
+                        - business type: a string (ex. "restaurant" or "bar")
 
-	"""
+    """
             
-	default_term = "bars"
-	default_lat = 41.8369
-	default_lon = -87.6847
-	yelp_list = []
-	return yelp_list
+    default_term = "bars"
+    default_lat = 41.8369
+    default_lon = -87.6847
+    yelp_list = []
+    return yelp_list
 
     # this is how the yelp api works
 
-	#yelp_api = YelpAPI(api_keys.yelp)
-	#search_results = yelp_api.search_query(term = default_term, \
+    #yelp_api = YelpAPI(api_keys.yelp)
+    #search_results = yelp_api.search_query(term = default_term, \
                                        #latitude = default_lat,\
                                        #longitude = default_lon)
 
@@ -165,7 +164,7 @@ def query_yelp(user_pref_dict):
 
 
 ##### STEP 3 #####
-def join_by_name_distance(yelp_result, candidates, threshold = 0.75):
+def join_by_name_distance(yelp_result, candidates, threshold=0.75):
     """ 
     ### Kevin's suggestion: change match to match_list 
     ### Edit: function needs to match on yelp_list and database_list
@@ -197,21 +196,21 @@ def join_by_name_distance(yelp_result, candidates, threshold = 0.75):
 
 ##### STEP 4 ##### 
 def final_result(ranked_match_list):
-	"""
-	# This function may not be necessary
+    """
+    # This function may not be necessary
 
-	This functions takes the ranked_match_list and transforms it into
-	an appropriate form to be delivered to Django.
+    This functions takes the ranked_match_list and transforms it into
+    an appropriate form to be delivered to Django.
 
-	Input:
-		- ranked_match_list: a list of lists of ranked matched
-							 businesses and relevant attributes
+    Input:
+        - ranked_match_list: a list of lists of ranked matched
+                             businesses and relevant attributes
 
-	Output:
-		- final_result: TBD
-	"""
+    Output:
+        - final_result: TBD
+    """
 
-	return final_result
+    return final_result
 
 ##### Auxilary Functions to be sorted #####
 LEGAL_DICT_INPUTS = {"inspection_id", "dba_name", "aka_name", "license_",
@@ -220,6 +219,7 @@ LEGAL_DICT_INPUTS = {"inspection_id", "dba_name", "aka_name", "license_",
                      "violations", "latitude", "longitude", "location",
                      "location_city","location_address", "location_zip",
                      "location_state"}
+
 
 def pull_cdp_health_api(input_dict, output_csv=None, limit=None,
                         legal_dict_inputs=LEGAL_DICT_INPUTS):
@@ -282,7 +282,7 @@ def pull_cdp_health_api(input_dict, output_csv=None, limit=None,
         concatenate_url += api_string_to_add
 
     # Get into API (with app tokens, there's no throttling limit):
-    app_token = api_keys.CDP_APP_TOKEN
+    app_token = data.api_keys.CDP_APP_TOKEN
     socrata_headers = {'X-App-Token': app_token}
     r = requests.get(url=concatenate_url, headers=socrata_headers)
 

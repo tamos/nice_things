@@ -12,7 +12,7 @@ This file contains functions for geocoding our address data.
 from geopy.geocoders import GoogleV3
 import pandas as pd
 import time
-from api_keys import GOOGLE_KEY as GOOGLE_KEY
+from data.api_keys import GOOGLE_KEY as GOOGLE_KEY
 from collections import namedtuple
 from random import uniform
 
@@ -115,7 +115,7 @@ def geo_code_single_address(address_str):
     address = location.address
     lat = location.latitude
     lon = location.longitude
-    time.sleep(uniform(0, 5))
+    time.sleep(uniform(4, 5))
 
     return address, lat, lon
 
