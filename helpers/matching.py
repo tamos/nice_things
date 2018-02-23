@@ -13,7 +13,13 @@ from itertools import product
 import recordlinkage as rl
 import numpy as np
 # will need to change this directory path below
+import os
+from dateutil import parser
+from django.core.wsgi import get_wsgi_application
+os.environ['DJANGO_SETTINGS_MODULE'] = "nice_things_django_project.settings"
+application = get_wsgi_application()
 from itinerary.models import Food, Wages, Flag
+
 
 default_term = "restaurants, Chinese"
 default_lat = 41.8369
@@ -116,7 +122,7 @@ def truncate_coordinate(coordinate):
     
     return trunc_coordinate
 
-def get_filtered_database_info(zip_filter, lat_filter, long_filter):
+def get_filtered_database_dfs(zip_filter, lat_filter, long_filter):
     """
 	This function takes the zip code, latitude, and longitude filters
 	and queries the database to obtain wage information based
@@ -131,13 +137,22 @@ def get_filtered_database_info(zip_filter, lat_filter, long_filter):
     	- wages_df: a pandas dataframe of wages information
     	- food_df: a pandas dataframe of food information
 	"""
-    Food_filtered = Food.objects.filter(zip__in=zip_filter, latitude__in=lat_filter, 
+    # filter django object based on zip code and lat/long
+    food_filtered = Food.objects.filter(zip__in=zip_filter, latitude__in=lat_filter, 
+    	longitude__in=long_filter)
+    wages_filtered = Wages.objects.filter(zip__in=zip_filter, latitude__in=lat_filter, 
     	longitude__in=long_filter)
 
-    Wages_filtered = Wages.objects.filter(zip__in=zip_filter, latitude__in=lat_filter, 
-    	longitude__in=long_filter)
+    # cast as pandas dataframes
+    food_df = food_filtered.to_dataframe(fieldnames=['zip', 'aka_name', 
+        'address', 'inspection_id', 'latitude', 'longitude'])
+    wages_df = wages_filtered.to_dataframe(fieldnames=['zip_cd', 'trade_nm', 
+        'street_addr_1_txt', 'case_id', 'latitude', 'longitude'])
+
+    #rename column names
     
-
+    return food_df, wages_df
+    
 
 def django_to_df_wages(food_df):
     """
@@ -197,12 +212,12 @@ def django_to_df_food(wages_df):
     return dj_df
 
 
-def link_datasets(yelp_results, dj_df, thresholds):
+def link_datasets(yelp_results_df, dj_df, thresholds):
     """
 	This functions compares yelp results to django results 
     and produces the best matches based on computing the
-    Levenshtein distance (LD) between the zip_code, business 
-    name, and address strings. 
+    jaro-winkler score between the zip_code, business 
+    name, address strings, latitude, and longitude. 
 
     Inputs:
         - yelp_results: a pandas dataframe of yelp business
@@ -215,7 +230,7 @@ def link_datasets(yelp_results, dj_df, thresholds):
         - results: a dictionary with restaurants/businesses 
     """
     # create dictionary of all possible match combinations
-    zip_threshold, name_threshold, addr_threshold = thresholds
+    name_thresh, addr_thresh = thresholds
     results = dict()
     for i in product(['high','low'], repeat = 3):
         if i not in results:
@@ -226,7 +241,17 @@ def link_datasets(yelp_results, dj_df, thresholds):
     pairs = indexer.index(yelp_results, dj_df)
 
     # Comparison
+    compare = recordlinkage.Compare()
+    compare.numeric('zip_code', 'zip_code', method='linear', 
+        label='zip_score')
+    compare.string('name', 'name', method='jarowinkler', 
+        threshold=name_thresh, label='name')
+    compare.string('addr', 'addr', method='jarowinkler', 
+        threshold=addr_thresh, label='addr')
+    compare.geo('latitude', 'longitude', 'latitude', 'longitude', 
+        method='linear', label='coordinates')
 
+    features = compare_cl.compute(pairs, dj_df)
 
     # Classification
 
