@@ -3,18 +3,21 @@ import os
 import pandas as pd
 from dateutil import parser
 import pytz
+import sys
 
 # To load the Django app, as per https://stackoverflow.com/questions/25537905/
 # django-1-7-throws-django-core-exceptions-
 # appregistrynotready-models-arent-load:
 from django.core.wsgi import get_wsgi_application
+#os.chdir("/nice_things_django_project")
+
 os.environ['DJANGO_SETTINGS_MODULE'] = "nice_things_django_project.settings"
 application = get_wsgi_application()
 
 from itinerary.models import Food, Wages
 
-import file_list
-from helpers import geocoding
+sys.path.insert(0, './helpers')
+from helpers import file_list, geocoding
 
 
 def update_wages_table(csv_path=file_list.labor_stats, geocode=False):
