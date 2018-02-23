@@ -11,11 +11,8 @@ from django.core.wsgi import get_wsgi_application
 os.environ['DJANGO_SETTINGS_MODULE'] = "nice_things_django_project.settings"
 application = get_wsgi_application()
 
-from itinerary.models import Food, Wages, Flag
+from itinerary.models import Food, Wages
 
-# Path change to import file_list, geocoding:
-path = "../"
-os.chdir(path)
 import file_list
 from helpers import geocoding
 
