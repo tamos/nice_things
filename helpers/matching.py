@@ -6,11 +6,7 @@ Created on Sat Feb 17 20:17:53 2018
 @author: ty & ks
 """
 import pandas as pd
-<<<<<<< HEAD:helpers/matching.py
-from data.api_keys import yelp
-=======
 #from api_keys import yelp
->>>>>>> 2ee2b36f34249461e9da5de099edb637dc7267dd:matching.py
 from jellyfish import jaro_distance
 from yelpapi import YelpAPI
 from itertools import product
@@ -27,12 +23,6 @@ default_sort = "distance" # sorts by distance (other options are
 # best_match, rating, review_count)
 
 # this is how the yelp api works
-<<<<<<< HEAD:helpers/matching.py
-yelp_api = YelpAPI(yelp)
-search_results = yelp_api.search_query(term=default_term,
-                                       latitude=default_lat,
-                                       longitude=default_lon)
-=======
 #yelp_api = YelpAPI(yelp)
 
 #temporarily use Kevin's API Key
@@ -42,7 +32,7 @@ search_results = yelp_api.search_query(term = default_term, \
                                        longitude = default_lon,\
                                        limit = default_lim,\
                                        sort_by = default_sort)
->>>>>>> 2ee2b36f34249461e9da5de099edb637dc7267dd:matching.py
+
 
 # use region key to get lattitude, longitude
 
@@ -86,10 +76,7 @@ def extract_yelp_data(search_results):
 
     return yelp_results
 
-<<<<<<< HEAD:helpers/matching.py
 
-def django_to_df_wages(django_result):
-=======
 def define_filters(yelp_results):
     """
 	This function creates the filters we will use to query
@@ -163,7 +150,7 @@ def django_to_df_wages(food_df):
     Output:
         - dj_df: a pandas dataframe of Dept. of Labour wages data
     """
->>>>>>> 2ee2b36f34249461e9da5de099edb637dc7267dd:matching.py
+
     dj_df = pd.DataFrame
     zip_code = []
     name = []
@@ -209,12 +196,7 @@ def django_to_df_food(wages_df):
     
     return dj_df
 
-<<<<<<< HEAD:helpers/matching.py
 
-yelp_results = extract_yelp_data(search_results)
-dj_df = yelp_results.copy()
-dj_df['inspection_id'] = 0
-=======
 def link_datasets(yelp_results, dj_df, thresholds):
     """
 	This functions compares yelp results to django results 
@@ -255,7 +237,7 @@ def link_datasets(yelp_results, dj_df, thresholds):
         results[verdict_tuple][y_tuple] = (dj_zip, dj_name, dj_addr, dj_id)
     
     return results
->>>>>>> 2ee2b36f34249461e9da5de099edb637dc7267dd:matching.py
+
 
 
 def compare_distance(yelp_results, dj_df, thresholds):
@@ -335,16 +317,10 @@ def best_matches(how_well, search_results, dj_df, thresholds):
     if len(results[how_well]) > 0:
         return results[how_well]  # dictionary of tuples (yelp) (flags data)
     else:
-<<<<<<< HEAD:helpers/matching.py
-        return yelp_results
-        
-        
 
-    #       
-=======
         return   yelp_results
     
->>>>>>> 2ee2b36f34249461e9da5de099edb637dc7267dd:matching.py
+
             
             
 #compare_distance(yelp_results, dj_df, (0.5, 0.5, 0.5))
