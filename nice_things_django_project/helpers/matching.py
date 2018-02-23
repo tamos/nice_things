@@ -23,7 +23,7 @@ from itinerary.models import Food, Wages, Flag
 from django_pandas.managers import DataFrameManager
 
 
-default_term = "restaurants, Chinese"
+default_term = "restaurant, Chinese"
 default_lat = 41.8369
 default_lon = -87.6847
 default_lim = 50 # defaults at 20 and 50 is limit
@@ -70,7 +70,9 @@ def extract_yelp_data(search_results):
     for i in businesses:
         addresses.append(i['location']['display_address'][0])
         names.append(i['name'])
-        zip_code.append(i['location']['zip_code'])
+        # need to create filter that works to filter out missing zipcodes
+        if i['location']['zip_code'] != '':
+            zip_code.append(i['location']['zip_code'])
         latitude.append(i['coordinates']['latitude'])
         longitude.append(i['coordinates']['longitude'])
 
@@ -98,11 +100,17 @@ def define_filters(yelp_results):
 		- latitude_filter: a set of unique truncated atitude coordinates
 		- longitude_filter: a numpy array of unique truncated longitude coordinates
 	"""
+    # remove rows that don't have a zip_code
+    yelp_results = yelp_results[yelp_results.zip_code != " '' "]
     latitude_filter = set()
     longitude_filter = set()
 
     # obtain unique zip codes and cast as integers
     zip_filter = yelp_results['zip_code'].unique()
+    # need to handle businesses without zip codes
+    # for zip_code in zip_filter:
+    # 	if zip_code == " '' ":
+    # 		np.delete
     zip_filter = set(zip_filter.astype(int))
 
     # truncate latitudes and obtain unique truncated latitudes
@@ -138,33 +146,35 @@ def get_filtered_database_dfs(zip_filter, lat_filter, long_filter):
     Output:
     	- wages_df: a pandas dataframe of wages information
     	- food_df: a pandas dataframe of food information
-	"""
+    """
     # filter django object based on zip code and lat/long
     food_filtered = Food.objects.filter(zip__in=zip_filter, 
         latitude__range=(min(lat_filter), max(lat_filter)), 
         longitude__range=(min(long_filter), max(long_filter)))
-    wages_filtered = Wages.objects.filter(zip__in=zip_filter, 
+    wages_filtered = Wages.objects.filter(zip_cd__in=zip_filter, 
         latitude__range=(min(lat_filter), max(lat_filter)), 
         longitude__range=(min(long_filter), max(long_filter)))
     
     # cast as pandas dataframes if filtered result is not empty
-    if food_filtered:
+    # make adjustments to this
+
+    if food_filtered.exists():
         food_df = food_filtered.to_dataframe(fieldnames=['zip', 'aka_name', 
             'address', 'inspection_id', 'latitude', 'longitude'])
         food_df = food_df.rename(index=str, columns={"zip": "zip_code", 
             "aka_name": "name", "address": "addr"})
     else:
-        continue
-    
-    if wages_filtered:
+        food_df = []
+
+    elif wages_filtered.exists():
         wages_df = wages_filtered.to_dataframe(fieldnames=['zip_cd', 'trade_nm', 
             'street_addr_1_txt', 'case_id', 'latitude', 'longitude'])
         wages_df = wages_df.rename(index=str, columns={"zip_cd": "zip_code", 
             "trade_nm": "name", "street_addr_1_txt": "addr"})
     else:
-        return yelp_results
-
-    return yelp_results, food_df, wages_df
+        wages_df = []
+        
+    return food_df, wages_df
     
 
 def link_datasets(yelp_results_df, dj_df, thresholds):
