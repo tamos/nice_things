@@ -157,6 +157,7 @@ class Enviro_Enforcement_Chicago(models.Model):
     ''' This model is data on environmental records from CDPH.
     It does not contain information on the individual violations,
     only that a violation exists. But the URL links to the details. 
+    https://data.cityofchicago.org/Environment-Sustainable-Development/CDPH-Environmental-Records-Lookup-Table/a9u4-3dwb/data
     '''
     longitude = models.FloatField(default=None)
     latitude = models.FloatField(default=None)
