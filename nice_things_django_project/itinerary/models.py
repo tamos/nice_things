@@ -21,7 +21,7 @@ class Food(models.Model):
     address = models.CharField(max_length=200, default=None)
     city = models.CharField(max_length=200, default=None)
     state = models.CharField(max_length=2, default=None)
-    zip = models.IntegerField(default=None)
+    zip_code = models.IntegerField(default=None)
     inspection_date = models.DateTimeField(default=None)
     inspection_type = models.CharField(max_length=200, default=None)
     results = models.CharField(max_length=200, default=None)
@@ -153,6 +153,33 @@ class Wages(models.Model):
 
 
 
+class Enviro_Enforcement_Chicago(models.Model):
+    ''' This model is data on environmental records from CDPH.
+    It does not contain information on the individual violations,
+    only that a violation exists. But the URL links to the details. 
+    '''
+    longitude = models.FloatField(default=None)
+    latitude = models.FloatField(default=None)
+    objects = DataFrameManager()
+    address = models.CharField(max_length=200) # need to concatentate strings for this
+    enviro_enforcement = models.BooleanField() # CDPH Enviro. Enforcement data
+    enviro_enforcement_url = models.URLField() # link to enviro information
 
+class Enviro_Complaints_Chicago(models.Model):
+    ''' This model is data on environmental records from CDPH.
+    It does not contain information on the individual violations,
+    only that a violation exists. But the URL links to the details. 
+    '''
+    longitude = models.FloatField(default=None)
+    latitude = models.FloatField(default=None)
+    objects = DataFrameManager()
+    address = models.CharField(max_length=200) # need to concatentate strings for this
+    complaints = models.BooleanField() # complaints in the CDPH Environmental Complaints data
+    complaints_url = models.URLField() # link to the complaint
+    
+    
+    
+    
+    
 
 

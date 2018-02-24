@@ -14,7 +14,7 @@ from django.core.wsgi import get_wsgi_application
 os.environ['DJANGO_SETTINGS_MODULE'] = "nice_things_django_project.settings"
 application = get_wsgi_application()
 
-from itinerary.models import Food, Wages
+from itinerary.models import Food, Wages, Enviro_Chicago
 
 sys.path.insert(0, './helpers')
 from helpers import file_list, geocoding
@@ -118,7 +118,7 @@ def update_food_table(csv_path=file_list.food_inspections):
     df = df.dropna()
 
     # Squirt into the database:
-    for index, row in df.iterrows():
+    for index, row in df.iterrows(): # Sasha I don't understand what's happening here - T
         # Prepare row names:
         inspection_id = row["inspection_id"]
         dba_name = row["dba_name"]
@@ -151,10 +151,101 @@ def update_food_table(csv_path=file_list.food_inspections):
             address=address,
             city=city,
             state=state,
-            zip=zip_,
+            zip_ =zip_,
             inspection_date=inspection_date,
             inspection_type=inspection_type,
             results=results,
             violations=violations,
             longitude=longitude,
             latitude=latitude)
+
+def update_enviro_chicago_tables(csv_path=file_list.enviro_chicago):
+    """
+    Updates the Enviro_Chicago table in the nice_things db.
+
+    :param csv_path: string, csv path file
+
+    :return: Update the Enviro_Chicago table in nice_things database
+    """
+    def split_y_and_url(df_column):
+        ''' splits a column in form Y (url)
+        '''
+        
+        split_df = df_column.str.extract(r'(^Y) \((.*)\)', expand = True).fillna('False')
+        split_df.replace('Y', True, inplace = True) # make boolean
+        return split_df[0], split_df[1]
+
+    def concatenate_address(row):
+        address_as_list = [str(row[i]) for i in cols_to_concat]
+        return " ".join(address_as_list)
+
+    def extract_coordinates(df):
+        lat_lon_extracted = df['MAP LOCATION'].str.extract(r'\((.*),(.*)\)')
+        cast_coordinate_to_float = lambda x: [i for i in map(float, x)]
+        lat = cast_coordinate_to_float(lat_lon_extracted[0])
+        lon = cast_coordinate_to_float(lat_lon_extracted[1])
+        # Ideally at this point we geocode the missing coordinates
+        return lat, lon
+
+    df_dirty = pd.read_csv(filepath_or_buffer = csv_path).fillna('False')
+    complaints, complaints_url = split_y_and_url(df['COMPLAINTS'])
+    enviro_enforcement, enviro_enforcement_url = split_y_and_url(df['ENFORCEMENT'])
+
+    cols_to_concat = ['STREET NUMBER FROM', 'DIRECTION', 'STREET NAME', 'STREET TYPE']
+
+    address = df_dirty.apply(func=concatenate_address, axis=1)
+
+    latitude, longitude = extract_coordinates(df_dirty)
+
+    attribute_list = [complaints, complaints_url, enviro_enforcement, enviro_enforcement_url,
+                          latitude, longitude]
+    
+    if sum(map(len, attribute_list)) % len(attribute_list) == 0:
+
+        df = pd.DataFrame()
+        df['complaints'] = complaints
+        df['complaints_url'] = complaints_url
+        df['enviro_enforcement'] = enviro_enforcement
+        df['enviro_enforcement_url'] = enviro_enforcement_url
+        df['latitude'] = latitude
+        df['longitude'] = longitude
+
+        df_complaints = df.copy().drop(['envir_enforcement', 'enviro_enforcement_url']).
+        df_enviro = df.copy().drop(['complaints', 'complaints_url'])
+
+        df_complaints.replace(to_replace='False', value = None).dropna()
+        df_enviro.replace(to_replace='False', value = None).dropna()
+       
+
+        # Squirt the data into the db:
+        obj, created = Enviro_Complaints_Chicago.objects.get_or_create(
+            longitude = longitude_complaints
+            latitude = latitude_complaints
+            address = address_complaints
+            complaints = complaints_complaints
+            complaints_url = complaints_url_complaints
+            
+        # Squirt the data into the db:
+        obj, created = Enviro_Enforcement_Chicago.objects.get_or_create(
+            longitude = longitude_enforce
+            latitude = latitude_enforce
+            address = address_enforce
+            enviro_enforcement = enviro_enforcement_enforce
+            enviro_enforcement = enviro_enforcement_url_enforce
+            
+            
+    
+
+
+
+
+        
+    
+
+    
+        
+        
+        
+
+    
+
