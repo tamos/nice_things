@@ -20,5 +20,6 @@ from django.contrib import admin
 urlpatterns = [
     #path('itinerary/', include('itinerary.urls')),
     path('admin/', admin.site.urls),
-    path('', include('itinerary.urls')),
+    path('', include('itinerary.urls'))
+    #path('results/', include('itinerary.urls'))
 ]

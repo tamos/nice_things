@@ -12,8 +12,85 @@
 <style>
 body,h1,h2,h3,h4,h5,h6 {font-family: "Raleway", Arial, Helvetica, sans-serif}
 .myLink {display: none}
+
+ul
+{
+    list-style-type: none;
+}
+
+ul.categorychecklist li {
+        display: inline-block;
+    }
+
+.container {
+    display: block;
+    position: relative;
+    padding-left: 35px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    font-size: 22px;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+
+.container input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+}
+
+
+.checkmark {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 25px;
+    width: 25px;
+    background-color: #eee;
+}
+
+
+.container:hover input ~ .checkmark {
+    background-color: #ccc;
+}
+
+
+.container input:checked ~ .checkmark {
+    background-color: #2196F3;
+}
+
+
+.checkmark:after {
+    content: "";
+    position: absolute;
+    display: none;
+}
+
+
+.container input:checked ~ .checkmark:after {
+    display: block;
+}
+
+
+.container .checkmark:after {
+    left: 9px;
+    top: 5px;
+    width: 5px;
+    height: 10px;
+    border: solid white;
+    border-width: 0 3px 3px 0;
+    -webkit-transform: rotate(45deg);
+    -ms-transform: rotate(45deg);
+    transform: rotate(45deg);
+}
 </style>
-<body class="w3-dark-grey">
+<!-- <body class="w3-dark-grey"> -->
+<body class="w3-black">
+
+
 
 <!-- Navigation Bar -->
 <!--<div class="w3-bar w3-white w3-border-bottom w3-xlarge">
@@ -24,7 +101,7 @@ body,h1,h2,h3,h4,h5,h6 {font-family: "Raleway", Arial, Helvetica, sans-serif}
 <!-- Header -->
 <header class="w3-display-container w3-content w3-hide-small" style="max-width:1500px">
   <!-- images used (open access) from https://www.pexels.com/photo/table-in-vintage-restaurant-6267/ -->
-  <img src="{% static "/menu-restaurant-vintage-table.jpg" %}" alt="Hipster Restaurant" width="1500" height="700" />
+  <img src="{% static "/menu-restaurant-vintage-table.jpg" %}" align="middle" alt="Hipster Restaurant" width="100%" height="100%" />
   <div class="w3-display-middle" style="width:65%">
     <div class="w3-bar w3-black">
       <button class="w3-bar-item w3-button tablink" onclick="openLink(event, 'Drink');"><i class="fa fa-glass-martini w3-margin-right"></i>Drink</button>
@@ -52,16 +129,33 @@ body,h1,h2,h3,h4,h5,h6 {font-family: "Raleway", Arial, Helvetica, sans-serif}
     <div id="Eat" class="w3-container w3-white w3-padding-16 myLink">
       <h3> Devour Dimsum. Destroy Injustice.</h3>
       <div class="w3-row-padding" style="margin:0 -16px;">
-        <div class="w3-half">
-          <label>Where? </label>
-          <input class="w3-input w3-border" type="text" placeholder="Hyde Park">
-        </div>
-        <div class="w3-half">
+        <!-- <div class="w3-half"> -->
+          <!-- <label>Where? </label>
+          <input class="w3-input w3-border" type="text" placeholder="Hyde Park"> -->
+            <form method="get">
+                {% csrf_token %}
+                <div class="w3-half">
+                <label>Where? </label>
+                {{ form.destination }}
+                </div>
+                <div class="w3-half">
+                <label>How much? </label>
+                {{ form.price }}
+                </div>
+                <div class="frame">
+                    {% if result != None %}
+                        {{result}}
+                    {% endif %}
+                </div>
+                <p><input type="submit" value="Nomnomnomnom" class="w3-button w3-dark-grey"/></p>
+            </form>
+        <!-- </div> -->
+        <!-- <div class="w3-half">
           <label>Tell us more:</label>
           <input class="w3-input w3-border" type="text" placeholder="Chinese food">
-        </div>
+        </div> -->
       </div>
-      <p><button class="w3-button w3-dark-grey">Nomnomnomnom</button></p>
+      <!-- <p><button class="w3-button w3-dark-grey">Nomnomnomnom</button></p> -->
     </div>
 
     <div id="Buy" class="w3-container w3-white w3-padding-16 myLink">
