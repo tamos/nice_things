@@ -26,26 +26,24 @@ from django_pandas.managers import DataFrameManager
 default_term = "La fuente restaurant"
 default_lat = 41.8194
 default_lon = -87.6990
-default_lim = 50 # defaults at 20 and 50 is limit
-default_sort = "distance" # sorts by distance (other options are
+default_lim = 50  # defaults at 20 and 50 is limit
+default_sort = "distance"  # sorts by distance (other options are
 # best_match, rating, review_count)
 
 # this is how the yelp api works
 #yelp_api = YelpAPI(yelp)
 
-#temporarily use Kevin's API Key
-yelp_api = YelpAPI("GsAgBiywduecH_D-DDeB-ctBkWbUnFP_6w_b0CG4utMCu3s9Z3XIrNuyJum_NJ-FuIIsljD_7KTrOaHuZZjos6v-5-o5GSzfSsAVwySWhmlV4vnlN9ElxCE0xOBrWnYx")
-search_results = yelp_api.search_query(term = default_term, \
-                                       latitude = default_lat,\
-                                       longitude = default_lon,\
-                                       limit = default_lim,\
-                                       sort_by = default_sort)
+# temporarily use Kevin's API Key
+yelp_api_key = "GsAgBiywduecH_D-DDeB-ctBkWbUnFP_6w_b0CG4utMCu3s9Z3XIrNuyJum_NJ-FuIIsljD_7KTrOaHuZZjos6v-5-o5GSzfSsAVwySWhmlV4vnlN9ElxCE0xOBrWnYx"
 
 
 # use region key to get lattitude, longitude
 
 
-def extract_yelp_data(search_results):
+def extract_yelp_data(yelp_api_key=yelp_api_key, term=default_term,
+                      lat=default_lat, long=default_lon,
+                      limit=default_lim, sort_by=default_sort):
+    # Need to update docstring:
     """
     This function takes search results (a dictionary) and obtains the 
     name, zip code, address of the possible restaurant matches in the
@@ -58,6 +56,13 @@ def extract_yelp_data(search_results):
         - yelp_results: a pandas dataframe containing the zip code,
                         name, address,  of each potential result.
     """
+    yelp_api = YelpAPI(yelp_api_key)
+    search_results = yelp_api.search_query(term=term,
+                                           latitude=lat,
+                                           longitude=long,
+                                           limit=limit,
+                                           sort_by=sort_by)
+
     # initialize lists for each planned column
     addresses = []
     names = []

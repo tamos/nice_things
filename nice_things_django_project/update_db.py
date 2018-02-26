@@ -10,6 +10,7 @@ import sys
 # appregistrynotready-models-arent-load:
 from django.core.wsgi import get_wsgi_application
 #os.chdir("/nice_things_django_project")
+print(os.getcwd())
 
 os.environ['DJANGO_SETTINGS_MODULE'] = "nice_things_django_project.settings"
 application = get_wsgi_application()
