@@ -200,6 +200,7 @@ def link_datasets(yelp_results_df, dj_df, thresholds):
     """
     # create dictionary of all possible match combinations
     # name_thresh = 0.50 | addr_thresh = 0.6
+    
     name_thresh, addr_thresh = thresholds
     results = dict()
     for i in product(['high','low'], repeat = 3):
