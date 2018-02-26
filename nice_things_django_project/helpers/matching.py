@@ -23,9 +23,9 @@ from itinerary.models import Food, Wages, Flag
 from django_pandas.managers import DataFrameManager
 
 
-default_term = "restaurant, Chinese"
-default_lat = 41.8369
-default_lon = -87.6847
+default_term = "La fuente restaurant"
+default_lat = 41.8194
+default_lon = -87.6990
 default_lim = 50 # defaults at 20 and 50 is limit
 default_sort = "distance" # sorts by distance (other options are
 # best_match, rating, review_count)
@@ -82,7 +82,12 @@ def extract_yelp_data(search_results):
     yelp_results['name'] = names
     yelp_results['addr'] = addresses
     yelp_results['latitude'] = latitude
-    yelp_results['longitude'] = longitude
+    yelp_results['longitude'] = longitude 
+
+    # change columns to appropriate data types
+    yelp_results['zip_code'] = pd.to_numeric(yelp_results['zip_code'])
+    #yelp_results['name'] = yelp_results['name'].astype(str)
+    # yelp_results = yelp_results['addr'].astype(str)
 
     return yelp_results
 
@@ -101,7 +106,7 @@ def define_filters(yelp_results):
 		- longitude_filter: a numpy array of unique truncated longitude coordinates
 	"""
     # remove rows that don't have a zip_code
-    yelp_results = yelp_results[yelp_results.zip_code != " '' "]
+    #yelp_results = yelp_results[yelp_results.zip_code != " '' "]
     latitude_filter = set()
     longitude_filter = set()
 
@@ -147,17 +152,16 @@ def get_filtered_database_dfs(zip_filter, lat_filter, long_filter):
     	- wages_df: a pandas dataframe of wages information
     	- food_df: a pandas dataframe of food information
     """
-    # filter django object based on zip code and lat/long
+    # filter django object based on zip code, latitude, & longitude
     food_filtered = Food.objects.filter(zip__in=zip_filter, 
         latitude__range=(min(lat_filter), max(lat_filter)), 
-        longitude__range=(min(long_filter), max(long_filter)))
+        longitude__range=(max(long_filter), min(long_filter)))
     wages_filtered = Wages.objects.filter(zip_cd__in=zip_filter, 
         latitude__range=(min(lat_filter), max(lat_filter)), 
-        longitude__range=(min(long_filter), max(long_filter)))
+        longitude__range=(max(long_filter), min(long_filter)))
+
     
     # cast as pandas dataframes if filtered result is not empty
-    # make adjustments to this
-
     if food_filtered.exists():
         food_df = food_filtered.to_dataframe(fieldnames=['zip', 'aka_name', 
             'address', 'inspection_id', 'latitude', 'longitude'])
@@ -166,7 +170,7 @@ def get_filtered_database_dfs(zip_filter, lat_filter, long_filter):
     else:
         food_df = []
 
-    elif wages_filtered.exists():
+    if wages_filtered.exists():
         wages_df = wages_filtered.to_dataframe(fieldnames=['zip_cd', 'trade_nm', 
             'street_addr_1_txt', 'case_id', 'latitude', 'longitude'])
         wages_df = wages_df.rename(index=str, columns={"zip_cd": "zip_code", 
@@ -195,6 +199,7 @@ def link_datasets(yelp_results_df, dj_df, thresholds):
         - results: a dictionary with restaurants/businesses 
     """
     # create dictionary of all possible match combinations
+    # name_thresh = 0.50 | addr_thresh = 0.6
     name_thresh, addr_thresh = thresholds
     results = dict()
     for i in product(['high','low'], repeat = 3):
@@ -202,24 +207,29 @@ def link_datasets(yelp_results_df, dj_df, thresholds):
             results[i] = dict()
 
     # Indexation
-    indexer = recordlinkage.BlockIndex(on='zip_code')
+    indexer = rl.FullIndex()
+    # having issues with Block Index - CHECK
+    indexer = rl.BlockIndex(on='zip_code')
     pairs = indexer.index(yelp_results, dj_df)
 
     # Comparison
-    compare = recordlinkage.Compare()
+    compare = rl.Compare()
     compare.numeric('zip_code', 'zip_code', method='linear', 
-        label='zip_score')
-    compare.string('name', 'name', method='jarowinkler', 
-        threshold=name_thresh, label='name')
-    compare.string('addr', 'addr', method='jarowinkler', 
-        threshold=addr_thresh, label='addr')
+        scale=30.0, label='zip_score')
+    compare.string('name', 'name', method='qgram', 
+        threshold=name_thresh, label='name_score')
+    compare.string('addr', 'addr', method='qgram', 
+        threshold=addr_thresh, label='addr_score')
     compare.geo('latitude', 'longitude', 'latitude', 'longitude', 
-        method='linear', label='coordinates')
+        method='linear', scale=30.0, label='coord_score')
 
-    features = compare_cl.compute(pairs, dj_df)
+    features = compare.compute(pairs, yelp_results, dj_df)
 
     # Classification
-
+    # set strict conditions for zip_score and coordinates_scores
+    # zip_score = 1.0
+    # coordinate_score >= 0.98
+    # 
 
     # fill in dictionary with business information mapped to match level
     verdict_tuple = (zip_verdict, name_verdict, addr_verdict)
@@ -227,76 +237,6 @@ def link_datasets(yelp_results_df, dj_df, thresholds):
         results[verdict_tuple][y_tuple] = (dj_zip, dj_name, dj_addr, dj_id)
     
     return results
-
-
-
-def compare_distance(yelp_results, dj_df, thresholds):
-    """ 
-    This functions compares yelp results to django results 
-    and produces the best matches based on computing the
-    Levenshtein distance (LD) between the zip_code, business 
-    name, and address strings. 
-
-    Inputs:
-        - yelp_results: a pandas dataframe of yelp business
-                        results based on a user's input
-        - dj_df: a pandas dataframe of django results.
-                 Ex. wages, healthcode violations, etc.
-        - thresholds: tuple of floats of thresholds categorizing string
-                      match levels based on Jaro-Winkler score
-    Outputs:
-        - results: a dictionary 
-    """
-    zip_threshold, name_threshold, addr_threshold = thresholds
-    results = dict()
-    for i in product(['high','low'], repeat = 3):
-        if i not in results:
-            results[i] = dict()
-    
-    # inspired by pa4 util function
-    for i in yelp_results.iterrows():
-
-        y_ind, y_zip, y_name, y_addr = i[0], i[1][0], i[1][1], i[1][2] 
-        y_tuple  = (y_ind, y_zip, y_name, y_addr)
-        # ensure all values are strings prior to using jaro-winkler
-        y_zip=str(y_zip)
-        y_name=str(y_name)
-        y_addr=str(y_addr)
-        
-        for j in dj_df.iterrows():
-            dj_zip, dj_name, dj_addr, dj_id = j[1][0], j[1][1], j[1][2], j[1][3]
-            # ensure all values are strings prior to using jaro-winkler
-            dj_zip=str(dj_zip)
-            dj_name=str(dj_name)
-            dj_addr=str(dj_addr)
-
-            dj_tuple = (dj_zip, dj_name, dj_addr, dj_id)
-
-            zip_jaro = jaro_distance(y_zip, dj_zip)
-            if zip_jaro >= zip_threshold:
-                zip_verdict = 'high'
-            else:
-                zip_verdict = 'low'
-                
-            name_jaro = jaro_distance(y_name, dj_name)            
-            if name_jaro >= name_threshold:
-                name_verdict = 'high'
-            else:
-                name_verdict = 'low'
-                
-            addr_jaro = jaro_distance(y_addr, dj_addr)
-            if addr_jaro >= addr_threshold:
-                addr_verdict = 'high'
-            else:
-                addr_verdict = 'low'
-
-            # consider making this enforce a requirement of 2 high 1 low minimum
-            verdict_tuple = (zip_verdict, name_verdict, addr_verdict)
-            if y_tuple not in results[verdict_tuple]:
-                results[verdict_tuple][y_tuple] = (dj_zip, dj_name, dj_addr, dj_id)
-    
-    return results
-
 
 def best_matches(how_well, search_results, dj_df, thresholds):
     # how well is tuple of High, High, Low, etc.
@@ -309,69 +249,4 @@ def best_matches(how_well, search_results, dj_df, thresholds):
     else:
 
         return   yelp_results
-    
-
-def django_to_df_wages(food_df):
-    """
-    This function takes a django object from U.S. Department of 
-    Labour wages data and turns relevant columns of information for
-    specified businesses into a pandas dataframe.
-
-    Input:
-        - django_result
-    Output:
-        - dj_df: a pandas dataframe of Dept. of Labour wages data
-    """
-
-    dj_df = pd.DataFrame
-    zip_code = []
-    name = []
-    addr = []
-    case_id = []
-    for i in django_result:
-        zip_code.append(i.zip_cd)
-        name.append(i.trade_nm)
-        addr.append(i.street_addr_1_txt)
-        case_id.append(i.case_id)
-    dj_df['zip_code'] = zip_code
-    dj_df['name'] = name
-    dj_df['addr'] = addr
-    dj_df['case_id'] = case_id
-    return dj_df
-
-def django_to_df_food(wages_df):
-    """
-    This functions takes a django object from the City of Chicago
-    healthcode violations data and turnbs relevant columns of
-    information for specified businesses into a pandas dataframe.
-
-    Input:
-        - django_result:
-    Output:
-        - dj_df: a pandas dataframe of healthcode violations
-                 by business
-    """
-    dj_df = pd.DataFrame
-    zip_code = []
-    name = []
-    addr = []
-    inspection_id = []
-    for i in django_result:
-        zip_code.append(i.zip)
-        name.append(i.aka_name)
-        addr.append(i.address)
-        inspection_id.append(i.inspection_id)
-    dj_df['zip_code'] = zip_code
-    dj_df['name'] = name
-    dj_df['addr'] = addr
-    dj_df['inspection_id'] = inspection_id
-    
-    return dj_df
-
-
-            
-            
-#compare_distance(yelp_results, dj_df, (0.5, 0.5, 0.5))
-    
-
 
