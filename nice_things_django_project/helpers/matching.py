@@ -271,6 +271,11 @@ def get_best_matches_details(yelp_results_df, dj_df, zip_filter,
         food_result = Food.objects.get(inspection_id=food_id)
         #food_result dot blahblah to get the actual description
 
+    # final return
+    # return the yelp_results PLUS new keys that contain
+    # food flag, wage flag, and all those other descriptions
+    # for the user.
+
 
 
 
