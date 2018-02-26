@@ -142,7 +142,7 @@ def truncate_coordinate(coordinate):
     
     return trunc_coordinate
 
-def get_filtered_database_dfs(zip_filter, lat_filter, long_filter):
+def get_filtered_food_df(zip_filter, lat_filter, long_filter):
     """
 	This function takes the zip code, latitude, and longitude filters
 	and queries the database to obtain wage information based
@@ -161,9 +161,10 @@ def get_filtered_database_dfs(zip_filter, lat_filter, long_filter):
     food_filtered = Food.objects.filter(zip__in=zip_filter, 
         latitude__range=(min(lat_filter), max(lat_filter)), 
         longitude__range=(max(long_filter), min(long_filter)))
-    wages_filtered = Wages.objects.filter(zip_cd__in=zip_filter, 
-        latitude__range=(min(lat_filter), max(lat_filter)), 
-        longitude__range=(max(long_filter), min(long_filter)))
+    # create separate function for wages
+    # wages_filtered = Wages.objects.filter(zip_cd__in=zip_filter, 
+    #     latitude__range=(min(lat_filter), max(lat_filter)), 
+    #     longitude__range=(max(long_filter), min(long_filter)))
 
     
     # cast as pandas dataframes if filtered result is not empty
@@ -175,18 +176,18 @@ def get_filtered_database_dfs(zip_filter, lat_filter, long_filter):
     else:
         food_df = []
 
-    if wages_filtered.exists():
-        wages_df = wages_filtered.to_dataframe(fieldnames=['zip_cd', 'trade_nm', 
-            'street_addr_1_txt', 'case_id', 'latitude', 'longitude'])
-        wages_df = wages_df.rename(index=str, columns={"zip_cd": "zip_code", 
-            "trade_nm": "name", "street_addr_1_txt": "addr"})
-    else:
-        wages_df = []
+    # if wages_filtered.exists():
+    #     wages_df = wages_filtered.to_dataframe(fieldnames=['zip_cd', 'trade_nm', 
+    #         'street_addr_1_txt', 'case_id', 'latitude', 'longitude'])
+    #     wages_df = wages_df.rename(index=str, columns={"zip_cd": "zip_code", 
+    #         "trade_nm": "name", "street_addr_1_txt": "addr"})
+    # else:
+    #     wages_df = []
         
-    return food_df, wages_df
+    return food_df
     
 
-def link_datasets(yelp_results_df, dj_df, thresholds):
+def link_datasets(yelp_results_df, dj_df):
     """
 	This functions compares yelp results to django results 
     and produces the best matches based on computing the
@@ -203,10 +204,10 @@ def link_datasets(yelp_results_df, dj_df, thresholds):
     Outputs:
         - results: a dictionary with restaurants/businesses 
     """
+    # set thresholds for comparing strings using qgram method
+    name_thresh = 0.60
+    addr_thresh = 0.60
     # create dictionary of all possible match combinations
-    # name_thresh = 0.50 | addr_thresh = 0.6
-    
-    name_thresh, addr_thresh = thresholds
     results = dict()
     for i in product(['high','low'], repeat = 3):
         if i not in results:
@@ -215,10 +216,10 @@ def link_datasets(yelp_results_df, dj_df, thresholds):
     # Indexation
     indexer = rl.FullIndex()
     # having issues with Block Index - CHECK
-    indexer = rl.BlockIndex(on='zip_code')
+    # indexer = rl.BlockIndex(on='zip_code')
     pairs = indexer.index(yelp_results, dj_df)
 
-    # Comparison
+    # Comparison between rows
     compare = rl.Compare()
     compare.numeric('zip_code', 'zip_code', method='linear', 
         scale=30.0, label='zip_score')
@@ -228,31 +229,57 @@ def link_datasets(yelp_results_df, dj_df, thresholds):
         threshold=addr_thresh, label='addr_score')
     compare.geo('latitude', 'longitude', 'latitude', 'longitude', 
         method='linear', scale=30.0, label='coord_score')
-
     features = compare.compute(pairs, yelp_results, dj_df)
 
-    # Classification
+    # Classification and final filtering
     # set strict conditions for zip_score and coordinates_scores
-    # zip_score = 1.0
-    # coordinate_score >= 0.98
-    # 
-
+    best_matches = features[(features['zip_score']==1.0) &
+    (features['name_score']==1.0) & (features['addr_score']==1.0) &
+    (features['coord_score']>=0.98)]
+    
     # fill in dictionary with business information mapped to match level
-    verdict_tuple = (zip_verdict, name_verdict, addr_verdict)
-    if y_tuple not in results[verdict_tuple]:
-        results[verdict_tuple][y_tuple] = (dj_zip, dj_name, dj_addr, dj_id)
+    # verdict_tuple = (zip_verdict, name_verdict, addr_verdict)
+    # if y_tuple not in results[verdict_tuple]:
+    #     results[verdict_tuple][y_tuple] = (dj_zip, dj_name, dj_addr, dj_id)
     
-    return results
+    return best_matches
 
-def best_matches(how_well, search_results, dj_df, thresholds):
-    # how well is tuple of High, High, Low, etc.
-    yelp_results = extract_yelp_data(search_results)
-    
-    results = compare_distance(yelp_results, dj_df, thresholds)
-    # find the ones that match well enough
-    if len(results[how_well]) > 0:
-        return results[how_well]  # dictionary of tuples (yelp) (flags data)
-    else:
+def get_best_matches_details(yelp_results_df, dj_df, zip_filter,
+    lat_filter, long_filter):
+    """
+    This function takes a best_matches dataframe and queries the postgres
+    database to obtain the details on flags for each business.
 
-        return   yelp_results
+    Input:
+        - yelp_results_df: a pandas dataframe
+        - dj_df: a pandas dataframe
+    Output:
+        - TBD
+    """
+    best_matches = link_datasets(yelp_results_df, dj_df)
+    food_df = get_filtered_food_df(zip_filter, lat_filter,
+        long_filter)
+
+    # obtain the index values from best_matches
+    index_array = best_matches.index.values
+
+    # loop through to obtain id numbers
+    for index_pair in index_array:
+        flag_index = index_pair[1]
+        flag_index = int(flag_index)
+        food_id = food_df.iloc[flag_index].inspection_id
+        food_result = Food.objects.get(inspection_id=food_id)
+        #food_result dot blahblah to get the actual description
+
+
+
+
+
+
+
+
+
+
+
+
 
