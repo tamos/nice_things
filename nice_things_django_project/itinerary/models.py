@@ -4,12 +4,6 @@ from django.utils import timezone
 from django_pandas.managers import DataFrameManager
 
 
-class Flag(models.Model):
-    flag_type = models.CharField(max_length=200)
-    flag_count = models.IntegerField(default=0)
-    longitude_trunc = models.FloatField()
-    latitude_trunc = models.FloatField()
-
 
 class Food(models.Model):
     inspection_id = models.PositiveIntegerField(primary_key=True)
@@ -21,7 +15,7 @@ class Food(models.Model):
     address = models.CharField(max_length=200, default=None)
     city = models.CharField(max_length=200, default=None)
     state = models.CharField(max_length=2, default=None)
-    zip = models.IntegerField(default=None)
+    zip_code = models.IntegerField(default=None)
     inspection_date = models.DateTimeField(default=None)
     inspection_type = models.CharField(max_length=200, default=None)
     results = models.CharField(max_length=200, default=None)
@@ -41,7 +35,7 @@ class Wages(models.Model):
     street_addr_1_txt = models.CharField(max_length=200)
     cty_nm = models.CharField(max_length=200)
     st_cd = models.CharField(max_length=2)
-    zip_cd = models.IntegerField(default=None)
+    zip_code = models.IntegerField(default=None)
     case_violtn_cnt = models.PositiveIntegerField()
     # Need to figure out coordinates, they don't come from the BLS CSV:
     longitude = models.FloatField(default=None)
@@ -150,9 +144,5 @@ class Wages(models.Model):
     sraw_bw_atp_amt
     sraw_ee_atp_cnt
     ld_dt'''
-
-
-
-
 
 
