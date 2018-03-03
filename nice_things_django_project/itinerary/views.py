@@ -1,4 +1,5 @@
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
+from django.urls import reverse
 import sys
 from django.shortcuts import render
 from itinerary.forms import ItineraryInputsForm
@@ -31,30 +32,33 @@ def index(request):
         if form.is_valid():
             args["destination"] = form.cleaned_data["destination"]
             args["price"] = form.cleaned_data["price"]
+            args["aka_name"] = form.cleaned_data["aka_name"]
 
     else:
         form = ItineraryInputsForm()
-
-    # Respond to user inputs:
-    '''if "restaurant_name" in args:
-        results = find_results(args)
-        if results.exists():
-            print("EXISTS!")
-            context["result"] = results'''
-
+        
     context["form"] = form
-
+        
+    # Respond to user inputs:
+    if "aka_name" in args.keys():
+        results = find_results(args["aka_name"])
+        if results.exists():
+            context["result"] = [i.aka_name for i in results]
+            print(context)
+            return HttpResponseRedirect('results')
+        
     return render(request, 'index.html', context)
 
+def result_map(request):# results):
+    response = "You're looking at the results of question "
+    return render(request, 'map.html')
 
-def find_results(args):
+
+def find_results(aka_name):
     """
     Dumb testing function
     :return:
     """
-    rest_name_str = args["restaurant_name"]
-    return Food.objects.filter(aka_name=rest_name_str)
-
-
-
-
+    #rest_name_str = args["restaurant_name"]
+    query_result = Food.objects.filter(aka_name=aka_name)
+    return query_result
