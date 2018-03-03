@@ -16,6 +16,7 @@ application = get_wsgi_application()
 # https://stackoverflow.com/questions/40206569/
 # django-model-doesnt-declare-an-explicit-app-label:
 from itinerary.models import Food, Wages
+from django.utils.html import format_html, mark_safe
 
 
 def index(request):
@@ -41,17 +42,25 @@ def index(request):
         
     # Respond to user inputs:
     if "aka_name" in args.keys():
-        results = find_results(args["aka_name"])
+        results = find_results(args["aka_name"])   # search criterion
         if results.exists():
-            context["result"] = [i.aka_name for i in results]
-            print(context)
-            return HttpResponseRedirect('results')
+            output = point_content(results)  # place the info we want into a dict
+            return render(request, 'map.html', output) # render the map
         
     return render(request, 'index.html', context)
 
-def result_map(request):# results):
-    response = "You're looking at the results of question "
-    return render(request, 'map.html')
+def point_content(results):
+    # fornow
+    business = results[0]
+    output = {}
+    output['content'] = format_html("<b>{}</b> <br> Food Inspection Result: {} {}",
+                    mark_safe(business.aka_name),
+                    business.results,
+                    business.violations)
+    output['lat'] = business.latitude
+    output['lon'] = business.longitude
+    return output
+    
 
 
 def find_results(aka_name):
@@ -62,3 +71,26 @@ def find_results(aka_name):
     #rest_name_str = args["restaurant_name"]
     query_result = Food.objects.filter(aka_name=aka_name)
     return query_result
+
+'''
+#NOT NECESSARY BUT KEEP JUST IN CASE
+from geojson import dumps
+from geojson import Feature, Point, FeatureCollection
+from django.utils.html import format_html, mark_safe
+from django.urls import reverse
+
+def result_map(request, results):
+    output = {}
+    #print(results)
+    output['lat'] = 41.8765
+    output['lon'] = -87.6244
+    output['content'] = format_html("<b>{}</b> {} {}",
+                    mark_safe('atl'),
+                    "MOTE",
+                    "HDH")
+    return render(request, 'map.html', output)
+'''
+
+
+
+
