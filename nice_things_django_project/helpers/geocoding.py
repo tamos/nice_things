@@ -5,7 +5,9 @@ Created on Fri Feb  9 12:34:16 2018
 
 @author: ty
 
-Modified on Sab Feb 17 22:10:17 2018 by Sasha
+Modified on Sat Feb 17 22:10:17 2018 by Sasha
+Modified on Fri Mar 02 17:34:17 2018 by Sasha
+
 
 This file contains functions for geocoding our address data.
 """
@@ -13,8 +15,17 @@ from geopy.geocoders import GoogleV3
 import pandas as pd
 import time
 from api_keys import GOOGLE_KEY as GOOGLE_KEY
+from api_keys import GOOGLE_KEYS as GOOGLE_KEYS
+from api_keys import OPEN_CAGE_DATA as OPEN_CAGE_DATA
+import random
 from collections import namedtuple
 from random import uniform
+import requests
+# Found on https://stackoverflow.com/questions/12082314/
+# how-to-convert-a-url-string-to-safe-characters-with-python:
+from urllib.parse import quote
+import json
+
 
 DEFAULT_LAT = 41.7830867
 DEFAULT_LON = -87.6040276
@@ -22,7 +33,7 @@ DEFAULT_LON = -87.6040276
 geocoded_address = namedtuple('geocode_address', ['address', 'lat', 'lon'])
 
 
-def get_whd(file_location = 'datasets/whd/whd_whisard.csv', default_city='Chicago'):
+def get_whd(file_location='datasets/whd/whd_whisard.csv', default_city='Chicago'):
     """
     This function gets the Wages and Hourly data and geocodes it. 
     WHD data comes from: https://www.dol.gov/whd/
@@ -110,7 +121,9 @@ def geo_code_single_address(address_str):
     :return: tuple of address string, latitude float, and longitude float,
     e.g. ("1234 U. st., Chicago, IL", -12.12134, 53.345345)
     """
-    geolocator = GoogleV3(api_key=GOOGLE_KEY)
+    api_key = GOOGLE_KEY#random.choice(GOOGLE_KEYS)
+    print("API KEY:", api_key)
+    geolocator = GoogleV3(api_key=api_key)
     location = geolocator.geocode(address_str)
     address = location.address
     lat = location.latitude
@@ -119,6 +132,48 @@ def geo_code_single_address(address_str):
 
     return address, lat, lon
 
+
+def geocode_using_opencagedata(address, city, state, zip_code,
+                               country, api_key=OPEN_CAGE_DATA):
+    """
+    Takes an address and uses https://geocoder.opencagedata.com/ service
+    to geocode each.
+
+    :param address: str, e.g. "1234 Wacker Dr"
+
+    :param city: str, e.g. "Chicago"
+
+    :param state: str, e.g. "IL"
+
+    :param zip_code: str, e.g. "60615"
+
+    :param country: str, e.g. "United States"
+
+    :param api_key: str, pass key for open cage data API,
+    e.g. "213jroijg_dafafd-dfa1424"
+
+    :return latitude, longitude: tuple, in which each item is a str,
+    representing floats of latitude and longitude
+    """
+    full_address = "{}, {}, {}, {}, {}".format(address, city, state, zip_code,
+                                               country)
+    # Get into API (with app tokens, there's a usage limit of 1
+    # request per 1 second):
+    concatenate_url = "https://api.opencagedata.com/geocode/v1/json?" \
+                      "key={}&q={}&pretty=1&no_annotations=1".\
+                      format(api_key, quote(full_address))
+    r = requests.get(url=concatenate_url)
+    response_dict = json.loads(r.text)
+    coordinates_dict = response_dict["results"][0]["geometry"]
+    latitude = coordinates_dict["lat"]
+    longitude = coordinates_dict["lng"]
+    # Wait some time between 2 and 4 seconds to avoid using too frequenlty:
+    time.sleep(uniform(2, 4))
+
+    return latitude, longitude
+
+def geocode_bls_addresses(original_bls_csv):
+    pass
 
 '''
 Please keep for the moment, just as reference
