@@ -29,10 +29,10 @@ from django_pandas.managers import DataFrameManager
 #                               #
 #################################
 
-default_term = "Mexican" # can do a strinf of mult vals
-default_categories = "restaurant" # can do a string of mult vals
+default_term = " " # can do a string of mult vals
+default_categories = " " # can do a string of mult vals
 default_price = "1, 2, 3" # can do a comma del. list of values
-default_location = "Chicago" # create drop down for this
+default_location = "Lincoln Square, Chicago" # create drop down for this
 default_lim = 50
 default_sort = "review_count" 
 default_attributes = "" # gender_neutral_restrooms
@@ -225,9 +225,9 @@ def link_datasets(yelp_results, dj_df):
     addr_thresh = 0.60
 
     # Indexation 
-    indexer = rl.FullIndex()
+    #indexer = rl.FullIndex()
     # having issues with Block Index - CHECK
-    # indexer = rl.BlockIndex(on='zip_code')
+    indexer = rl.BlockIndex(on='zip_code')
     pairs = indexer.index(yelp_results, dj_df)
 
     # make comparison between rows
@@ -308,6 +308,29 @@ def get_best_matches_details(yelp_results, zip_filter, lat_filter, long_filter):
             yelp_results['food_date'].iloc[yelp_index].append(t[3])
 
     return yelp_results
+
+
+def final_result():
+    """
+    This function 
+
+    """
+    yelp_results = extract_yelp_data(yelp_api_key=yelp_api_key, term=default_term, 
+        categories=default_categories, price=default_price, 
+        location=default_location, limit=default_lim, sort_by=default_sort)
+
+    zip_filter, lat_filter, long_filter = define_filters(yelp_results)
+
+    dj_df = get_filtered_food_df(zip_filter, lat_filter, long_filter)
+
+    link = link_datasets(yelp_results, dj_df)
+
+    final_result = get_best_matches_details(yelp_results, zip_filter, 
+        lat_filter, long_filter)
+
+    return final_result
+    
+
 
 
 
