@@ -7,7 +7,7 @@ from queue import PriorityQueue
 import requests
 import pandas as pd
 import io
-import api_keys
+import api_keys 
 
 default_term = "bars"
 default_lat = 41.8369
@@ -221,7 +221,7 @@ LEGAL_DICT_INPUTS = {"inspection_id", "dba_name", "aka_name", "license_",
                      "location_state"}
 
 
-def pull_cdp_health_api(input_dict, output_csv=None, limit=None,
+def pull_cdp_health_api(where_date, input_dict={}, output_csv=None, limit=None,
                         legal_dict_inputs=LEGAL_DICT_INPUTS):
     """
     Connects to the Chicago Data Portal and downloads the Food Inspections
@@ -274,6 +274,10 @@ def pull_cdp_health_api(input_dict, output_csv=None, limit=None,
     if limit:  # If want to limit how many rows
         concatenate_url += "&$limit=" + str(limit)
 
+    start, end = where_date
+    date = "&$where=inspection_date between '{}T00:00:00' and '{}T00:00:00'".format(start, end)
+    concatenate_url = concatenate_url + date
+
     for key, value in input_dict.items():
         # Foolproof key inputs:
         if key not in legal_dict_inputs:
@@ -288,8 +292,28 @@ def pull_cdp_health_api(input_dict, output_csv=None, limit=None,
 
     # Process the data:
     csv_data = r.text
+    print(csv_data)
     df = pd.read_csv(io.StringIO(csv_data), index_col="inspection_id")
 
+    # fill na values 
+    values = {"inspection_id": 0000000,
+                "dba_name": "NO_NAME",
+                "aka_name": "NO NAME",
+                "license_": 0000000,
+                "facility_type": "NO_NAME",
+                "risk": "NO_NAME",
+                "address": "NO_NAME",
+                "city": "NO_NAME",
+                "state": "NO_NAME",
+                "zip": "NO_NAME",
+                "inspection_date": "NO_NAME",
+                "inspection_type": "NO_NAME",
+                "results": "NO_NAME",
+                "violations": "NO_NAME",
+                "longitude": 00.00000,
+                "latitude": 00.00000},
+    df.fillna(value=values)
+    
     # Dump into csv, if necessary:
     if output_csv:
         df.to_csv(output_csv)
