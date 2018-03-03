@@ -68,7 +68,6 @@ def find_results(aka_name):
     Dumb testing function
     :return:
     """
-    #rest_name_str = args["restaurant_name"]
     query_result = Food.objects.filter(aka_name=aka_name)
     return query_result
 
