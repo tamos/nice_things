@@ -33,6 +33,9 @@ class Food(models.Model):
     #flag_type = models.CharField(max_length=200, default=None)
     objects = DataFrameManager()
 
+    #def __str__(self):
+    #    return self.inspection_id, self.aka_name
+
 
 class Wages(models.Model):
     case_id = models.PositiveIntegerField(primary_key=True)

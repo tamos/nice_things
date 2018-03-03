@@ -6,7 +6,6 @@ from itinerary.forms import ItineraryInputsForm
 # django-1-7-throws-django-core-exceptions-
 # appregistrynotready-models-arent-load:
 import os
-
 nice_things_project_dir = os.path.join(os.path.dirname(__file__), "..")
 sys.path.insert(0, nice_things_project_dir)
 from django.core.wsgi import get_wsgi_application
@@ -15,6 +14,7 @@ application = get_wsgi_application()
 # https://stackoverflow.com/questions/40206569/
 # django-model-doesnt-declare-an-explicit-app-label:
 from itinerary.models import Food, Wages
+from helpers import matching
 
 
 def index(request):
@@ -36,6 +36,9 @@ def index(request):
         form = ItineraryInputsForm()
 
     # Respond to user inputs:
+    df = matching.extract_yelp_data(term="La fuente restaurant",
+                                    limit=20, sort_by="distance")
+    print(df)
     '''if "restaurant_name" in args:
         results = find_results(args)
         if results.exists():
