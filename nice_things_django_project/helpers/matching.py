@@ -23,7 +23,9 @@ from itinerary.models import Food, Wages, Flag
 from django_pandas.managers import DataFrameManager
 
 
-default_term = "La fuente restaurant"
+default_term = "pizza"
+# create a pair of coordinates for each neighborhood/zip code (centroid). Based
+# on user input, use that as the default_lat, default_long
 default_lat = 41.8194
 default_lon = -87.6990
 default_lim = 50  # defaults at 20 and 50 is limit
@@ -108,7 +110,8 @@ def define_filters(yelp_results):
 	Ouput:
 		- zip_filter: a set of unique zip codes in the Yelp results
 		- latitude_filter: a set of unique truncated atitude coordinates
-		- longitude_filter: a numpy array of unique truncated longitude coordinates
+		- longitude_filter: a numpy array of unique truncated 
+							longitude coordinates
 	"""
     # remove rows that don't have a zip_code
     #yelp_results = yelp_results[yelp_results.zip_code != " '' "]
@@ -187,7 +190,7 @@ def get_filtered_food_df(zip_filter, lat_filter, long_filter):
     return food_df
     
 
-def link_datasets(yelp_results_df, dj_df):
+def link_datasets(yelp_results, dj_df):
     """
 	This functions compares yelp results to django results 
     and produces the best matches based on computing the
@@ -232,7 +235,6 @@ def link_datasets(yelp_results_df, dj_df):
     features = compare.compute(pairs, yelp_results, dj_df)
 
     # Classification and final filtering
-    # set strict conditions for zip_score and coordinates_scores
     best_matches = features[(features['zip_score']==1.0) &
     (features['name_score']==1.0) & (features['addr_score']==1.0) &
     (features['coord_score']>=0.98)]
@@ -244,8 +246,7 @@ def link_datasets(yelp_results_df, dj_df):
     
     return best_matches
 
-def get_best_matches_details(yelp_results_df, dj_df, zip_filter,
-    lat_filter, long_filter):
+def get_best_matches_details(yelp_results, zip_filter, lat_filter, long_filter):
     """
     This function takes a best_matches dataframe and queries the postgres
     database to obtain the details on flags for each business.
@@ -254,22 +255,34 @@ def get_best_matches_details(yelp_results_df, dj_df, zip_filter,
         - yelp_results_df: a pandas dataframe
         - dj_df: a pandas dataframe
     Output:
-        - TBD
+        - l: a list of tuples containing 
     """
-    best_matches = link_datasets(yelp_results_df, dj_df)
-    food_df = get_filtered_food_df(zip_filter, lat_filter,
-        long_filter)
+    food_df = get_filtered_food_df(zip_filter, lat_filter, long_filter)
+    best_matches = link_datasets(yelp_results, food_df)
 
     # obtain the index values from best_matches
     index_array = best_matches.index.values
 
+    l = []
     # loop through to obtain id numbers
     for index_pair in index_array:
         flag_index = index_pair[1]
         flag_index = int(flag_index)
         food_id = food_df.iloc[flag_index].inspection_id
-        food_result = Food.objects.get(inspection_id=food_id)
-        #food_result dot blahblah to get the actual description
+        food_row = Food.objects.get(inspection_id=food_id)
+        name = food_row.aka_name
+        address = food_row.address
+        # city = food_row.city
+        # state = food_row.state
+        result = food_row.results
+        violation = food_row.violations
+        date = food_row.inspection_date
+        insp_type = food_row.inspection_type
+        t = (name, address, result, violation, date, insp_type)
+        l.append(t)
+
+    return l
+
 
     # final return
     # return the yelp_results PLUS new keys that contain
