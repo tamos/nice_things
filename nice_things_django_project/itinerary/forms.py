@@ -13,12 +13,12 @@ PRICE_CHOICES = (
 
 class ItineraryInputsForm(forms.Form):
     destination = forms.CharField(max_length=100,
-                                  required=True,
+                                  required=False,
                                   widget=forms.TextInput(
                                       attrs={"class": "w3-input w3-border",
                                              "placeholder": "Chicago only, yo"})
                                   )
-    price = forms.MultipleChoiceField(required=True,
+    price = forms.MultipleChoiceField(required=False,
                                       widget=forms.CheckboxSelectMultiple(
                                           attrs={"display": "inline-block"}
                                       ),
