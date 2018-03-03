@@ -1,6 +1,13 @@
+
+  
 <!DOCTYPE html>
+<!-- Based on an example from https://maptimeboston.github.io/leaflet-intro/ and a tutorial at http://leafletjs.com/examples.html -->
+{% load leaflet_tags %}
+{% load geojson_tags %}
 <html>
 <head>
+{% leaflet_js %}
+{% leaflet_css %}
 <meta charset=utf-8 />
 <title>Find Your Nice Things</title>
 <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
@@ -13,6 +20,11 @@
 </head>
 <body>
 <div id='map'></div>
+<script>
+  var lat = {{ lat }};
+  var lon = {{ lon }};
+  //var c =  "{{ ftc }}" ;
+</script>
 
 <script>
 L.mapbox.accessToken = 'pk.eyJ1IjoidHlsZXJhdWNoaWMiLCJhIjoiY2plM2w3dHl4MmR1azJxcDkyaGdrZmYxNiJ9.NcAoPbMiSoUeWiIzuYh9tg';
@@ -21,17 +33,25 @@ var mapboxTiles = L.tileLayer('https://api.mapbox.com/v4/mapbox.streets/{z}/{x}/
     attribution: '© <a href="https://www.mapbox.com/feedback/">Mapbox</a> © <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
 });
 
+
+
 var map = L.map('map')
     .addLayer(mapboxTiles)
-    .setView([41.8765, -87.6244], 15);
+    .setView([lat, lon], 13);
     
-    
-      // add points
-  var marker1 = L.marker([41.8765, -87.6244]).addTo(map);
-  marker1.bindPopup("<b>Hello world!</b>").openPopup();
+         
+var marker1 = L.marker([lat, lon]).addTo(map);
+
+  marker1.bindPopup("{{ content }}");
+  
+  //var marker2 = L.marker([41.8762, -87.6235]).addTo(map);
+   //marker2.bindPopup("<b>Hello world!</b>");
 
 
+  
 
 </script>
+
+
 </body>
 </html>
