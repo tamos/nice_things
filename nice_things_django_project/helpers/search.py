@@ -310,8 +310,8 @@ def pull_cdp_health_api(where_date, input_dict={}, output_csv=None, limit=None,
                 "inspection_type": "NO_NAME",
                 "results": "NO_NAME",
                 "violations": "NO_NAME",
-                "longitude": 00.00000,
-                "latitude": 00.00000},
+                "longitude": 0000000,
+                "latitude": 0000000},
     df.fillna(value=values)
     
     # Dump into csv, if necessary:
