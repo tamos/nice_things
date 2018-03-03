@@ -24,4 +24,10 @@ class ItineraryInputsForm(forms.Form):
                                       ),
                                       choices=PRICE_CHOICES)
 
-
+    aka_name = forms.CharField(max_length=100,
+                                  required=False,
+                                  widget=forms.TextInput(
+                                      attrs={"class": "w3-input w3-border",
+                                             "placeholder": "nickname"})
+                                  )
+    
