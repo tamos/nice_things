@@ -37,7 +37,7 @@ To Set Up The App:
 
   ``` sudo -u postgres psql ```
   
-  ```CREATE USSER nice_things LOGIN password 'uccs'; ```
+  ```CREATE USSER nice_things LOGIN password ''; ```
   
   ```CREATE DATABASE nice_things_db OWNER nice_things;```
   
@@ -47,8 +47,14 @@ To Set Up The App:
   
   ```python3 manage.py migrate```
   
-  ```python3 update_db.py update_food_table```
+  Open the shell:
   
-  ```python3 update_db.py update_wages_table```
+  ```python3 manage.py shell```
+  
+  ```import update_db```
+  
+  ```update_db.update_food_table()```
+  
+  ```update_db.update_wages_table()```
   
   ```python3 manage.py runserver```
