@@ -74,7 +74,6 @@ def point_content(results):
     # fornow
     business = results[0:2]
     output = {}
-    #output.keys() = ['lat1', 'lat2', 'lon1', 'lon2', 'content1', 'content2']
     output['content1'] = format_html("<b>{}</b> <br> Food Inspection Result: {} {}",
                     mark_safe(results[0].aka_name),
                     results[0].results,
@@ -87,7 +86,6 @@ def point_content(results):
                     "more datassss")
     output['lat2'] = results[1].latitude
     output['lon2'] = results[1].longitude
-    print(output['content2'])
     return output
     
 
