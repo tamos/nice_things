@@ -71,21 +71,49 @@ def point_content2(results):
 
 
 def point_content(results):
-    # fornow
-    business = results[0:2]
+    # For now we will hard code this as separate keys until we figure out
+    # how to unpack them in javascript. Ugly, but it works.
+    print(len(results))
+    num_results = len(results)
     output = {}
-    output['content1'] = format_html("<b>{}</b> <br> Food Inspection Result: {} {}",
-                    mark_safe(results[0].aka_name),
-                    results[0].results,
-                    "more data")
-    output['lat1'] = results[0].latitude
-    output['lon1'] = results[0].longitude
-    output['content2'] = format_html("<b>{}</b> <br> Food Inspection Result: {} {}",
-                    mark_safe(results[1].aka_name),
-                    results[1].results,
-                    "more datassss")
-    output['lat2'] = results[1].latitude
-    output['lon2'] = results[1].longitude
+    if num_results >= 1:
+        output['content0'] = format_html("<b>{}</b> <br> Food Inspection Result: {} {}",
+                        mark_safe(results[0].aka_name),
+                        results[0].results,
+                        "more data")
+        output['lat0'] = results[0].latitude
+        output['lon0'] = results[0].longitude
+    if num_results >= 2:
+        output['content1'] = format_html("<b>{}</b> <br> Food Inspection Result: {} {}",
+                        mark_safe(results[1].aka_name),
+                        results[1].results,
+                        "more datassss")
+        output['lat1'] = results[1].latitude
+        output['lon1'] = results[1].longitude
+    '''if num_results >= 3:
+        output['content2'] = format_html("<b>{}</b> <br> Food Inspection Result: {} {}",
+                        mark_safe(results[2].aka_name),
+                        results[2].results,
+                        "more datassss")
+        output['lat2'] = results[2].latitude
+        output['lon2'] = results[2].longitude
+    if num_results >= 4:
+        output['content3'] = format_html("<b>{}</b> <br> Food Inspection Result: {} {}",
+                        mark_safe(results[3].aka_name),
+                        results[3].results,
+                        "more datassss")
+        output['lat3'] = results[3].latitude
+        output['lon3'] = results[3].longitude
+    if num_results >= 5:
+        output['content4'] = format_html("<b>{}</b> <br> Food Inspection Result: {} {}",
+                        mark_safe(results[4].aka_name),
+                        results[4].results,
+                        "more datassss")
+        output['lat4'] = results[4].latitude
+        output['lon4'] = results[4].longitude'''
+
+    print(len(output))
+    print(output.keys())
     return output
     
 
