@@ -45,7 +45,7 @@ def index(request):
         results = find_results(args["aka_name"])   # search criterion
         if results.exists():
             output = point_content(results)  # place the info we want into a dict
-            return render(request, 'map_tester.html', output) # render the map
+            return render(request, 'map.html', output) # render the map
         
     return render(request, 'index.html', context)
 
