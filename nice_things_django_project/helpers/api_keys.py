@@ -1,4 +1,4 @@
 # API KEYS FILE
 GOOGLE_KEY = ""
-CDP_APP_TOKEN = ""
+CDP_APP_TOKEN = "bPWJHJvrEK5viv4Xszdhb43Yt"
 yelp = ""
