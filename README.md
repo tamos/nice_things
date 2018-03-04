@@ -65,3 +65,11 @@ Chicago Data Portal: https://data.cityofchicago.org
   ```update_db.update_wages_table()```
   
   ```python3 manage.py runserver```
+  
+  
+ # Data Sources
+ 
+ 
+ Bureau of Labour Statistics: https://enforcedata.dol.gov/views/data_summary.php
+ 
+ 
