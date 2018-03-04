@@ -25,11 +25,17 @@
 
 <script>
 
-
+// as noted in views, we are hard coding this until we figure out javascript data structures
+  var lat0 = {{ lat0 }};
+  var lon0 = {{ lon0 }};
   var lat1 = {{ lat1 }};
   var lon1 = {{ lon1 }};
-  var lat2 = {{ lat2 }};
-  var lon2 = {{ lon2 }};
+  //var lat2 = {{ lat2 }};
+  //var lon2 = {{ lon2 }};
+  //var lat3 = {{ lat3 }};
+  //var lon3 = {{ lon3 }};
+  //var lat4 = {{ lat4 }};
+  //var lon4 = {{ lon4 }};
 
 // get access to the underlying images and mapping data
 L.mapbox.accessToken = 'pk.eyJ1IjoidHlsZXJhdWNoaWMiLCJhIjoiY2plM2w3dHl4MmR1azJxcDkyaGdrZmYxNiJ9.NcAoPbMiSoUeWiIzuYh9tg';
@@ -46,8 +52,11 @@ var map = L.map('map')
     
 // create an array of our values we want to plot
  var results = [
+  ["{{ content0 | safe }}",lat0, lon0],
   ["{{ content1 | safe }}",lat1, lon1],
-  ["{{content2 | safe}}",lat2, lon2]
+  //["{{ content2 | safe}}",lat2, lon2],
+  //["{{ content3 | safe }}",lat3, lon3],
+  //["{{ content4 | safe}}",lat4, lon4]
   ];
     
 // add points to the map

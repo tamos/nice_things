@@ -17,7 +17,9 @@ application = get_wsgi_application()
 # django-model-doesnt-declare-an-explicit-app-label:
 from itinerary.models import Food, Wages
 from django.utils.html import format_html, mark_safe
-
+os.chdir('helpers')
+import helpers.matching as matching   # This throws an error, says manage.py is not found
+os.chdir( '../')
 
 def index(request):
     context = {}
@@ -34,7 +36,10 @@ def index(request):
             args["destination"] = form.cleaned_data["destination"]
             args["price"] = form.cleaned_data["price"]
             args["aka_name"] = form.cleaned_data["aka_name"]
-
+            args["aka_name"] = form.cleaned_data["term"]
+            #yelp_result = matching.extract_yelp_data(term = args["term"])
+            
+        
     else:
         form = ItineraryInputsForm()
         
@@ -50,42 +55,53 @@ def index(request):
     return render(request, 'index.html', context)
 
 
-def point_content2(results):
-    # fornow
-    business = results[0:2]
-    output = {'content': []}
-    for i in results:
-        pop_content = format_html("<b>{}</b> <br> Food Inspection Result: {} {}",
-                    mark_safe(i.aka_name),
-                    i.results,
-                    'is')
-        lat = i.latitude
-        lon = i.longitude
-        output['content'].append([pop_content, lat, lon])
-        print(output)
-    return output
-
-
-
-
-
 
 def point_content(results):
-    # fornow
-    business = results[0:2]
+    """ This function takes a queryset result and places it into a dictionary
+    for use in the map page.
+    """
+    # For now we will hard code this as separate keys until we figure out
+    # how to unpack them in javascript. Ugly, but it works.
+    print(len(results))
+    num_results = len(results)
     output = {}
-    output['content1'] = format_html("<b>{}</b> <br> Food Inspection Result: {} {}",
-                    mark_safe(results[0].aka_name),
-                    results[0].results,
-                    "more data")
-    output['lat1'] = results[0].latitude
-    output['lon1'] = results[0].longitude
-    output['content2'] = format_html("<b>{}</b> <br> Food Inspection Result: {} {}",
-                    mark_safe(results[1].aka_name),
-                    results[1].results,
-                    "more datassss")
-    output['lat2'] = results[1].latitude
-    output['lon2'] = results[1].longitude
+    if num_results >= 1:
+        output['content0'] = format_html("<b>{}</b> <br> Food Inspection Result: {} {}",
+                        mark_safe(results[0].aka_name),
+                        results[0].results,
+                        "more data")
+        output['lat0'] = results[0].latitude
+        output['lon0'] = results[0].longitude
+    if num_results >= 2:
+        output['content1'] = format_html("<b>{}</b> <br> Food Inspection Result: {} {}",
+                        mark_safe(results[1].aka_name),
+                        results[1].results,
+                        "more datassss")
+        output['lat1'] = results[1].latitude
+        output['lon1'] = results[1].longitude
+        # We need to figure out a way to account for few results
+        # the javascript breaks if we are missing a key
+    '''if num_results >= 3:
+        output['content2'] = format_html("<b>{}</b> <br> Food Inspection Result: {} {}",
+                        mark_safe(results[2].aka_name),
+                        results[2].results,
+                        "more datassss")
+        output['lat2'] = results[2].latitude
+        output['lon2'] = results[2].longitude
+    if num_results >= 4:
+        output['content3'] = format_html("<b>{}</b> <br> Food Inspection Result: {} {}",
+                        mark_safe(results[3].aka_name),
+                        results[3].results,
+                        "more datassss")
+        output['lat3'] = results[3].latitude
+        output['lon3'] = results[3].longitude
+    if num_results >= 5:
+        output['content4'] = format_html("<b>{}</b> <br> Food Inspection Result: {} {}",
+                        mark_safe(results[4].aka_name),
+                        results[4].results,
+                        "more datassss")
+        output['lat4'] = results[4].latitude
+        output['lon4'] = results[4].longitude'''
     return output
     
 
@@ -98,24 +114,5 @@ def find_results(aka_name):
     #rest_name_str = args["restaurant_name"]
     query_result = Food.objects.filter(aka_name=aka_name)
     return query_result
-
-'''
-#NOT NECESSARY BUT KEEP JUST IN CASE
-from geojson import dumps
-from geojson import Feature, Point, FeatureCollection
-from django.utils.html import format_html, mark_safe
-from django.urls import reverse
-
-def result_map(request, results):
-    output = {}
-    #print(results)
-    output['lat'] = 41.8765
-    output['lon'] = -87.6244
-    output['content'] = format_html("<b>{}</b> {} {}",
-                    mark_safe('atl'),
-                    "MOTE",
-                    "HDH")
-    return render(request, 'map.html', output)
-'''
 
 

@@ -30,4 +30,11 @@ class ItineraryInputsForm(forms.Form):
                                       attrs={"class": "w3-input w3-border",
                                              "placeholder": "nickname"})
                                   )
+    term = forms.CharField(max_length=100,
+                                  required=False,
+                                  widget=forms.TextInput(
+                                      attrs={"class": "w3-input w3-border",
+                                             "placeholder": "Something to go on"})
+                                  )
+    
     
