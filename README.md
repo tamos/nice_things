@@ -1,32 +1,39 @@
-# We Can Have Nice Things Repository
+# We Can Have Nice Things
 
 Repository for CAPP 30122 Winter 2018 Project
 
-  * Alexander Tyan
-  * Kevin Sun
-  * Tyler Amos
+  * Alexander Tyan (AlexanderTyan)
+  * Kevin Sun (Sun-Kev)
+  * Tyler Amos (tamos)
   
   
-Dependencies:
+# Dependencies:
 
-django-geojson: https://django-geojson.readthedocs.io/en/latest/installation.html
+ * django-geojson: https://django-geojson.readthedocs.io/en/latest/installation.html
 
-leaflet: http://leafletjs.com
+ * leaflet: http://leafletjs.com
 
-django-leaflet: https://django-leaflet.readthedocs.io
+ * django-leaflet: https://django-leaflet.readthedocs.io
 
-record_linkage: http://recordlinkage.readthedocs.io
+ * record_linkage: http://recordlinkage.readthedocs.io
+ 
+ * yelpapi: https://github.com/gfairchild/yelpapi
+ 
+ * pandas: https://pandas.pydata.org
+ 
+ * requests: 
 
 
-
-Sign up for the following API's:
+# Sign up for the following API's:
 
 Google Maps: https://developers.google.com/maps/documentation/geocoding/intro
 
 Mapbox (for tile layers): https://www.mapbox.com
+
+Chicago Data Portal: https://data.cityofchicago.org
   
   
-To Set Up The App:
+# To Set Up The App:
 
 ## 1. Install PostgreSQL
 
