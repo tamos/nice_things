@@ -7,6 +7,25 @@ Repository for CAPP 30122 Winter 2018 Project
   * Tyler Amos
   
   
+Dependencies:
+
+django-geojson: https://django-geojson.readthedocs.io/en/latest/installation.html
+
+leaflet: http://leafletjs.com
+
+django-leaflet: https://django-leaflet.readthedocs.io
+
+record_linkage: http://recordlinkage.readthedocs.io
+
+
+
+Sign up for the following API's:
+
+Google Maps: https://developers.google.com/maps/documentation/geocoding/intro
+
+Mapbox (for tile layers): https://www.mapbox.com
+  
+  
 To Set Up The App:
 
 ## 1. Install PostgreSQL
