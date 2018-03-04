@@ -224,6 +224,7 @@ LEGAL_DICT_INPUTS = {"inspection_id", "dba_name", "aka_name", "license_",
 def pull_cdp_health_api(where_date, input_dict={}, output_csv=None, limit=None,
                         legal_dict_inputs=LEGAL_DICT_INPUTS):
     """
+    where_date: tuple of dates ("yyyy-mm-dd", "yyyy-mm-dd"), start and end
     Connects to the Chicago Data Portal and downloads the Food Inspections
     data set according to user preferences specified in the function
     parameters
@@ -310,8 +311,8 @@ def pull_cdp_health_api(where_date, input_dict={}, output_csv=None, limit=None,
                 "inspection_type": "NO_NAME",
                 "results": "NO_NAME",
                 "violations": "NO_NAME",
-                "longitude": 0000000,
-                "latitude": 0000000},
+                "longitude": 000000.0,
+                "latitude": 000000.0}
     df.fillna(value=values)
     
     # Dump into csv, if necessary:
