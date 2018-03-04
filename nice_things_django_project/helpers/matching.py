@@ -169,19 +169,12 @@ def get_filtered_food_df(zip_filter, lat_filter, long_filter):
 		- long_filter: a set of truncated longitude coordinates
 
     Output:
-    	- wages_df: a pandas dataframe of wages information
     	- food_df: a pandas dataframe of food information
     """
     # filter django Food object based on zip code, latitude, & longitude
     food_filtered = Food.objects.filter(zip__in=zip_filter, 
         latitude__range=(min(lat_filter), max(lat_filter)), 
         longitude__range=(max(long_filter), min(long_filter)))
-    
-    # filter django Wages object based on zip code, latitude, & longitude
-    # create separate function for wages
-    # wages_filtered = Wages.objects.filter(zip_cd__in=zip_filter, 
-    #     latitude__range=(min(lat_filter), max(lat_filter)), 
-    #     longitude__range=(max(long_filter), min(long_filter)))
 
     # cast django FOOD object as dataframe if there is data
     if food_filtered.exists():
@@ -191,18 +184,40 @@ def get_filtered_food_df(zip_filter, lat_filter, long_filter):
             "aka_name": "name", "address": "addr"})
     else:
         food_df = []
-
-    # cast django WAGES object as dataframe is there is data
-    # if wages_filtered.exists():
-    #     wages_df = wages_filtered.to_dataframe(fieldnames=['zip_cd', 'trade_nm', 
-    #         'street_addr_1_txt', 'case_id', 'latitude', 'longitude'])
-    #     wages_df = wages_df.rename(index=str, columns={"zip_cd": "zip_code", 
-    #         "trade_nm": "name", "street_addr_1_txt": "addr"})
-    # else:
-    #     wages_df = []
         
     return food_df
     
+
+def get_filtered_wages_df(zip_filter, lat_filter, long_filter):
+    """
+    This function takes the zip code, latitude, and longitude filters
+    and queries the database to obtain information that fits within
+    those filters. A pandas dataframe of filtered database
+    information gets returned.
+
+    Input:
+        - zip_filter: a set of zip codes in the Yelp results
+        - lat_filter: a set of truncated latitude coordinates
+        - long_filter: a set of truncated longitude coordinates
+    Output:
+        - wages_df: a pandas dataframe of wages information
+    """
+    #filter django Wages object based on zip code, latitude, & longitude
+    wages_filtered = Wages.objects.filter(zip_cd__in=zip_filter, 
+        latitude__range=(min(lat_filter), max(lat_filter)), 
+        longitude__range=(max(long_filter), min(long_filter)))
+
+    # cast django WAGES object as dataframe is there is data
+    if wages_filtered.exists():
+        wages_df = wages_filtered.to_dataframe(fieldnames=['zip_cd', 'trade_nm', 
+            'street_addr_1_txt', 'case_id', 'latitude', 'longitude'])
+        wages_df = wages_df.rename(index=str, columns={"zip_cd": "zip_code", 
+            "trade_nm": "name", "street_addr_1_txt": "addr"})
+    else:
+        wages_df = []
+
+    return wages_df
+
 
 def link_datasets(yelp_results, dj_df):
     """
@@ -255,7 +270,7 @@ def link_datasets(yelp_results, dj_df):
     return link
 
 
-def get_best_matches_details(yelp_results, zip_filter, lat_filter, long_filter):
+def query_database(yelp_results, zip_filter, lat_filter, long_filter):
     """
     This function takes the best matches between the Yelp results and the
     database query and fetches the details of the respective FLAG 
@@ -267,19 +282,26 @@ def get_best_matches_details(yelp_results, zip_filter, lat_filter, long_filter):
         - long_filter: a set of longitude coordinates
 
     Output:
-        - l: a list of tuples each containing business: 
-        (name, address, result, date of inspection, inspection type) 
+        - yelp_results: a dataframe of Yelp results with food inspection
+                        information and date columns added
     """
+    # obtain details from Food Table
     food_df = get_filtered_food_df(zip_filter, lat_filter, long_filter)
-    link = link_datasets(yelp_results, food_df)
-    index_array, best_matches = link
+    food_link = link_datasets(yelp_results, food_df)
+    f_index_array, f_best_matches = food_link
+    # obtain details from Wages Table
+    wages_df = get_filtered_wages_df(zip_filter, lat_filter, long_filter)
+    wages_link = link_datasets(yelp_results, wages_df)
+    w_index_array, w_best_matches = wages_link
 
+    # add relevant columns to yelp_results dataframe
     yelp_results['food_status'] = np.empty((len(yelp_results), 0)).tolist()
     yelp_results['food_date'] = np.empty((len(yelp_results), 0)).tolist()
+    yelp_results['wages_status'] = np.empty((len(yelp_results), 0)).tolist()
+    yelp_results['wages_date'] = np.empty((len(yelp_results), 0)).tolist()
 
     # Get details from FOOD table
-    l = []
-    for index_pair in index_array:
+    for index_pair in f_index_array:
         yelp_index, flag_index = index_pair[0], int(index_pair[1])
         _id = food_df.iloc[flag_index].inspection_id
         # query the relevant database table
@@ -307,6 +329,35 @@ def get_best_matches_details(yelp_results, zip_filter, lat_filter, long_filter):
             yelp_results['food_status'].iloc[yelp_index].append(t[2]) 
             yelp_results['food_date'].iloc[yelp_index].append(t[3])
 
+   # Get details from WAGES table
+    for index_pair in w_index_array:
+        yelp_index, flag_index = index_pair[0], int(index_pair[1])
+        _id = wages_df.iloc[flag_index].case_id
+        # query the relevant database table
+        w_row = Wages.objects.get(case_id=_id)
+        result = w_row.results
+        # only include non-passes
+        # if result != "Pass": 
+        #     # obtain the business name
+        #     name = w_row.trade_name
+
+        #     # obtain violation information (necessary?)
+        #     #violation = table_row.violations
+
+        #     # obtain date and format the date 
+        #     d = str(f_row.inspection_date.day)
+        #     m = str(f_row.inspection_date.month)
+        #     y = str(f_row.inspection_date.year)
+        #     format_date = m + " " + d + " " + y
+
+        #     # obtain inspection type
+        #     insp_type = w_row.inspection_type
+        #     t = (flag_index, name, result, format_date, insp_type)
+            
+        #     # add to the yelp results data frame
+        #     yelp_results['wages_status'].iloc[yelp_index].append(t[2]) 
+        #     yelp_results['wages_date'].iloc[yelp_index].append(t[3])
+
     return yelp_results
 
 
@@ -325,7 +376,7 @@ def final_result():
 
     link = link_datasets(yelp_results, dj_df)
 
-    final_result = get_best_matches_details(yelp_results, zip_filter, 
+    final_result = query_databse(yelp_results, zip_filter, 
         lat_filter, long_filter)
 
     return final_result
