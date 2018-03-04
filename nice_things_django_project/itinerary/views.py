@@ -1,4 +1,5 @@
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
+from django.urls import reverse
 import sys
 from django.shortcuts import render
 from itinerary.forms import ItineraryInputsForm
@@ -15,7 +16,10 @@ application = get_wsgi_application()
 # https://stackoverflow.com/questions/40206569/
 # django-model-doesnt-declare-an-explicit-app-label:
 from itinerary.models import Food, Wages
-
+from django.utils.html import format_html, mark_safe
+os.chdir('helpers')
+import helpers.matching as matching   # This throws an error, says manage.py is not found
+os.chdir( '../')
 
 def index(request):
     context = {}
@@ -31,30 +35,84 @@ def index(request):
         if form.is_valid():
             args["destination"] = form.cleaned_data["destination"]
             args["price"] = form.cleaned_data["price"]
-
+            args["aka_name"] = form.cleaned_data["aka_name"]
+            args["aka_name"] = form.cleaned_data["term"]
+            #yelp_result = matching.extract_yelp_data(term = args["term"])
+            
+        
     else:
         form = ItineraryInputsForm()
-
-    # Respond to user inputs:
-    '''if "restaurant_name" in args:
-        results = find_results(args)
-        if results.exists():
-            print("EXISTS!")
-            context["result"] = results'''
-
+        
     context["form"] = form
-
+        
+    # Respond to user inputs:
+    if "aka_name" in args.keys():
+        results = find_results(args["aka_name"])   # search criterion
+        if results.exists():
+            output = point_content(results)  # place the info we want into a dict
+            return render(request, 'map.html', output) # render the map
+        
     return render(request, 'index.html', context)
 
 
-def find_results(args):
+
+def point_content(results):
+    """ This function takes a queryset result and places it into a dictionary
+    for use in the map page.
+    """
+    # For now we will hard code this as separate keys until we figure out
+    # how to unpack them in javascript. Ugly, but it works.
+    print(len(results))
+    num_results = len(results)
+    output = {}
+    if num_results >= 1:
+        output['content0'] = format_html("<b>{}</b> <br> Food Inspection Result: {} {}",
+                        mark_safe(results[0].aka_name),
+                        results[0].results,
+                        "more data")
+        output['lat0'] = results[0].latitude
+        output['lon0'] = results[0].longitude
+    if num_results >= 2:
+        output['content1'] = format_html("<b>{}</b> <br> Food Inspection Result: {} {}",
+                        mark_safe(results[1].aka_name),
+                        results[1].results,
+                        "more datassss")
+        output['lat1'] = results[1].latitude
+        output['lon1'] = results[1].longitude
+        # We need to figure out a way to account for few results
+        # the javascript breaks if we are missing a key
+    '''if num_results >= 3:
+        output['content2'] = format_html("<b>{}</b> <br> Food Inspection Result: {} {}",
+                        mark_safe(results[2].aka_name),
+                        results[2].results,
+                        "more datassss")
+        output['lat2'] = results[2].latitude
+        output['lon2'] = results[2].longitude
+    if num_results >= 4:
+        output['content3'] = format_html("<b>{}</b> <br> Food Inspection Result: {} {}",
+                        mark_safe(results[3].aka_name),
+                        results[3].results,
+                        "more datassss")
+        output['lat3'] = results[3].latitude
+        output['lon3'] = results[3].longitude
+    if num_results >= 5:
+        output['content4'] = format_html("<b>{}</b> <br> Food Inspection Result: {} {}",
+                        mark_safe(results[4].aka_name),
+                        results[4].results,
+                        "more datassss")
+        output['lat4'] = results[4].latitude
+        output['lon4'] = results[4].longitude'''
+    return output
+    
+
+
+def find_results(aka_name):
     """
     Dumb testing function
     :return:
     """
-    rest_name_str = args["restaurant_name"]
-    return Food.objects.filter(aka_name=rest_name_str)
-
-
+    #rest_name_str = args["restaurant_name"]
+    query_result = Food.objects.filter(aka_name=aka_name)
+    return query_result
 
 

@@ -19,7 +19,7 @@ from django.core.wsgi import get_wsgi_application
 os.chdir('../')
 os.environ['DJANGO_SETTINGS_MODULE'] = "nice_things_django_project.settings"
 application = get_wsgi_application()
-from itinerary.models import Food, Wages, Flag
+from itinerary.models import Food, Wages
 from django_pandas.managers import DataFrameManager
 
 ##### YELP QUERY PARAMETERS #####

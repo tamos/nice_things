@@ -9,8 +9,8 @@ import sys
 # django-1-7-throws-django-core-exceptions-
 # appregistrynotready-models-arent-load:
 from django.core.wsgi import get_wsgi_application
-#os.chdir("/nice_things_django_project")
-print(os.getcwd())
+# os.chdir("/nice_things_django_project")
+# print(os.getcwd())
 
 os.environ['DJANGO_SETTINGS_MODULE'] = "nice_things_django_project.settings"
 application = get_wsgi_application()
@@ -21,12 +21,12 @@ sys.path.insert(0, './helpers')
 from helpers import file_list, geocoding
 
 
-def update_wages_table(csv_path=file_list.labor_stats, geocode=False):
+def update_wages_table(csv_path=file_list.labor_stats, geocode="opendatacage"):
     """
     Updates the Wages table in the nice_things db.
 
     :param csv_path: string, csv path file
-
+    :param geocode: str, "google" or "opendatacage"
     :return: Update the Wages table in nice_things database
     """
     use_cols = ["case_id", "trade_nm", "legal_name", "street_addr_1_txt",
@@ -46,7 +46,10 @@ def update_wages_table(csv_path=file_list.labor_stats, geocode=False):
     # in the nice_things database:
     df = df.dropna()
 
+    print(df["street_addr_1_txt"])
+
     # Squirt into the database:
+    geocode_counter = 1
     for index, row in df.iterrows():
         # Prepare row names:
         case_id = row["case_id"]
@@ -58,17 +61,28 @@ def update_wages_table(csv_path=file_list.labor_stats, geocode=False):
         zip_cd = row["zip_cd"]
         case_violtn_cnt = row["case_violtn_cnt"]
 
-        if geocode:
+        if geocode == "google":
             google_query = "{}, {}, {}".format(street_addr_1_txt, cty_nm, st_cd)
-            address, google_longitude, google_latitude = \
+            print("ATTEMPTING TO GEOCODE ADDRESS", geocode_counter, ":")
+            print(google_query)
+            address, longitude, latitude = \
                 geocoding.geo_code_single_address(google_query)
+            geocode_counter += 1
+        elif geocode == "opendatacage":
+            print("ATTEMPTING TO GEOCODE ADDRESS", geocode_counter, ":")
+            print(street_addr_1_txt, cty_nm, st_cd, zip_cd)
+            latitude, longitude = geocoding.geocode_using_opencagedata(
+                                                    address=street_addr_1_txt,
+                                                    city=cty_nm, state=st_cd,
+                                                    zip_code=zip_cd,
+                                                    country="United States")
+            geocode_counter += 1
+
         # Empty placeholders if we are not geocoding. Necessary because
         # db does not take nulls:
         else:
-            google_longitude = 0.0
-            google_latitude = 0.0
-        longitude = google_longitude
-        latitude = google_latitude
+            longitude = 0.0
+            latitude = 0.0
 
         # Squirt the data into the db:
         obj, created = Wages.objects.get_or_create(
