@@ -45,20 +45,49 @@ def index(request):
         results = find_results(args["aka_name"])   # search criterion
         if results.exists():
             output = point_content(results)  # place the info we want into a dict
-            return render(request, 'map.html', output) # render the map
+            return render(request, 'map_tester.html', output) # render the map
         
     return render(request, 'index.html', context)
 
+
+def point_content2(results):
+    # fornow
+    business = results[0:2]
+    output = {'content': []}
+    for i in results:
+        pop_content = format_html("<b>{}</b> <br> Food Inspection Result: {} {}",
+                    mark_safe(i.aka_name),
+                    i.results,
+                    'is')
+        lat = i.latitude
+        lon = i.longitude
+        output['content'].append([pop_content, lat, lon])
+        print(output)
+    return output
+
+
+
+
+
+
 def point_content(results):
     # fornow
-    business = results[0]
+    business = results[0:2]
     output = {}
-    output['content'] = format_html("<b>{}</b> <br> Food Inspection Result: {} {}",
-                    mark_safe(business.aka_name),
-                    business.results,
-                    business.violations)
-    output['lat'] = business.latitude
-    output['lon'] = business.longitude
+    #output.keys() = ['lat1', 'lat2', 'lon1', 'lon2', 'content1', 'content2']
+    output['content1'] = format_html("<b>{}</b> <br> Food Inspection Result: {} {}",
+                    mark_safe(results[0].aka_name),
+                    results[0].results,
+                    "more data")
+    output['lat1'] = results[0].latitude
+    output['lon1'] = results[0].longitude
+    output['content2'] = format_html("<b>{}</b> <br> Food Inspection Result: {} {}",
+                    mark_safe(results[1].aka_name),
+                    results[1].results,
+                    "more datassss")
+    output['lat2'] = results[1].latitude
+    output['lon2'] = results[1].longitude
+    print(output['content2'])
     return output
     
 
@@ -68,6 +97,7 @@ def find_results(aka_name):
     Dumb testing function
     :return:
     """
+    #rest_name_str = args["restaurant_name"]
     query_result = Food.objects.filter(aka_name=aka_name)
     return query_result
 
