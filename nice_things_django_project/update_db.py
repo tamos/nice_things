@@ -9,29 +9,32 @@ import sys
 # django-1-7-throws-django-core-exceptions-
 # appregistrynotready-models-arent-load:
 from django.core.wsgi import get_wsgi_application
-# os.chdir("/nice_things_django_project")
-# print(os.getcwd())
-
 os.environ['DJANGO_SETTINGS_MODULE'] = "nice_things_django_project.settings"
 application = get_wsgi_application()
 
+# Used to interact with database tables:
 from itinerary.models import Food, Wages
 
-from pathlib import Path
-#nice_things_django_project_dir = str(Path(__file__).resolve()) + "/.."
+# Find files directories:
 nice_things_django_project_dir = os.path.dirname(__file__)
 sys.path.insert(0, nice_things_django_project_dir)
-
-#sys.path.insert(0, './helpers')
 from helpers import file_list, geocoding
 
+BLS_WAGES_GEOCODED_DIR = "{}{}".format(nice_things_django_project_dir,
+                                       file_list.labor_stats_geocoded)
+CDP_FOOD_INPSPECTIONS_DIR = "{}{}".format(nice_things_django_project_dir,
+                                         file_list.food_inspections)
 
-def update_wages_table(csv_path="{}{}".format(nice_things_django_project_dir, file_list.labor_stats_geocoded), geocode=None):
+
+def update_wages_table(csv_path=BLS_WAGES_GEOCODED_DIR,
+                       geocode=None):
     """
     Updates the Wages table in the nice_things db.
 
     :param csv_path: string, csv path file
-    :param geocode: str, "google" or "opendatacage"
+
+    :param geocode: str, "google" or "opendatacage"; default None.
+
     :return: Update the Wages table in nice_things database
     """
     use_cols = ["case_id", "trade_nm", "legal_name", "street_addr_1_txt",
@@ -53,8 +56,6 @@ def update_wages_table(csv_path="{}{}".format(nice_things_django_project_dir, fi
     # in the nice_things database:
     df = df.dropna()
 
-    print(df["street_addr_1_txt"])
-
     # Squirt into the database:
     geocode_counter = 1
     for index, row in df.iterrows():
@@ -70,6 +71,8 @@ def update_wages_table(csv_path="{}{}".format(nice_things_django_project_dir, fi
         latitude = row["latitude"]
         longitude = row["longitude"]
 
+        # In case we are geocoding straight from Google or OpenCageData
+        # geocoding API:
         if geocode == "google":
             google_query = "{}, {}, {}".format(street_addr_1_txt, cty_nm, st_cd)
             print("ATTEMPTING TO GEOCODE ADDRESS", geocode_counter, ":")
@@ -87,12 +90,6 @@ def update_wages_table(csv_path="{}{}".format(nice_things_django_project_dir, fi
                                                     country="United States")
             geocode_counter += 1
 
-        # Empty placeholders if we are not geocoding. Necessary because
-        # db does not take nulls:
-        else:
-            pass
-            #longitude = 0.0
-            #latitude = 0.0
 
         # Squirt the data into the db:
         obj, created = Wages.objects.get_or_create(
@@ -108,7 +105,7 @@ def update_wages_table(csv_path="{}{}".format(nice_things_django_project_dir, fi
             latitude=latitude)
 
 
-def update_food_table(csv_path=file_list.food_inspections):
+def update_food_table(csv_path=CDP_FOOD_INPSPECTIONS_DIR):
     """
     Updates the Food table in the nice_things db.
 
@@ -138,7 +135,7 @@ def update_food_table(csv_path=file_list.food_inspections):
                             "longitude": float,
                             "latitude": float},
                      usecols=use_cols)
-    # Clean out nulls to avoid nullable entries into the itinerary_wages table
+    # Clean out nulls to avoid nullable entries into the itinerary_food table
     # in the nice_things database:
     df = df.dropna()
 

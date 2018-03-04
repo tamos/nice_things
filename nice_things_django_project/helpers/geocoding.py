@@ -24,14 +24,11 @@ import csv
 import sys
 import os
 
-from pathlib import Path
-#nice_things_django_project_dir = str(Path(__file__).resolve()) + "/.."
+# Find files directories:
 nice_things_django_project_dir = os.path.join(os.path.dirname(__file__), '..')
 sys.path.insert(0, nice_things_django_project_dir)
-
 from helpers import file_list
 from helpers.api_keys import GOOGLE_KEY
-#from helpers.api_keys import GOOGLE_KEYS
 from helpers.api_keys import OPEN_CAGE_DATA
 
 
