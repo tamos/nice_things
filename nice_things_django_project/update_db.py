@@ -17,11 +17,16 @@ application = get_wsgi_application()
 
 from itinerary.models import Food, Wages
 
-sys.path.insert(0, './helpers')
+from pathlib import Path
+#nice_things_django_project_dir = str(Path(__file__).resolve()) + "/.."
+nice_things_django_project_dir = os.path.dirname(__file__)
+sys.path.insert(0, nice_things_django_project_dir)
+
+#sys.path.insert(0, './helpers')
 from helpers import file_list, geocoding
 
 
-def update_wages_table(csv_path=file_list.labor_stats, geocode="opendatacage"):
+def update_wages_table(csv_path="{}{}".format(nice_things_django_project_dir, file_list.labor_stats_geocoded), geocode=None):
     """
     Updates the Wages table in the nice_things db.
 
@@ -30,7 +35,7 @@ def update_wages_table(csv_path=file_list.labor_stats, geocode="opendatacage"):
     :return: Update the Wages table in nice_things database
     """
     use_cols = ["case_id", "trade_nm", "legal_name", "street_addr_1_txt",
-                "cty_nm", "st_cd", "zip_cd", "case_violtn_cnt"]
+                "cty_nm", "st_cd", "zip_cd", "case_violtn_cnt", "latitude", "longitude"]
     df = pd.read_csv(filepath_or_buffer=csv_path,
                      dtype={"case_id": int,
                             "trade_nm": str,
@@ -39,7 +44,9 @@ def update_wages_table(csv_path=file_list.labor_stats, geocode="opendatacage"):
                             "cty_nm": str,
                             "st_cd": str,
                             "zip_cd": int,
-                            "case_violtn_cnt": int},
+                            "case_violtn_cnt": int,
+                            "latitude": float,
+                            "longitude": float},
                      usecols=use_cols)
 
     # Clean out nulls to avoid nullable entries into the itinerary_wages table
@@ -58,8 +65,10 @@ def update_wages_table(csv_path=file_list.labor_stats, geocode="opendatacage"):
         street_addr_1_txt = row["street_addr_1_txt"]
         cty_nm = row["cty_nm"]
         st_cd = row["st_cd"]
-        zip_cd = row["zip_cd"]
+        zip_code = row["zip_cd"]
         case_violtn_cnt = row["case_violtn_cnt"]
+        latitude = row["latitude"]
+        longitude = row["longitude"]
 
         if geocode == "google":
             google_query = "{}, {}, {}".format(street_addr_1_txt, cty_nm, st_cd)
@@ -81,8 +90,9 @@ def update_wages_table(csv_path=file_list.labor_stats, geocode="opendatacage"):
         # Empty placeholders if we are not geocoding. Necessary because
         # db does not take nulls:
         else:
-            longitude = 0.0
-            latitude = 0.0
+            pass
+            #longitude = 0.0
+            #latitude = 0.0
 
         # Squirt the data into the db:
         obj, created = Wages.objects.get_or_create(
@@ -92,7 +102,7 @@ def update_wages_table(csv_path=file_list.labor_stats, geocode="opendatacage"):
             street_addr_1_txt=street_addr_1_txt,
             cty_nm=cty_nm,
             st_cd=st_cd,
-            zip_cd=zip_cd,
+            zip_code=zip_code,
             case_violtn_cnt=case_violtn_cnt,
             longitude=longitude,
             latitude=latitude)
@@ -144,7 +154,7 @@ def update_food_table(csv_path=file_list.food_inspections):
         address = row["address"]
         city = row["city"]
         state = row["state"]
-        zip_ = row["zip"]
+        zip_code = row["zip"]
         converted_date = parser.parse(row["inspection_date"])
         converted_date = converted_date.replace(tzinfo=pytz.UTC)
         inspection_date = converted_date
@@ -166,7 +176,7 @@ def update_food_table(csv_path=file_list.food_inspections):
             address=address,
             city=city,
             state=state,
-            zip=zip_,
+            zip_code=zip_code,
             inspection_date=inspection_date,
             inspection_type=inspection_type,
             results=results,

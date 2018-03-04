@@ -31,7 +31,7 @@ sys.path.insert(0, nice_things_django_project_dir)
 
 from helpers import file_list
 from helpers.api_keys import GOOGLE_KEY
-from helpers.api_keys import GOOGLE_KEYS
+#from helpers.api_keys import GOOGLE_KEYS
 from helpers.api_keys import OPEN_CAGE_DATA
 
 
