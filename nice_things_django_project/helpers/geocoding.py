@@ -12,19 +12,42 @@ Modified on Fri Mar 02 17:34:17 2018 by Sasha
 This file contains functions for geocoding our address data.
 """
 from geopy.geocoders import GoogleV3
-import pandas as pd
-import time
-from api_keys import GOOGLE_KEY as GOOGLE_KEY
-from api_keys import GOOGLE_KEYS as GOOGLE_KEYS
-from api_keys import OPEN_CAGE_DATA as OPEN_CAGE_DATA
-import random
 from collections import namedtuple
 from random import uniform
 import requests
-# Found on https://stackoverflow.com/questions/12082314/
-# how-to-convert-a-url-string-to-safe-characters-with-python:
+import pandas as pd
+import random
+import time
 from urllib.parse import quote
 import json
+import csv
+import sys
+import os
+
+from pathlib import Path
+#nice_things_django_project_dir = str(Path(__file__).resolve()) + "/.."
+nice_things_django_project_dir = os.path.join(os.path.dirname(__file__), '..')
+sys.path.insert(0, nice_things_django_project_dir)
+
+from helpers import file_list
+from helpers.api_keys import GOOGLE_KEY
+from helpers.api_keys import GOOGLE_KEYS
+from helpers.api_keys import OPEN_CAGE_DATA
+
+
+# Found on https://stackoverflow.com/questions/12082314/
+# how-to-convert-a-url-string-to-safe-characters-with-python:
+
+
+# Upon import, this will set current working directory to
+# file_list.nice_things_django_project_dir:
+# working = os.environ.get("WORKING_DIRECTORY",
+#                          file_list.nice_things_django_project_dir)
+# if len(sys.argv) > 1:
+#     working = sys.argv[1]
+# os.chdir(working)
+#
+# sys.path.insert(0, file_list.nice_things_django_project_dir)
 
 
 DEFAULT_LAT = 41.7830867
@@ -74,7 +97,7 @@ def get_whd(file_location='datasets/whd/whd_whisard.csv', default_city='Chicago'
 def geo_code_address(address_list, limit=200):
     """
     This function takes a list of addresses as strings and returns the 
-    location as a geopy Location instance. 
+    location as a geopy Location instance using Google's Geocode API.
     
     Inputs:
         - address_list: a list of strings
@@ -114,7 +137,7 @@ def geo_code_address(address_list, limit=200):
 def geo_code_single_address(address_str):
     """
     Takes an address and outputs Google's address, and latitude, longitude
-    coordinates
+    coordinates using Google's Geocode API.
 
     :param address_str: string, address, e.g. "1234 U. st., Chicago, IL"
 
@@ -167,13 +190,77 @@ def geocode_using_opencagedata(address, city, state, zip_code,
     coordinates_dict = response_dict["results"][0]["geometry"]
     latitude = coordinates_dict["lat"]
     longitude = coordinates_dict["lng"]
-    # Wait some time between 2 and 4 seconds to avoid using too frequenlty:
+    # Wait some time between 2 and 4 seconds to avoid using too frequently:
     time.sleep(uniform(2, 4))
 
     return latitude, longitude
 
-def geocode_bls_addresses(original_bls_csv):
-    pass
+
+def geocode_bls_addresses(output_csv="{}{}".
+                          format(nice_things_django_project_dir,
+                                 file_list.labor_stats_geocoded),
+                          original_bls_csv="{}{}".
+                          format(nice_things_django_project_dir,
+                                 file_list.labor_stats)):
+    # print(original_bls_csv)
+    # print(output_csv)
+
+    use_cols = ["case_id", "trade_nm", "legal_name", "street_addr_1_txt",
+                "cty_nm", "st_cd", "zip_cd", "case_violtn_cnt"]
+
+    df = pd.read_csv(filepath_or_buffer=original_bls_csv,
+                     dtype={"case_id": int,
+                            "trade_nm": str,
+                            "legal_name": str,
+                            "street_addr_1_txt": str,
+                            "cty_nm": str,
+                            "st_cd": str,
+                            "zip_cd": int,
+                            "case_violtn_cnt": int},
+                     usecols=use_cols)
+
+    # Clean out nulls to avoid nullable entries into the itinerary_wages table
+    # in the nice_things database:
+    df = df.dropna()
+
+    csv_file = open(output_csv, "w")
+    csv_writer = csv.writer(csv_file)
+    csv_writer.writerow(use_cols + ["latitude", "longitude"])
+
+    # Squirt into the csv:
+    geocode_counter = 1
+    for index, row in df.iterrows():
+        # Prepare row names:
+        case_id = row[use_cols[0]]
+        trade_nm = row[use_cols[1]]
+        legal_name = row[use_cols[2]]
+        street_addr_1_txt = row[use_cols[3]]
+        cty_nm = row[use_cols[4]]
+        st_cd = row[use_cols[5]]
+        zip_cd = row[use_cols[6]]
+        case_violtn_cnt = row[use_cols[7]]
+
+        # Geocode:
+        print("ATTEMPTING TO GEOCODE ADDRESS", geocode_counter, ":")
+        print(street_addr_1_txt, cty_nm, st_cd, zip_cd)
+        latitude, longitude = geocode_using_opencagedata(
+            address=street_addr_1_txt,
+            city=cty_nm, state=st_cd,
+            zip_code=zip_cd,
+            country="United States")
+        print("WRITE ROW:", [case_id, trade_nm, legal_name, street_addr_1_txt,
+                             cty_nm, st_cd, zip_cd, case_violtn_cnt,
+                             latitude, longitude])
+
+        csv_writer.writerow([case_id, trade_nm, legal_name, street_addr_1_txt,
+                             cty_nm, st_cd, zip_cd, case_violtn_cnt,
+                             latitude, longitude])
+        geocode_counter += 1
+        if geocode_counter > 7:
+            break
+
+    csv_file.close()
+
 
 '''
 Please keep for the moment, just as reference
