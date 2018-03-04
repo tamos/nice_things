@@ -49,16 +49,43 @@ def index(request):
         
     return render(request, 'index.html', context)
 
+
+def point_content2(results):
+    # fornow
+    business = results[0:2]
+    output = {'content': []}
+    for i in results:
+        pop_content = format_html("<b>{}</b> <br> Food Inspection Result: {} {}",
+                    mark_safe(i.aka_name),
+                    i.results,
+                    'is')
+        lat = i.latitude
+        lon = i.longitude
+        output['content'].append([pop_content, lat, lon])
+        print(output)
+    return output
+
+
+
+
+
+
 def point_content(results):
     # fornow
-    business = results[0]
+    business = results[0:2]
     output = {}
-    output['content'] = format_html("<b>{}</b> <br> Food Inspection Result: {} {}",
-                    mark_safe(business.aka_name),
-                    business.results,
-                    business.violations)
-    output['lat'] = business.latitude
-    output['lon'] = business.longitude
+    output['content1'] = format_html("<b>{}</b> <br> Food Inspection Result: {} {}",
+                    mark_safe(results[0].aka_name),
+                    results[0].results,
+                    "more data")
+    output['lat1'] = results[0].latitude
+    output['lon1'] = results[0].longitude
+    output['content2'] = format_html("<b>{}</b> <br> Food Inspection Result: {} {}",
+                    mark_safe(results[1].aka_name),
+                    results[1].results,
+                    "more datassss")
+    output['lat2'] = results[1].latitude
+    output['lon2'] = results[1].longitude
     return output
     
 
@@ -68,6 +95,7 @@ def find_results(aka_name):
     Dumb testing function
     :return:
     """
+    #rest_name_str = args["restaurant_name"]
     query_result = Food.objects.filter(aka_name=aka_name)
     return query_result
 
