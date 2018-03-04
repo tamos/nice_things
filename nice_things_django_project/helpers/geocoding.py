@@ -256,8 +256,8 @@ def geocode_bls_addresses(output_csv="{}{}".
                              cty_nm, st_cd, zip_cd, case_violtn_cnt,
                              latitude, longitude])
         geocode_counter += 1
-        if geocode_counter > 7:
-            break
+        # if geocode_counter > 7:
+        #     break
 
     csv_file.close()
 
