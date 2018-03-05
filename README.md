@@ -37,6 +37,8 @@ Chicago Data Portal: https://data.cityofchicago.org
 
 ## 1. Install PostgreSQL
 
+Recommended: https://postgresapp.com
+
 
 ## 2. Create a PostgrSQL User nice_things
 
@@ -44,7 +46,7 @@ Chicago Data Portal: https://data.cityofchicago.org
 
   ``` sudo -u postgres psql ```
   
-  ```CREATE USSER nice_things LOGIN password ''; ```
+  ```CREATE USER nice_things LOGIN password ''; ```
   
   ```CREATE DATABASE nice_things_db OWNER nice_things;```
   
