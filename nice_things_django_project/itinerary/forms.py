@@ -8,6 +8,7 @@ PRICE_CHOICES = (
     ("1", '$'),
     ("2", '$$'),
     ("3", '$$$'),
+    ("4", '$$$$'),
 )
 ATTRIBUTE_CHOICES = (
     ('Gender Neutral Restrooms'))
@@ -25,10 +26,10 @@ SORT_CHOICES = (
 
 class ItineraryInputsForm(forms.Form):
     loc = forms.CharField(max_length=100,
-                                  required=False,
-                                  widget=forms.TextInput(
+                                  required=True,
+                                 widget=forms.TextInput(
                                       attrs={"class": "w3-input w3-border",
-                                             "placeholder": "BoBo-ville, Chicago"})
+                                             "placeholder": "Where in Chicago?"})
                                   )
     price = forms.MultipleChoiceField(required=False,
                                       widget=forms.CheckboxSelectMultiple(

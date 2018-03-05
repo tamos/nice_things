@@ -29,12 +29,13 @@ def index(request):
         form = ItineraryInputsForm(request.GET)
 
         # Convert form input into dictionary for search.py:
-        args = {"location": "",
-                "price": "",
-                "term": "",
-                "categories": "",
+        # Place defaults
+        args = {"location": "Chicago",
+                "price": "1,2,3,4",
+                "term": "Chicago",
+                "categories": "bar",
                 "attributes": "",
-                "sort": "" }
+                "sort": "distance" }
 
         # Validate the inputs are legal:
         if form.is_valid():
@@ -47,7 +48,7 @@ def index(request):
             # Go get results
             results = matching.final_result(args)  # search criterion
             # consider accounting for no results corner case
-            #output = point_content(results)  # place the info we want into a dict
+            output = point_content(results)  # place the info we want into a dict
             return render(request, 'map.html', output) # render the map       
             
     else:
@@ -64,26 +65,29 @@ def point_content(results):
     """
     # For now we will hard code this as separate keys until we figure out
     # how to unpack them in javascript. Ugly, but it works.
-    print(len(results))
-    num_results = len(results)
+    num_results = results.shape[0]
     output = {}
     if num_results >= 1:
-        output['content0'] = format_html("<b>{}</b> <br> Food Inspection Result: {} {}",
-                        mark_safe(results[0].aka_name),
-                        results[0].results,
-                        "more data")
-        output['lat0'] = results[0].latitude
-        output['lon0'] = results[0].longitude
+        output['content0'] = format_html("<b>{}</b> <br> {} <br> #: {} <br> {}",
+                        mark_safe(results.iloc[0]['name']),
+                        results.iloc[0]["addr"],
+                        results.iloc[0]["phone"],
+                        results.iloc[0]["price"])
+        output['lat0'] = results.iloc[0]["latitude"]
+        output['lon0'] = results.iloc[0]["longitude"]
+    
     if num_results >= 2:
-        output['content1'] = format_html("<b>{}</b> <br> Food Inspection Result: {} {}",
-                        mark_safe(results[1].aka_name),
-                        results[1].results,
-                        "more datassss")
-        output['lat1'] = results[1].latitude
-        output['lon1'] = results[1].longitude
+        output['content1'] = format_html("<b>{}</b> <br> {} <br> #: {} <br> {} ",
+                        mark_safe(results.iloc[1]['name']),
+                        results.iloc[1]["addr"],
+                        results.iloc[1]["phone"],
+                        results.iloc[1]["price"])
+        output['lat1'] = results.iloc[1]["latitude"]
+        output['lon1'] = results.iloc[1]["longitude"]
+    '''
         # We need to figure out a way to account for few results
         # the javascript breaks if we are missing a key
-    '''if num_results >= 3:
+    if num_results >= 3:
         output['content2'] = format_html("<b>{}</b> <br> Food Inspection Result: {} {}",
                         mark_safe(results[2].aka_name),
                         results[2].results,
