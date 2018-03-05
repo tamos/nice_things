@@ -174,16 +174,16 @@ def get_filtered_food_df(zip_filter, lat_filter, long_filter):
     	- food_df: a pandas dataframe of food information
     """
     # filter django Food object based on zip code, latitude, & longitude
-    food_filtered = Food.objects.filter(zip__in=zip_filter, 
+    food_filtered = Food.objects.filter(zip_code__in=zip_filter, 
         latitude__range=(min(lat_filter), max(lat_filter)), 
         longitude__range=(max(long_filter), min(long_filter)))
 
     # cast django FOOD object as dataframe if there is data
     if food_filtered.exists():
-        food_df = food_filtered.to_dataframe(fieldnames=['zip', 'aka_name', 
+        food_df = food_filtered.to_dataframe(fieldnames=['zip_code', 'aka_name', 
             'address', 'inspection_id', 'latitude', 'longitude'])
-        food_df = food_df.rename(index=str, columns={"zip": "zip_code", 
-            "aka_name": "name", "address": "addr"})
+        food_df = food_df.rename(index=str, columns={"aka_name": "name", 
+            "address": "addr"})
     else:
         food_df = []
         
@@ -310,26 +310,26 @@ def query_database(yelp_results, zip_filter, lat_filter, long_filter):
         f_row = Food.objects.get(inspection_id=_id)
         result = f_row.results
         # only include non-passes
-        if result != "Pass": 
-            # obtain the business name
-            name = f_row.aka_name
+        #if result != "Pass": 
+        # obtain the business name
+        name = f_row.aka_name
 
-            # obtain violation information (necessary?)
-            #violation = table_row.violations
+        # obtain violation information (necessary?)
+        #violation = table_row.violations
 
-            # obtain date and format the date 
-            d = str(f_row.inspection_date.day)
-            m = str(f_row.inspection_date.month)
-            y = str(f_row.inspection_date.year)
-            format_date = m + " " + d + " " + y
+        # obtain date and format the date 
+        d = str(f_row.inspection_date.day)
+        m = str(f_row.inspection_date.month)
+        y = str(f_row.inspection_date.year)
+        format_date = m + " " + d + " " + y
 
-            # obtain inspection type
-            insp_type = f_row.inspection_type
-            t = (flag_index, name, result, format_date, insp_type)
-            
-            # add to the yelp results data frame
-            yelp_results['food_status'].iloc[yelp_index].append(t[2]) 
-            yelp_results['food_date'].iloc[yelp_index].append(t[3])
+        # obtain inspection type
+        insp_type = f_row.inspection_type
+        t = (flag_index, name, result, format_date, insp_type)
+        
+        # add to the yelp results data frame
+        yelp_results['food_status'].iloc[yelp_index].append(t[2]) 
+        yelp_results['food_date'].iloc[yelp_index].append(t[3])
 
    # Get details from WAGES table
     for index_pair in w_index_array:
@@ -368,7 +368,7 @@ def final_result(dict_from_views):
     categories = dict_from_views['categories']
     price = dict_from_views['price']
     location = dict_from_views['location']
-    lim = 10
+    lim = 50
     sort = dict_from_views['sort']
     attributes = dict_from_views['attributes']
 
