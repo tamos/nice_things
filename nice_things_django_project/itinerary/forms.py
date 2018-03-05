@@ -5,10 +5,16 @@ from django.utils.safestring import mark_safe
 
 
 PRICE_CHOICES = (
-    ('$', '$'),
-    ('$$', '$$'),
-    ('$$$', '$$$'),
+    ("1", '$'),
+    ("2", '$$'),
+    ("3", '$$$'),
 )
+ATTRIBUTE_CHOICES = (
+    ('Gender Neutral Restrooms'))
+
+CATEGORY_CHOICES = (
+    ("bars", 'Eat'),
+    ("restaurants", 'Drink'))
 
 
 class ItineraryInputsForm(forms.Form):
@@ -16,7 +22,7 @@ class ItineraryInputsForm(forms.Form):
                                   required=False,
                                   widget=forms.TextInput(
                                       attrs={"class": "w3-input w3-border",
-                                             "placeholder": "Chicago only, yo"})
+                                             "placeholder": "BoBo-ville, Chicago"})
                                   )
     price = forms.MultipleChoiceField(required=False,
                                       widget=forms.CheckboxSelectMultiple(
@@ -34,7 +40,13 @@ class ItineraryInputsForm(forms.Form):
                                   required=False,
                                   widget=forms.TextInput(
                                       attrs={"class": "w3-input w3-border",
-                                             "placeholder": "Something to go on"})
+                                             "placeholder": "Southern BBQ Kareoke"})
                                   )
+    attributes = forms.BooleanField(required=False)
     
+    categories = forms.MultipleChoiceField(required=False,
+                                      widget=forms.CheckboxSelectMultiple(
+                                          attrs={"display": "inline-block"}
+                                      ),
+                                      choices=CATEGORY_CHOICES)    
     
