@@ -1,8 +1,6 @@
 ######### Structure & Steps ##########
 from jellyfish import jaro_distance
 from queue import PriorityQueue
-# This package that was deprecated. We updated it and submitted a pull
-# request to the author, this is the updated package. 
 # Our API key is stored in a separate file
 import requests
 import pandas as pd
