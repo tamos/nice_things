@@ -21,6 +21,8 @@ os.chdir('helpers')
 import helpers.matching as matching   # has to be a better way to do this
 os.chdir( '../')
 
+from django.core import serializers
+
 def index(request):
     context = {}
     # Process user inputs:
@@ -48,8 +50,8 @@ def index(request):
             # Go get results
             results = matching.final_result(args)  # search criterion
             # consider accounting for no results corner case
-            output = point_content(results)  # place the info we want into a dict
-            return render(request, 'map.html', output) # render the map       
+            output = point_content(results)# place the info we want into a dict
+            return render(request, 'map.html', {'output':output}) # render the map       
             
     else:
         form = ItineraryInputsForm()
@@ -57,60 +59,21 @@ def index(request):
     context["form"] = form
     return render(request, 'index.html', context)
 
-
+import json
 
 def point_content(results):
     """ This function takes a queryset result and places it into a dictionary
     for use in the map page.
     """
-    # For now we will hard code this as separate keys until we figure out
-    # how to unpack them in javascript. Ugly, but it works.
-    num_results = results.shape[0]
-    output = {}
-    if num_results >= 1:
-        output['content0'] = format_html("<b>{}</b> <br> {} <br> #: {} <br> {}",
-                        mark_safe(results.iloc[0]['name']),
-                        results.iloc[0]["addr"],
-                        results.iloc[0]["phone"],
-                        results.iloc[0]["price"])
-        output['lat0'] = results.iloc[0]["latitude"]
-        output['lon0'] = results.iloc[0]["longitude"]
-    
-    if num_results >= 2:
-        output['content1'] = format_html("<b>{}</b> <br> {} <br> #: {} <br> {} ",
-                        mark_safe(results.iloc[1]['name']),
-                        results.iloc[1]["addr"],
-                        results.iloc[1]["phone"],
-                        results.iloc[1]["price"])
-        output['lat1'] = results.iloc[1]["latitude"]
-        output['lon1'] = results.iloc[1]["longitude"]
-    '''
-        # We need to figure out a way to account for few results
-        # the javascript breaks if we are missing a key
-    if num_results >= 3:
-        output['content2'] = format_html("<b>{}</b> <br> Food Inspection Result: {} {}",
-                        mark_safe(results[2].aka_name),
-                        results[2].results,
-                        "more datassss")
-        output['lat2'] = results[2].latitude
-        output['lon2'] = results[2].longitude
-    if num_results >= 4:
-        output['content3'] = format_html("<b>{}</b> <br> Food Inspection Result: {} {}",
-                        mark_safe(results[3].aka_name),
-                        results[3].results,
-                        "more datassss")
-        output['lat3'] = results[3].latitude
-        output['lon3'] = results[3].longitude
-    if num_results >= 5:
-        output['content4'] = format_html("<b>{}</b> <br> Food Inspection Result: {} {}",
-                        mark_safe(results[4].aka_name),
-                        results[4].results,
-                        "more datassss")
-        output['lat4'] = results[4].latitude
-        output['lon4'] = results[4].longitude'''
+    output = []
+    for i in results.itertuples():
+        output.append([i.latitude, i.longitude, i.name])
+    output = mark_safe(json.dumps(output))
+    # References for json/marking safe:
+    # https://stackoverflow.com/questions/4698220/django-template-convert-a-python-list-into-a-javascript-object
+    # https://stackoverflow.com/questions/739942/how-to-pass-an-array-in-django-to-a-template-and-use-it-with-javascript#739974
     return output
-    
-
+ 
 
 def find_results(aka_name):
     """
