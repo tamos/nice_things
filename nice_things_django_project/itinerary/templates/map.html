@@ -25,18 +25,6 @@
 
 <script>
 
-// as noted in views, we are hard coding this until we figure out javascript data structures
-  //ar lat0 = {{ lat0 }};
-  //var lon0 = {{ lon0 }};
-  //var lat1 = {{ lat1 }};
-  //var lon1 = {{ lon1 }};
-  //var lat2 = {{ lat2 }};
-  //var lon2 = {{ lon2 }};
-  //var lat3 = {{ lat3 }};
-  //var lon3 = {{ lon3 }};
-  //var lat4 = {{ lat4 }};
-  //var lon4 = {{ lon4 }};
-
 // get access to the underlying images and mapping data
 L.mapbox.accessToken = 'pk.eyJ1IjoidHlsZXJhdWNoaWMiLCJhIjoiY2plM2w3dHl4MmR1azJxcDkyaGdrZmYxNiJ9.NcAoPbMiSoUeWiIzuYh9tg';
 
@@ -45,24 +33,22 @@ var mapboxTiles = L.tileLayer('https://api.mapbox.com/styles/v1/tylerauchic/cjee
     attribution: '© <a href="https://www.mapbox.com/feedback/">Mapbox</a> © <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
 });
 
+// create an array of our values we want to plot
+ var results = {{ output | safe }} //  From: https://stackoverflow.com/questions/739942/how-to-pass-an-array-in-django-to-a-template-and-use-it-with-javascript#739974
+ 
+ var focuslat = results[1][0]
+ var focuslon = results[1][1]
+    
+
 // put down the land cover, colours, etc.
 var map = L.map('map')
     .addLayer(mapboxTiles)
-    .setView([41.836944, -87.684722], 13); // the focal point of the map
-    
-// create an array of our values we want to plot
- var results = {{ output | safe }}
-  //["{{ content0 | safe }}",lat0, lon0],
-  //["{{ content1 | safe }}",lat1, lon1],
-  //["{{ content2 | safe}}",lat2, lon2],
-  //["{{ content3 | safe }}",lat3, lon3],
-  //["{{ content4 | safe}}",lat4, lon4]
-  
+    .setView([focuslat, focuslon], 15); // the focal point of the map
     
 // add points to the map
   for (var i = 0; i < results.length; i++) {
-   marker = new L.marker([results[i][0],results[i][1]])
-    .bindPopup(results[i][2])
+   marker = new L.marker([results[i][0],results[i][1]]) // lat, lon
+    .bindPopup(results[i][2]) // content
     .addTo(map);
   }
 
