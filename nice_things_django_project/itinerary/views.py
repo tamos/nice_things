@@ -18,7 +18,7 @@ application = get_wsgi_application()
 from itinerary.models import Food, Wages
 from django.utils.html import format_html, mark_safe
 os.chdir('helpers')
-import helpers.matching as matching  
+import helpers.matching as matching   # has to be a better way to do this
 os.chdir( '../')
 
 def index(request):
