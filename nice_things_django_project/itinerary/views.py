@@ -33,10 +33,10 @@ def index(request):
 
         # Validate the inputs are legal:
         if form.is_valid():
-            args["destination"] = form.cleaned_data["destination"]
+            args["loc"] = form.cleaned_data["loc"]
             args["price"] = form.cleaned_data["price"]
-            args["aka_name"] = form.cleaned_data["aka_name"]
-            args["aka_name"] = form.cleaned_data["term"]
+            #args["aka_name"] = form.cleaned_data["aka_name"]
+           #args["aka_name"] = form.cleaned_data["term"]
             #yelp_result = matching.extract_yelp_data(term = args["term"])
             
         
@@ -44,13 +44,14 @@ def index(request):
         form = ItineraryInputsForm()
         
     context["form"] = form
-        
+    '''
     # Respond to user inputs:
     if "aka_name" in args.keys():
         results = find_results(args["aka_name"])   # search criterion
         if results.exists():
             output = point_content(results)  # place the info we want into a dict
             return render(request, 'map.html', output) # render the map
+            '''
         
     return render(request, 'index.html', context)
 
