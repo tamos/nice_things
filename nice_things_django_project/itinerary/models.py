@@ -138,42 +138,42 @@ class Wages(models.Model):
     sraw_ee_atp_cnt
     ld_dt'''
 
-class Env_Enforce(models.Model):
-    ''' 
-    This model is data on environmental records from CDPH.
-    It does not contain information on the individual violations,
-    only that a violation exists. But the URL links to the details. 
-    https://data.cityofchicago.org/Environment-Sustainable-Development/CDPH-Environmental-Records-Lookup-Table/a9u4-3dwb/data
-    '''
-    # needs a primary key
-    longitude = models.FloatField(default=None)
-    latitude = models.FloatField(default=None)
-    objects = DataFrameManager()
-    address = models.CharField(max_length=200) # need to concatentate strings for this
-    enviro_enforcement = models.BooleanField() # CDPH Enviro. Enforcement data
-    enviro_enforcement_url = models.URLField() # link to enviro information
+# class Env_Enforce(models.Model):
+#     ''' 
+#     This model is data on environmental records from CDPH.
+#     It does not contain information on the individual violations,
+#     only that a violation exists. But the URL links to the details. 
+#     https://data.cityofchicago.org/Environment-Sustainable-Development/CDPH-Environmental-Records-Lookup-Table/a9u4-3dwb/data
+#     '''
+#     # needs a primary key
+#     longitude = models.FloatField(default=None)
+#     latitude = models.FloatField(default=None)
+#     objects = DataFrameManager()
+#     address = models.CharField(max_length=200) # need to concatentate strings for this
+#     enviro_enforcement = models.BooleanField() # CDPH Enviro. Enforcement data
+#     enviro_enforcement_url = models.URLField() # link to enviro information
 
-class Env_Complaints(models.Model):
-    ''' 
-    This model is data on environmental records from CDPH.
-    It does not contain information on the individual violations,
-    only that a violation exists. But the URL links to the details. 
-    '''
-    # needs a primary key
-    longitude = models.FloatField(default=None)
-    latitude = models.FloatField(default=None)
-    objects = DataFrameManager()
-    address = models.CharField(max_length=200) # need to concatentate strings for this
-    complaints = models.BooleanField() # complaints in the CDPH Environmental Complaints data
-    complaints_url = models.URLField() # link to the complaint
+# class Env_Complaints(models.Model):
+#     ''' 
+#     This model is data on environmental records from CDPH.
+#     It does not contain information on the individual violations,
+#     only that a violation exists. But the URL links to the details. 
+#     '''
+#     # needs a primary key
+#     longitude = models.FloatField(default=None)
+#     latitude = models.FloatField(default=None)
+#     objects = DataFrameManager()
+#     address = models.CharField(max_length=200) # need to concatentate strings for this
+#     complaints = models.BooleanField() # complaints in the CDPH Environmental Complaints data
+#     complaints_url = models.URLField() # link to the complaint
 
-class Divvy(models.Model):
-    _id = models.PositiveIntegerField(primary_key=True)
-    name = models.CharField(max_length=200)
-    city = models.CharField(max_length=200)
-    longitude = models.FloatField(default=None)
-    latitude = models.FloatField(default=None)
-    objects = DataFrameManager()
+# class Divvy(models.Model):
+#     _id = models.PositiveIntegerField(primary_key=True)
+#     name = models.CharField(max_length=200)
+#     city = models.CharField(max_length=200)
+#     longitude = models.FloatField(default=None)
+#     latitude = models.FloatField(default=None)
+#     objects = DataFrameManager()
 
 
 
