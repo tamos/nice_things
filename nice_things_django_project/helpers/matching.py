@@ -382,10 +382,10 @@ def final_result(dict_from_views):
         categories=categories, price=price, location=location, limit=lim, 
         sort_by=sort, attributes=attributes)
 
-#    zip_filter, lat_filter, long_filter = define_filters(yelp_results)
+    zip_filter, lat_filter, long_filter = define_filters(yelp_results)
 
-#    final_result = query_database(yelp_results, zip_filter, 
-#        lat_filter, long_filter)
+    final_result = query_database(yelp_results, zip_filter, 
+        lat_filter, long_filter)
 
     return None
     

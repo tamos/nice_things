@@ -48,7 +48,6 @@ def index(request):
             # Go get results
             results = matching.final_result(args)  # search criterion
             # consider accounting for no results corner case
-            #return HttpResponse(results)
             #output = point_content(results)  # place the info we want into a dict
             #return render(request, 'map.html', output) # render the map       
             
