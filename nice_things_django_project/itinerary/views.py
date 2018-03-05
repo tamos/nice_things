@@ -68,24 +68,26 @@ def point_content(results):
     num_results = results.shape[0]
     output = {}
     if num_results >= 1:
-        output['content0'] = format_html("<b>{}</b> <br> Food Inspection Result: {} {}",
+        output['content0'] = format_html("<b>{}</b> <br> {} <br> #: {} <br> {}",
                         mark_safe(results.iloc[0]['name']),
                         results.iloc[0]["addr"],
-                        "more data")
+                        results.iloc[0]["phone"],
+                        results.iloc[0]["price"])
         output['lat0'] = results.iloc[0]["latitude"]
         output['lon0'] = results.iloc[0]["longitude"]
-    '''
+    
     if num_results >= 2:
-        output['content1'] = format_html("<b>{}</b> <br> Food Inspection Result: {} {}",
-                        mark_safe(results[1].aka_name),
-                        results[1].results,
-                        "more datassss")
-        output['lat1'] = results[1].latitude
-        output['lon1'] = results[1].longitude
+        output['content1'] = format_html("<b>{}</b> <br> {} <br> #: {} <br> {}",
+                        mark_safe(results.iloc[1]['name']),
+                        results.iloc[1]["addr"],
+                        results.iloc[1]["phone"],
+                        results.iloc[1]["price"])
+        output['lat1'] = results.iloc[1]["latitude"]
+        output['lon1'] = results.iloc[1]["longitude"]
         '''
         # We need to figure out a way to account for few results
         # the javascript breaks if we are missing a key
-    '''if num_results >= 3:
+    if num_results >= 3:
         output['content2'] = format_html("<b>{}</b> <br> Food Inspection Result: {} {}",
                         mark_safe(results[2].aka_name),
                         results[2].results,
