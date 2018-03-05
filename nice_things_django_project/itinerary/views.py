@@ -29,12 +29,13 @@ def index(request):
         form = ItineraryInputsForm(request.GET)
 
         # Convert form input into dictionary for search.py:
-        args = {"location": "",
-                "price": "",
-                "term": "",
-                "categories": "",
+        # Place defaults
+        args = {"location": "Chicago",
+                "price": "1,2,3,4",
+                "term": "Chicago",
+                "categories": "bar",
                 "attributes": "",
-                "sort": "" }
+                "sort": "distance" }
 
         # Validate the inputs are legal:
         if form.is_valid():
@@ -47,8 +48,9 @@ def index(request):
             # Go get results
             results = matching.final_result(args)  # search criterion
             # consider accounting for no results corner case
+            #return HttpResponse(results)
             #output = point_content(results)  # place the info we want into a dict
-            return render(request, 'map.html', output) # render the map       
+            #return render(request, 'map.html', output) # render the map       
             
     else:
         form = ItineraryInputsForm()
