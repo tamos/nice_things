@@ -70,6 +70,11 @@ def index(request):
     return render(request, 'index.html', context)  # Render main page
 
 
+
+from dominate.tags import html, head, body, b
+from dominate.util import raw
+from dominate.document import document
+
 def point_content(results):
     """ This function takes the DataFrame of matched results and
     places them into a list in the form (latitude, longitude, content)
@@ -84,13 +89,98 @@ def point_content(results):
     output = []
     for i in results.itertuples():
         # This is where we insert the marker content
-        output.append([i.latitude, i.longitude, i.name])
-        output = mark_safe(json.dumps(output)) # make sure Django doesn't block it
+        #content = popup(i)
+        #content = document()
+        #content.add(b(i.name))
+        content = popup(i)
+        popup_label = content.to_html()
+        output.append([content.latitude, content.longitude, popup_label])
+        
+    output = mark_safe(json.dumps(output)) # make sure Django doesn't block it
 
     # References for json/marking safe:
     # https://stackoverflow.com/questions/4698220/django-template-convert-a-python-list-into-a-javascript-object
     # https://stackoverflow.com/questions/739942/how-to-pass-an-array-in-django-to-a-template-and-use-it-with-javascript#739974
     return output
+
+
+
+
+"""
+This is a class which holds generates popup content in html
+should be in another file, but is giving me errors
+"""
+
+import dominate
+from dominate.tags import html, head, body, b
+from dominate.document import document 
+
+
+
+
+
+
+
+
+class popup(object):
+    
+
+    def __init__(self, result):
+        self.name = result.name
+        self.addr = result.addr
+        self.latitude = result.latitude
+        self.longitude = result.longitude
+        try:
+            self.phone = result.phone
+        except:
+            self.phone = None
+        try:
+            self.price = result.price
+        except:
+            self.price = None
+        try:
+            self.food_status = " ".join(result.food_status)
+        except:
+            self.food_status = None
+        try:
+            self.food_date = " ".join(result.food_date)
+        except:
+            self.food_date = None
+        try:
+            self.wages_violations = " ".join(result.wages_violations)
+        except:
+            self.wages_violations = None
+        
+        self.rendered_html = document()
+        self.to_label = [(self.phone, "#: "), (self.price, ""), (self.food_status, "Food Inspections: "),
+                         (self.food_date, "Inspection Date: "),
+                         (self.wages_violations, "Recorded Bureau of Labor Violations: ")]
+
+# iterating from: https://stackoverflow.com/questions/25150955/python-iterating-through-object-attributes
+    def to_html(self):
+        """ Renders to a STRING representation of html
+
+        """
+        self.rendered_html.add(b(self.name)) # bold the name
+        self.rendered_html.add(self.addr) # next the address
+        for attr, prefix in self.to_label: # catch nones?
+            if attr:
+                self.rendered_html.add(prefix, str(attr))
+        return str(self.rendered_html)
+            
+        #content = str(html(b(i.name)))
+        
+        
+'''
+Index(['zip_code', 'name', 'addr',
+'phone', 'price', 'latitude', 'longitude',
+       'food_status', 'food_date',
+       'wages_violations'],
+
+'''
+       
+
+
  
 
 
