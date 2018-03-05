@@ -9,6 +9,7 @@
 <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<script defer src="https://use.fontawesome.com/releases/v5.0.8/js/all.js"></script>
 <style>
 body,h1,h2,h3,h4,h5,h6 {font-family: "Raleway", Arial, Helvetica, sans-serif}
 .myLink {display: none}
@@ -102,76 +103,50 @@ ul.categorychecklist li {
 <header class="w3-display-container w3-content w3-hide-small" style="max-width:1500px">
   <!-- images used (open access) from https://www.pexels.com/photo/table-in-vintage-restaurant-6267/ -->
   <img src="{% static "/menu-restaurant-vintage-table.jpg" %}" align="middle" alt="Hipster Restaurant" width="100%" height="100%" />
-  <div class="w3-display-middle" style="width:65%">
+  <div class="w3-display-middle" style="width:90%">
     <div class="w3-bar w3-black">
-      <button class="w3-bar-item w3-button tablink" onclick="openLink(event, 'Drink');"><i class="fa fa-glass-martini w3-margin-right"></i>Drink</button>
-      <button class="w3-bar-item w3-button tablink" onclick="openLink(event, 'Eat');"><i class="fa fa-utensil-fork"></i>Eat</button>
-      <!-- <button class="w3-bar-item w3-button tablink" onclick="openLink(event, 'Buy');"><i class="fa fa-shopping-cartk"></i>Buy</button> -->
+      <button class="w3-bar-item w3-button tablink" onclick="openLink(event, 'Drink');">Find Your Next Great Outing</button>
+      
     </div>
 
     <!-- Tabs -->
     <div id="Drink" class="w3-container w3-white w3-padding-16 myLink">
-      <h3>Shots for solidarity. </h3>
-      <div class="w3-row-padding" style="margin:0 -16px;">
-        <div class="w3-half">
-          <label>Where?</label>
-          <input class="w3-input w3-border" type="text" placeholder="Hyde Park">
-        </div>
-        <div class="w3-half">
-          <label>Tell us more:</label>
-          <input class="w3-input w3-border" type="text" placeholder="Mechanical bull">
-        </div>
-      </div>
-      <p><button class="w3-button w3-dark-grey">Don't forget to hydrate!</button></p>
-    </div>
 
-
-    <div id="Eat" class="w3-container w3-white w3-padding-16 myLink">
-      <h3> Devour Dimsum. Destroy Injustice.</h3>
-      <div class="w3-row-padding" style="margin:0 -16px;">
-        <!-- <div class="w3-half"> -->
-          <!-- <label>Where? </label>
-          <input class="w3-input w3-border" type="text" placeholder="Hyde Park"> -->
             <form method="get">
                 {% csrf_token %}
-                <div class="w3-half">
-                <label>Where? </label>
-                {{ form.destination }}
+                <div class="w3=row">
+                  <div class="w3-quarter">
+                  <label>Where? </label>
+                  {{ form.loc }}
+                  </div>
+                  <div class="w3-quarter">
+                  <label>How much? </label>
+                  {{ form.price }}
+                  </div>
+                
+                  <div class="w3-quarter">
+                <label>Sort by: </label>
+                {{ form.sort_by }}
                 </div>
-                <div class="w3-half">
-                <label>How much? </label>
-                {{ form.price }}
                 </div>
-                <div class="w3-half">
-                <label> What are we looking for? </label>
+                <div class="w3-quarter">
+                <label>What kind? </label>
+                {{ form.categories }}
+                </div>
+              </div>
+                <div class="w3=row">
+                <label>Gender Neutral Restrooms: </label>
+                {{ form.attributes }}
+                </div>
+                <div class="w3-rest">
+                <label> Don't make us guess... </label>
                 {{ form.term }}
                 </div>
-                
-                <p><input type="submit" value="Nomnomnomnom" class="w3-button w3-dark-grey"/></p>
+                <p><input type="submit" value="Find" class="w3-button w3-dark-grey"/></p>
             </form>
-        <!-- </div> -->
-        <!-- <div class="w3-half">
-          <label>Tell us more:</label>
-          <input class="w3-input w3-border" type="text" placeholder="Chinese food">
-        </div> -->
       </div>
-      <!-- <p><button class="w3-button w3-dark-grey">Nomnomnomnom</button></p> -->
     </div>
-<!-- 
-    <div id="Buy" class="w3-container w3-white w3-padding-16 myLink">
-      <h3>Listen to your heart. Spend at the right places.</h3>
-      <div class="w3-row-padding" style="margin:0 -16px;">
-        <div class="w3-half">
-          <label>Where? </label>
-          <input class="w3-input w3-border" type="text" placeholder="Hyde Park">
-        </div>
-        <div class="w3-half">
-          <label>Tell us more:</label>
-          <input class="w3-input w3-border" type="text" placeholder="Sweaters for pet badgers">
-        </div>
-      </div>
-      <p><button class="w3-button w3-dark-grey">Make it rain</button></p>
-    </div>-->
+
 
 
     </div>
