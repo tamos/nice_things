@@ -7,13 +7,7 @@ from queue import PriorityQueue
 import requests
 import pandas as pd
 import io
-import sys
-import os
-
-# Find files directories:
-nice_things_django_project_dir = os.path.join(os.path.dirname(__file__), '..')
-sys.path.insert(0, nice_things_django_project_dir)
-from helpers import api_keys
+import api_keys 
 
 default_term = "bars"
 default_lat = 41.8369
@@ -227,7 +221,7 @@ LEGAL_DICT_INPUTS = {"inspection_id", "dba_name", "aka_name", "license_",
                      "location_state"}
 
 
-def pull_cdp_health_api(where_date=None, input_dict={}, output_csv=None, limit=None,
+def pull_cdp_health_api(where_date, input_dict={}, output_csv=None, limit=None,
                         legal_dict_inputs=LEGAL_DICT_INPUTS):
     """
     where_date: tuple of dates ("yyyy-mm-dd", "yyyy-mm-dd"), start and end
@@ -281,22 +275,10 @@ def pull_cdp_health_api(where_date=None, input_dict={}, output_csv=None, limit=N
     if limit:  # If want to limit how many rows
         concatenate_url += "&$limit=" + str(limit)
 
-    # Apply non-null filter to numeric fields, to avoid pandas
-    # dealing with null numeric types:
-    non_null_filter = "&$where=inspection_id IS NOT NULL AND " \
-                      "license_ IS NOT NULL AND " \
-                      "zip IS NOT NULL AND " \
-                      "longitude IS NOT NULL AND " \
-                      "latitude IS NOT NULL"
-    concatenate_url += non_null_filter
+    start, end = where_date
+    date = "&$where=inspection_date between '{}T00:00:00' and '{}T00:00:00'".format(start, end)
+    concatenate_url = concatenate_url + date
 
-    # Apply date filter:
-    if where_date:
-        start, end = where_date
-        date = " AND inspection_date between '{}T00:00:00' and '{}T00:00:00'".format(start, end)
-        concatenate_url += date
-
-    # Other filters as specifed by the input_dict in the function inputs:
     for key, value in input_dict.items():
         # Foolproof key inputs:
         if key not in legal_dict_inputs:
@@ -311,24 +293,27 @@ def pull_cdp_health_api(where_date=None, input_dict={}, output_csv=None, limit=N
 
     # Process the data:
     csv_data = r.text
-    df = pd.read_csv(io.StringIO(csv_data),
-                     dtype={"inspection_id": int,
-                            "dba_name": str,
-                            "aka_name": str,
-                            "license_": int,
-                            "facility_type": str,
-                            "risk": str,
-                            "address": str,
-                            "city": str,
-                            "state": str,
-                            "zip": int,
-                            "inspection_date": str,
-                            "inspection_type": str,
-                            "results": str,
-                            "violations": str,
-                            "longitude": float,
-                            "latitude": float},
-                     index_col="inspection_id")
+    print(csv_data)
+    df = pd.read_csv(io.StringIO(csv_data), index_col="inspection_id")
+
+    # fill na values 
+    values = {"inspection_id": 0000000,
+                "dba_name": "NO_NAME",
+                "aka_name": "NO NAME",
+                "license_": 0000000,
+                "facility_type": "NO_NAME",
+                "risk": "NO_NAME",
+                "address": "NO_NAME",
+                "city": "NO_NAME",
+                "state": "NO_NAME",
+                "zip": "NO_NAME",
+                "inspection_date": "NO_NAME",
+                "inspection_type": "NO_NAME",
+                "results": "NO_NAME",
+                "violations": "NO_NAME",
+                "longitude": 000000.0,
+                "latitude": 000000.0}
+    df.fillna(value=values)
     
     # Dump into csv, if necessary:
     if output_csv:

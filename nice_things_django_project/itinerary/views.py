@@ -77,14 +77,14 @@ def point_content(results):
         output['lon0'] = results.iloc[0]["longitude"]
     
     if num_results >= 2:
-        output['content1'] = format_html("<b>{}</b> <br> {} <br> #: {} <br> {}",
+        output['content1'] = format_html("<b>{}</b> <br> {} <br> #: {} <br> {} ",
                         mark_safe(results.iloc[1]['name']),
                         results.iloc[1]["addr"],
                         results.iloc[1]["phone"],
                         results.iloc[1]["price"])
         output['lat1'] = results.iloc[1]["latitude"]
         output['lon1'] = results.iloc[1]["longitude"]
-        '''
+    '''
         # We need to figure out a way to account for few results
         # the javascript breaks if we are missing a key
     if num_results >= 3:
