@@ -26,7 +26,7 @@ SORT_CHOICES = (
 
 class ItineraryInputsForm(forms.Form):
     loc = forms.CharField(max_length=100,
-                                  required=False,
+                                  required=True,
                                  widget=forms.TextInput(
                                       attrs={"class": "w3-input w3-border",
                                              "placeholder": "Where in Chicago?"})
