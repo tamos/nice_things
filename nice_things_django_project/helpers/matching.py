@@ -387,7 +387,7 @@ def final_result(dict_from_views):
     final_result = query_database(yelp_results, zip_filter, 
         lat_filter, long_filter)
 
-    return None
+    return final_result 
     
 
 

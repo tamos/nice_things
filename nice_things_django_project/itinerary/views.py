@@ -48,8 +48,8 @@ def index(request):
             # Go get results
             results = matching.final_result(args)  # search criterion
             # consider accounting for no results corner case
-            #output = point_content(results)  # place the info we want into a dict
-            #return render(request, 'map.html', output) # render the map       
+            output = point_content(results)  # place the info we want into a dict
+            return render(request, 'map.html', output) # render the map       
             
     else:
         form = ItineraryInputsForm()
@@ -65,16 +65,16 @@ def point_content(results):
     """
     # For now we will hard code this as separate keys until we figure out
     # how to unpack them in javascript. Ugly, but it works.
-    print(len(results))
-    num_results = len(results)
+    num_results = results.shape[0]
     output = {}
     if num_results >= 1:
         output['content0'] = format_html("<b>{}</b> <br> Food Inspection Result: {} {}",
-                        mark_safe(results[0].aka_name),
-                        results[0].results,
+                        mark_safe(results.iloc[0]['name']),
+                        results.iloc[0]["addr"],
                         "more data")
-        output['lat0'] = results[0].latitude
-        output['lon0'] = results[0].longitude
+        output['lat0'] = results.iloc[0]["latitude"]
+        output['lon0'] = results.iloc[0]["longitude"]
+    '''
     if num_results >= 2:
         output['content1'] = format_html("<b>{}</b> <br> Food Inspection Result: {} {}",
                         mark_safe(results[1].aka_name),
@@ -82,6 +82,7 @@ def point_content(results):
                         "more datassss")
         output['lat1'] = results[1].latitude
         output['lon1'] = results[1].longitude
+        '''
         # We need to figure out a way to account for few results
         # the javascript breaks if we are missing a key
     '''if num_results >= 3:
