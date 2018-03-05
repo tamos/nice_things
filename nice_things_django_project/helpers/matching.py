@@ -77,6 +77,8 @@ def extract_yelp_data(yelp_api_key=yelp_api_key, term=default_term,
                                            sort_by=sort_by,
                                            attributes=attributes)
 
+    if not search_results:
+        return None
     # initialize lists for each planned column in yelp_results df
     addresses = []
     names = []
