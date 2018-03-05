@@ -18,7 +18,7 @@ application = get_wsgi_application()
 from itinerary.models import Food, Wages
 from django.utils.html import format_html, mark_safe
 os.chdir('helpers')
-import helpers.matching as matching   # This throws an error, says manage.py is not found
+import helpers.matching as matching  
 os.chdir( '../')
 
 def index(request):
@@ -29,30 +29,31 @@ def index(request):
         form = ItineraryInputsForm(request.GET)
 
         # Convert form input into dictionary for search.py:
-        args = {}
+        args = {"location": "",
+                "price": "",
+                "term": "",
+                "categories": "",
+                "attributes": "",
+                "sort": "" }
 
         # Validate the inputs are legal:
         if form.is_valid():
-            args["loc"] = form.cleaned_data["loc"]
+            args["location"] = form.cleaned_data["loc"]
             args["price"] = form.cleaned_data["price"]
-            #args["aka_name"] = form.cleaned_data["aka_name"]
-           #args["aka_name"] = form.cleaned_data["term"]
-            #yelp_result = matching.extract_yelp_data(term = args["term"])
+            args["term"] = form.cleaned_data["term"]
+            args["categories"] = form.cleaned_data["categories"]
+            args["attributes"] = form.cleaned_data["attributes"]
+            args["sort"] = form.cleaned_data["sort_by"]
+            # Go get results
+            results = matching.final_result(args)  # search criterion
+            # consider accounting for no results corner case
+            #output = point_content(results)  # place the info we want into a dict
+            return render(request, 'map.html', output) # render the map       
             
-        
     else:
         form = ItineraryInputsForm()
         
     context["form"] = form
-    '''
-    # Respond to user inputs:
-    if "aka_name" in args.keys():
-        results = find_results(args["aka_name"])   # search criterion
-        if results.exists():
-            output = point_content(results)  # place the info we want into a dict
-            return render(request, 'map.html', output) # render the map
-            '''
-        
     return render(request, 'index.html', context)
 
 
