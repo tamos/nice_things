@@ -7,7 +7,7 @@ from itinerary.forms import ItineraryInputsForm
 # django-1-7-throws-django-core-exceptions-
 # appregistrynotready-models-arent-load:
 import os
-
+import json
 nice_things_project_dir = os.path.join(os.path.dirname(__file__), "..")
 sys.path.insert(0, nice_things_project_dir)
 from django.core.wsgi import get_wsgi_application
@@ -18,10 +18,19 @@ application = get_wsgi_application()
 from itinerary.models import Food, Wages
 from django.utils.html import format_html, mark_safe
 os.chdir('helpers')
-import helpers.matching as matching   # This throws an error, says manage.py is not found
+import helpers.matching as matching   # has to be a better way to do this
 os.chdir( '../')
 
+
 def index(request):
+    """ This function is the main view. It either takes users' inputs
+    or renders a map with the results.
+    Inputs:
+        - request: the Django request object
+
+    Outputs:
+        - redirects users to either the main page (index.html) or a map (map.html)
+    """
     context = {}
     # Process user inputs:
     if request.method == 'GET':
@@ -29,90 +38,127 @@ def index(request):
         form = ItineraryInputsForm(request.GET)
 
         # Convert form input into dictionary for search.py:
-        args = {}
+        # Place defaults
+        args = {"location": "Chicago",
+                "price": "1,2,3,4",
+                "term": "Chicago",
+                "categories": "bar",
+                "attributes": "",
+                "sort": "distance" }
 
         # Validate the inputs are legal:
         if form.is_valid():
-            args["destination"] = form.cleaned_data["destination"]
+            args["location"] = form.cleaned_data["loc"]
             args["price"] = form.cleaned_data["price"]
-            args["aka_name"] = form.cleaned_data["aka_name"]
-            args["aka_name"] = form.cleaned_data["term"]
-            #yelp_result = matching.extract_yelp_data(term = args["term"])
+            args["term"] = form.cleaned_data["term"]
+            args["categories"] = form.cleaned_data["categories"]
+            args["attributes"] = form.cleaned_data["attributes"]
+            args["sort"] = form.cleaned_data["sort_by"]
             
-        
+            # Go get results, render as json and output
+            results = matching.final_result(args) 
+            if results.shape[0] > 0: 
+                output = point_content(results)  # place the info we want into json
+                return render(request, 'map.html', {'output':output}) # render the map       
+            # Return to main page if we get no results
+            else:
+                form = ItineraryInputsForm() 
     else:
-        form = ItineraryInputsForm()
+        form = ItineraryInputsForm()  
         
     context["form"] = form
-        
-    # Respond to user inputs:
-    if "aka_name" in args.keys():
-        results = find_results(args["aka_name"])   # search criterion
-        if results.exists():
-            output = point_content(results)  # place the info we want into a dict
-            return render(request, 'map.html', output) # render the map
-        
-    return render(request, 'index.html', context)
+    return render(request, 'index.html', context)  # Render main page
 
 
+
+from dominate.tags import html, head, body, b
+from dominate.util import raw
+from dominate.document import document
 
 def point_content(results):
-    """ This function takes a queryset result and places it into a dictionary
-    for use in the map page.
+    """ This function takes the DataFrame of matched results and
+    places them into a list in the form (latitude, longitude, content)
+    which is then used to generate the points on a map.
+
+    Inputs:
+        - results (DataFrame): object where each row is a single business
+    Outputs:
+        - output (json): a json object which is passed to render in
+        a dictionary to be made into a Javascript array in map.html
     """
-    # For now we will hard code this as separate keys until we figure out
-    # how to unpack them in javascript. Ugly, but it works.
-    print(len(results))
-    num_results = len(results)
-    output = {}
-    if num_results >= 1:
-        output['content0'] = format_html("<b>{}</b> <br> Food Inspection Result: {} {}",
-                        mark_safe(results[0].aka_name),
-                        results[0].results,
-                        "more data")
-        output['lat0'] = results[0].latitude
-        output['lon0'] = results[0].longitude
-    if num_results >= 2:
-        output['content1'] = format_html("<b>{}</b> <br> Food Inspection Result: {} {}",
-                        mark_safe(results[1].aka_name),
-                        results[1].results,
-                        "more datassss")
-        output['lat1'] = results[1].latitude
-        output['lon1'] = results[1].longitude
-        # We need to figure out a way to account for few results
-        # the javascript breaks if we are missing a key
-    '''if num_results >= 3:
-        output['content2'] = format_html("<b>{}</b> <br> Food Inspection Result: {} {}",
-                        mark_safe(results[2].aka_name),
-                        results[2].results,
-                        "more datassss")
-        output['lat2'] = results[2].latitude
-        output['lon2'] = results[2].longitude
-    if num_results >= 4:
-        output['content3'] = format_html("<b>{}</b> <br> Food Inspection Result: {} {}",
-                        mark_safe(results[3].aka_name),
-                        results[3].results,
-                        "more datassss")
-        output['lat3'] = results[3].latitude
-        output['lon3'] = results[3].longitude
-    if num_results >= 5:
-        output['content4'] = format_html("<b>{}</b> <br> Food Inspection Result: {} {}",
-                        mark_safe(results[4].aka_name),
-                        results[4].results,
-                        "more datassss")
-        output['lat4'] = results[4].latitude
-        output['lon4'] = results[4].longitude'''
+    output = []
+    for i in results.itertuples():
+        # This is where we insert the marker content
+        content = popup(i)
+        output.append([content.latitude, content.longitude, content.to_html()])
+        
+    output = mark_safe(json.dumps(output)) # make sure Django doesn't block it
+
+    # References for json/marking safe:
+    # https://stackoverflow.com/questions/4698220/django-template-convert-a-python-list-into-a-javascript-object
+    # https://stackoverflow.com/questions/739942/how-to-pass-an-array-in-django-to-a-template-and-use-it-with-javascript#739974
     return output
+
+
+
+
+"""
+This is a class which holds generates popup content in html
+should be in another file, but is giving me errors
+"""
+
+import dominate
+from dominate.tags import html, head, body, b, br
+from dominate.document import document 
+
+
+class popup(object):
     
 
+    def __init__(self, result):
+        self.name = result.name
+        self.addr = result.addr
+        self.latitude = result.latitude
+        self.longitude = result.longitude
+        try:
+            self.phone = result.phone
+        except:
+            self.phone = None
+        try:
+            self.price = result.price
+        except:
+            self.price = None
+        try:
+            self.food_status = " ".join(result.food_status)
+        except:
+            self.food_status = None
+        try:
+            self.food_date = " ".join(result.food_date)
+        except:
+            self.food_date = None
+        try:
+            self.wages_violations = " ".join(result.wages_violations)
+        except:
+            self.wages_violations = None
+        
+        self.rendered_html = document()
+        self.to_label = [(self.phone, ""), (self.price, ""), (self.food_status, "Food Inspections: "),
+                         (self.food_date, "Inspection Date: "),
+                         (self.wages_violations, "Recorded Bureau of Labor Violations: ")]
 
-def find_results(aka_name):
-    """
-    Dumb testing function
-    :return:
-    """
-    #rest_name_str = args["restaurant_name"]
-    query_result = Food.objects.filter(aka_name=aka_name)
-    return query_result
+# iterating from: https://stackoverflow.com/questions/25150955/python-iterating-through-object-attributes
+    def to_html(self):
+        """ Renders to a STRING representation of html
+
+        """
+        self.rendered_html.add(b(self.name)) # bold the name
+        self.rendered_html.add(br(), self.addr, br()) # next the address, br is line break
+        for attr, prefix in self.to_label: # catch nones?
+            if attr:
+                self.rendered_html.add(prefix, str(attr), br()) # loop through attributes and add
+        return str(self.rendered_html)
+            
+
+        
 
 
