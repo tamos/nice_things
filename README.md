@@ -21,7 +21,9 @@ Repository for CAPP 30122 Winter 2018 Project
  
  * pandas: https://pandas.pydata.org
  
- * requests: 
+ * requests: http://docs.python-requests.org/en/master/
+ 
+ * dominate: https://github.com/Knio/dominate
 
 
 # Sign up for the following API's:
