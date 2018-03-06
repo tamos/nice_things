@@ -13,7 +13,7 @@ os.environ['DJANGO_SETTINGS_MODULE'] = "nice_things_django_project.settings"
 application = get_wsgi_application()
 
 # Used to interact with database tables:
-from itinerary.models import Food, Wages
+from itinerary.models import Food, Wages, Divvy
 
 # Find files directories:
 nice_things_django_project_dir = os.path.dirname(__file__)
@@ -23,9 +23,9 @@ from helpers import file_list, geocoding
 BLS_WAGES_GEOCODED_DIR = "{}{}".format(nice_things_django_project_dir,
                                        file_list.labor_stats_geocoded)
 CDP_FOOD_INPSPECTIONS_DIR = "{}{}".format(nice_things_django_project_dir,
-                                         file_list.food_inspections)
+                                         file_list.food_j2017_m2018)
 DIVVY_DIR = "{}{}".format(nice_things_django_project_dir,
-                                         file_list.food_inspections)
+                                         file_list.divvy_stats)
 
 
 def update_wages_table(csv_path=BLS_WAGES_GEOCODED_DIR,
@@ -258,15 +258,35 @@ def update_food_table(csv_path=CDP_FOOD_INPSPECTIONS_DIR):
             
 
 def update_divvy_table(csv_path=DIVVY_DIR):
-    use_cols = ["_id", "name", "city", "latitude", "longitude", "capacity"]
+    use_cols = ["id", "name", "city", "latitude", "longitude", "dpcapacity"]
     df = pd.read_csv(filepath_or_buffer=csv_path,
-                     dtype={"_id": int,
+                     dtype={"id": int,
                             "name": str,
                             "city": str,
                             "latitude": float,
                             "longitude": float,
-                            "capacity": int},
+                            "dpcapacity": int},
                      usecols=use_cols)
+ 
+    df = df.dropna()
+
+    # Squirt into the database:
+    for index, row in df.iterrows():
+        # Prepare row names:
+        _id = row["id"]
+        name = row["name"]
+        city = row["city"]
+        latitude = row["latitude"]
+        longitude = row["longitude"]   
+        capacity = row["dpcapacity"]
+
+        obj, created = Divvy.objects.get_or_create(
+            _id=_id,
+            name=name,
+            city=city,
+            longitude=longitude,
+            latitude=latitude,
+            capacity=capacity)
 
 
 
