@@ -89,12 +89,8 @@ def point_content(results):
     output = []
     for i in results.itertuples():
         # This is where we insert the marker content
-        #content = popup(i)
-        #content = document()
-        #content.add(b(i.name))
         content = popup(i)
-        popup_label = content.to_html()
-        output.append([content.latitude, content.longitude, popup_label])
+        output.append([content.latitude, content.longitude, content.to_html()])
         
     output = mark_safe(json.dumps(output)) # make sure Django doesn't block it
 
@@ -112,14 +108,8 @@ should be in another file, but is giving me errors
 """
 
 import dominate
-from dominate.tags import html, head, body, b
+from dominate.tags import html, head, body, b, br
 from dominate.document import document 
-
-
-
-
-
-
 
 
 class popup(object):
@@ -152,7 +142,7 @@ class popup(object):
             self.wages_violations = None
         
         self.rendered_html = document()
-        self.to_label = [(self.phone, "#: "), (self.price, ""), (self.food_status, "Food Inspections: "),
+        self.to_label = [(self.phone, ""), (self.price, ""), (self.food_status, "Food Inspections: "),
                          (self.food_date, "Inspection Date: "),
                          (self.wages_violations, "Recorded Bureau of Labor Violations: ")]
 
@@ -162,25 +152,13 @@ class popup(object):
 
         """
         self.rendered_html.add(b(self.name)) # bold the name
-        self.rendered_html.add(self.addr) # next the address
+        self.rendered_html.add(br(), self.addr, br()) # next the address, br is line break
         for attr, prefix in self.to_label: # catch nones?
             if attr:
-                self.rendered_html.add(prefix, str(attr))
+                self.rendered_html.add(prefix, str(attr), br()) # loop through attributes and add
         return str(self.rendered_html)
             
-        #content = str(html(b(i.name)))
+
         
-        
-'''
-Index(['zip_code', 'name', 'addr',
-'phone', 'price', 'latitude', 'longitude',
-       'food_status', 'food_date',
-       'wages_violations'],
-
-'''
-       
-
-
- 
 
 
