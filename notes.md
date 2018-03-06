@@ -1,13 +1,17 @@
 # Notes
 
-## 26 Jan
+## March 6
 
  - Will do attributions as ### attribute  ######
  
  - Gender neutral washrooms as a feature/points of conciousness
  - have radius functionality
  - Offset function
- - 
+ - New archview resto
+ - Uchicago pub - all pass
+ - falcon inn - all pass
+ - bracket room - failed
+ - rajun cajun - failed
  
 File style:
 
