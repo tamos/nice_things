@@ -167,13 +167,14 @@ class Wages(models.Model):
 #     complaints = models.BooleanField() # complaints in the CDPH Environmental Complaints data
 #     complaints_url = models.URLField() # link to the complaint
 
-# class Divvy(models.Model):
-#     _id = models.PositiveIntegerField(primary_key=True)
-#     name = models.CharField(max_length=200)
-#     city = models.CharField(max_length=200)
-#     longitude = models.FloatField(default=None)
-#     latitude = models.FloatField(default=None)
-#     objects = DataFrameManager()
+class Divvy(models.Model):
+    _id = models.PositiveIntegerField(primary_key=True)
+    name = models.CharField(max_length=200)
+    city = models.CharField(max_length=200)
+    longitude = models.FloatField(default=None)
+    latitude = models.FloatField(default=None)
+    capacity = models.PositiveIntegerField()
+    objects = DataFrameManager()
 
 
 
