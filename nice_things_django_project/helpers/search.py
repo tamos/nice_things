@@ -218,14 +218,18 @@ LEGAL_DICT_INPUTS = {"inspection_id", "dba_name", "aka_name", "license_",
                      "location_city","location_address", "location_zip",
                      "location_state"}
 
-
-def pull_cdp_health_api(where_date, input_dict={}, output_csv=None, limit=None,
+def pull_cdp_health_api(output_csv, where_date=None, input_dict={}, limit=None,
                         legal_dict_inputs=LEGAL_DICT_INPUTS):
     """
-    where_date: tuple of dates ("yyyy-mm-dd", "yyyy-mm-dd"), start and end
     Connects to the Chicago Data Portal and downloads the Food Inspections
     data set according to user preferences specified in the function
     parameters
+
+    :param where_date: tuple of dates ("yyyy-mm-dd", "yyyy-mm-dd"), start and end
+
+    :param output_csv: string, write out a csv file with this string as a name.
+                       WILL OVERWRITE EXISTING FILE IF NAME MATCHES!
+
     :param input_dict: dictionary of params for what fields from the dataset
     to include and how to filter them. Dict keys are strings. For full field
     interpretation see "cdp_food_inspections_description.pdf"
@@ -251,12 +255,13 @@ def pull_cdp_health_api(where_date, input_dict={}, output_csv=None, limit=None,
             location_address: text
             location_zip: text
             location_state: text
-    :param output_csv: string, write out a csv file with this string as a name.
-                       WILL OVERWRITE EXISTING FILE IF NAME MATCHES!
+
     :param limit: integer, limit how many most recent rows. API returns 1000 by
                   default.
+
     :param legal_dict_inputs: possible keys for the input_dict
-    :return: pandas filtered dataframe.
+
+    :return: writes out the csv
     """
     # Check input_dict is a dictionary:
     if not isinstance(input_dict, dict):
@@ -273,10 +278,33 @@ def pull_cdp_health_api(where_date, input_dict={}, output_csv=None, limit=None,
     if limit:  # If want to limit how many rows
         concatenate_url += "&$limit=" + str(limit)
 
-    start, end = where_date
-    date = "&$where=inspection_date between '{}T00:00:00' and '{}T00:00:00'".format(start, end)
-    concatenate_url = concatenate_url + date
+    # Apply non-null filter to numeric fields, to avoid pandas
+    # dealing with null numeric types:
+    non_null_filter = "&$where=inspection_id IS NOT NULL AND " \
+                      "dba_name IS NOT NULL AND " \
+                      "aka_name IS NOT NULL AND " \
+                      "license_ IS NOT NULL AND " \
+                      "facility_type IS NOT NULL AND " \
+                      "risk IS NOT NULL AND " \
+                      "address IS NOT NULL AND " \
+                      "city IS NOT NULL AND " \
+                      "state IS NOT NULL AND " \
+                      "zip IS NOT NULL AND " \
+                      "inspection_date IS NOT NULL AND " \
+                      "inspection_type IS NOT NULL AND " \
+                      "results IS NOT NULL AND " \
+                      "violations IS NOT NULL AND " \
+                      "longitude IS NOT NULL AND " \
+                      "latitude IS NOT NULL"
+    concatenate_url += non_null_filter
 
+    # Apply date filter:
+    if where_date:
+        start, end = where_date
+        date = " AND inspection_date between '{}T00:00:00' and '{}T00:00:00'".format(start, end)
+        concatenate_url += date
+
+    # Other filters as specifed by the input_dict in the function inputs:
     for key, value in input_dict.items():
         # Foolproof key inputs:
         if key not in legal_dict_inputs:
@@ -289,36 +317,11 @@ def pull_cdp_health_api(where_date, input_dict={}, output_csv=None, limit=None,
     socrata_headers = {'X-App-Token': app_token}
     r = requests.get(url=concatenate_url, headers=socrata_headers)
 
-    # Process the data:
+    # Process the data and write out:
     csv_data = r.text
-    print(csv_data)
-    df = pd.read_csv(io.StringIO(csv_data), index_col="inspection_id")
-
-    # fill na values 
-    values = {"inspection_id": 0000000,
-                "dba_name": "NO_NAME",
-                "aka_name": "NO NAME",
-                "license_": 0000000,
-                "facility_type": "NO_NAME",
-                "risk": "NO_NAME",
-                "address": "NO_NAME",
-                "city": "NO_NAME",
-                "state": "NO_NAME",
-                "zip": "NO_NAME",
-                "inspection_date": "NO_NAME",
-                "inspection_type": "NO_NAME",
-                "results": "NO_NAME",
-                "violations": "NO_NAME",
-                "longitude": 000000.0,
-                "latitude": 000000.0}
-    df.fillna(value=values)
-    
-    # Dump into csv, if necessary:
-    if output_csv:
-        df.to_csv(output_csv)
-
-    return df
-
+    csv_file = open(output_csv, "w")
+    csv_file.write(csv_data)
+    csv_file.close()
 
 # Using "place" as a parameter query flags table. Then go to health, labour,
 # environmental, etc. tables and query those tables. 
