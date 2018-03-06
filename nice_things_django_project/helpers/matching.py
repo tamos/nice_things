@@ -33,9 +33,9 @@ default_term = " " # can do a string of mult vals
 default_categories = " " # can do a string of mult vals
 default_price = "1, 2, 3" # can do a comma del. list of values
 default_location = "Lincoln Square, Chicago" # create drop down for this
-default_lim = 50
+default_lim = 10
 default_sort = "review_count" 
-default_attributes = "" # gender_neutral_restrooms
+default_attributes = "gender_neutral_restrooms"
 # sorts by distance (other options are best_match, rating, review_count)
 
 # temporarily use Kevin's API Key (abstract this into another film)
@@ -44,7 +44,8 @@ yelp_api_key = "GsAgBiywduecH_D-DDeB-ctBkWbUnFP_6w_b0CG4utMCu3s9Z3XIrNuyJum_NJ-F
 
 def extract_yelp_data(yelp_api_key=yelp_api_key, term=default_term, 
     categories=default_categories, price=default_price, 
-    location=default_location, limit=default_lim, sort_by=default_sort):
+    location=default_location, limit=default_lim, sort_by=default_sort,
+    attributes=default_attributes):
     """
     This function takes search results (a dictionary) and obtains the 
     name, zip code, address of the possible restaurant matches in the
@@ -73,8 +74,11 @@ def extract_yelp_data(yelp_api_key=yelp_api_key, term=default_term,
                                            price=price,
                                            location=location,
                                            limit=limit,
-                                           sort_by=sort_by)
+                                           sort_by=sort_by,
+                                           attributes=attributes)
 
+    if not search_results:
+        return None
     # initialize lists for each planned column in yelp_results df
     addresses = []
     names = []
@@ -87,13 +91,17 @@ def extract_yelp_data(yelp_api_key=yelp_api_key, term=default_term,
     # obtain business information
     businesses = search_results['businesses']
     for i in businesses:
+        
         addresses.append(i['location']['display_address'][0])
         names.append(i['name'])
         # filter out businesses without zip codes
         if i['location']['zip_code'] != '':
             zip_code.append(i['location']['zip_code'])
         phone.append(i['phone'])
-        price.append(i['price'])
+        try:
+            price.append(i['price'])
+        except:
+            price.append("If you have to ask...")
         latitude.append(i['coordinates']['latitude'])
         longitude.append(i['coordinates']['longitude'])
 
@@ -172,16 +180,16 @@ def get_filtered_food_df(zip_filter, lat_filter, long_filter):
     	- food_df: a pandas dataframe of food information
     """
     # filter django Food object based on zip code, latitude, & longitude
-    food_filtered = Food.objects.filter(zip__in=zip_filter, 
+    food_filtered = Food.objects.filter(zip_code__in=zip_filter, 
         latitude__range=(min(lat_filter), max(lat_filter)), 
         longitude__range=(max(long_filter), min(long_filter)))
 
     # cast django FOOD object as dataframe if there is data
     if food_filtered.exists():
-        food_df = food_filtered.to_dataframe(fieldnames=['zip', 'aka_name', 
+        food_df = food_filtered.to_dataframe(fieldnames=['zip_code', 'aka_name', 
             'address', 'inspection_id', 'latitude', 'longitude'])
-        food_df = food_df.rename(index=str, columns={"zip": "zip_code", 
-            "aka_name": "name", "address": "addr"})
+        food_df = food_df.rename(index=str, columns={"aka_name": "name", 
+            "address": "addr"})
     else:
         food_df = []
         
@@ -203,13 +211,13 @@ def get_filtered_wages_df(zip_filter, lat_filter, long_filter):
         - wages_df: a pandas dataframe of wages information
     """
     #filter django Wages object based on zip code, latitude, & longitude
-    wages_filtered = Wages.objects.filter(zip_cd__in=zip_filter, 
+    wages_filtered = Wages.objects.filter(zip_code__in=zip_filter, 
         latitude__range=(min(lat_filter), max(lat_filter)), 
         longitude__range=(max(long_filter), min(long_filter)))
 
     # cast django WAGES object as dataframe is there is data
     if wages_filtered.exists():
-        wages_df = wages_filtered.to_dataframe(fieldnames=['zip_cd', 'trade_nm', 
+        wages_df = wages_filtered.to_dataframe(fieldnames=['zip_code', 'trade_nm', 
             'street_addr_1_txt', 'case_id', 'latitude', 'longitude'])
         wages_df = wages_df.rename(index=str, columns={"zip_cd": "zip_code", 
             "trade_nm": "name", "street_addr_1_txt": "addr"})
@@ -236,8 +244,8 @@ def link_datasets(yelp_results, dj_df):
         databse results df AND the best matches qgram scores
     """
     # set thresholds for comparing strings using qgram method
-    name_thresh = 0.60
-    addr_thresh = 0.60
+    name_thresh = 0.55
+    addr_thresh = 0.55
 
     # Indexation 
     #indexer = rl.FullIndex()
@@ -260,7 +268,7 @@ def link_datasets(yelp_results, dj_df):
     # Classification and final filtering
     best_matches = features[(features['zip_score']==1.0) &
     (features['name_score']==1.0) & (features['addr_score']==1.0) &
-    (features['coord_score']>=0.98)]
+    (features['coord_score']>=0.99)]
     # obtain the index values from best_matches
     index_array = best_matches.index.values
 
@@ -297,8 +305,8 @@ def query_database(yelp_results, zip_filter, lat_filter, long_filter):
     # add relevant columns to yelp_results dataframe
     yelp_results['food_status'] = np.empty((len(yelp_results), 0)).tolist()
     yelp_results['food_date'] = np.empty((len(yelp_results), 0)).tolist()
-    yelp_results['wages_status'] = np.empty((len(yelp_results), 0)).tolist()
-    yelp_results['wages_date'] = np.empty((len(yelp_results), 0)).tolist()
+    yelp_results['wages_violations'] = np.empty((len(yelp_results), 0)).tolist()
+    #yelp_results['wages_date'] = np.empty((len(yelp_results), 0)).tolist()
 
     # Get details from FOOD table
     for index_pair in f_index_array:
@@ -308,26 +316,26 @@ def query_database(yelp_results, zip_filter, lat_filter, long_filter):
         f_row = Food.objects.get(inspection_id=_id)
         result = f_row.results
         # only include non-passes
-        if result != "Pass": 
-            # obtain the business name
-            name = f_row.aka_name
+        #if result != "Pass": 
+        # obtain the business name
+        name = f_row.aka_name
 
-            # obtain violation information (necessary?)
-            #violation = table_row.violations
+        # obtain violation information (necessary?)
+        #violation = table_row.violations
 
-            # obtain date and format the date 
-            d = str(f_row.inspection_date.day)
-            m = str(f_row.inspection_date.month)
-            y = str(f_row.inspection_date.year)
-            format_date = m + " " + d + " " + y
+        # obtain date and format the date 
+        d = str(f_row.inspection_date.day)
+        m = str(f_row.inspection_date.month)
+        y = str(f_row.inspection_date.year)
+        format_date = m + " " + d + " " + y
 
-            # obtain inspection type
-            insp_type = f_row.inspection_type
-            t = (flag_index, name, result, format_date, insp_type)
-            
-            # add to the yelp results data frame
-            yelp_results['food_status'].iloc[yelp_index].append(t[2]) 
-            yelp_results['food_date'].iloc[yelp_index].append(t[3])
+        # obtain inspection type
+        insp_type = f_row.inspection_type
+        t = (flag_index, name, result, format_date, insp_type)
+        
+        # add to the yelp results data frame
+        yelp_results['food_status'].iloc[yelp_index].append(t[2]) 
+        yelp_results['food_date'].iloc[yelp_index].append(t[3])
 
    # Get details from WAGES table
     for index_pair in w_index_array:
@@ -335,51 +343,51 @@ def query_database(yelp_results, zip_filter, lat_filter, long_filter):
         _id = wages_df.iloc[flag_index].case_id
         # query the relevant database table
         w_row = Wages.objects.get(case_id=_id)
-        result = w_row.results
-        # only include non-passes
-        # if result != "Pass": 
-        #     # obtain the business name
-        #     name = w_row.trade_name
 
-        #     # obtain violation information (necessary?)
-        #     #violation = table_row.violations
+        # obtain the wanted business information
+        violations = w_row.case_violtn_cnt
+        name = w_row.trade_nm
 
-        #     # obtain date and format the date 
-        #     d = str(f_row.inspection_date.day)
-        #     m = str(f_row.inspection_date.month)
-        #     y = str(f_row.inspection_date.year)
-        #     format_date = m + " " + d + " " + y
-
-        #     # obtain inspection type
-        #     insp_type = w_row.inspection_type
-        #     t = (flag_index, name, result, format_date, insp_type)
-            
-        #     # add to the yelp results data frame
-        #     yelp_results['wages_status'].iloc[yelp_index].append(t[2]) 
-        #     yelp_results['wages_date'].iloc[yelp_index].append(t[3])
+        t = (flag_index, name, violations)
+        
+        # add to the yelp results data frame
+        yelp_results['wages_violations'].iloc[yelp_index].append(t[2]) 
+        #yelp_results['wages_date'].iloc[yelp_index].append(t[3])
 
     return yelp_results
 
 
-def final_result():
+def final_result(dict_from_views):
     """
-    This function 
+    This function takes the users inputs as a dictionary, queries Yelp,
+    defines the zip/lat/long filters, completes record linkage between
+    Yelp and the tables within the databse, and returns a final dataframe
+    to be sent back to Views.
+
+    Input:
+        - dict_from_views: a dictionary of user inputs
+    Output:
+        - final_result a pandas dataframe
 
     """
-    yelp_results = extract_yelp_data(yelp_api_key=yelp_api_key, term=default_term, 
-        categories=default_categories, price=default_price, 
-        location=default_location, limit=default_lim, sort_by=default_sort)
+    term = dict_from_views['term']
+    categories = dict_from_views['categories']
+    price = dict_from_views['price']
+    location = dict_from_views['location'] + "Chicago"
+    lim = 50
+    sort = dict_from_views['sort']
+    attributes = dict_from_views['attributes']
+
+    yelp_results = extract_yelp_data(yelp_api_key=yelp_api_key, term=term, 
+        categories=categories, price=price, location=location, limit=lim, 
+        sort_by=sort, attributes=attributes)
 
     zip_filter, lat_filter, long_filter = define_filters(yelp_results)
 
-    dj_df = get_filtered_food_df(zip_filter, lat_filter, long_filter)
-
-    link = link_datasets(yelp_results, dj_df)
-
-    final_result = query_databse(yelp_results, zip_filter, 
+    final_result = query_database(yelp_results, zip_filter, 
         lat_filter, long_filter)
 
-    return final_result
+    return final_result 
     
 
 

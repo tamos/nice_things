@@ -1,19 +1,11 @@
 ######### Structure & Steps ##########
 from jellyfish import jaro_distance
 from queue import PriorityQueue
-# This package that was deprecated. We updated it and submitted a pull
-# request to the author, this is the updated package. 
 # Our API key is stored in a separate file
 import requests
 import pandas as pd
 import io
-import sys
-import os
-
-# Find files directories:
-nice_things_django_project_dir = os.path.join(os.path.dirname(__file__), '..')
-sys.path.insert(0, nice_things_django_project_dir)
-from helpers import api_keys
+import api_keys 
 
 default_term = "bars"
 default_lat = 41.8369
@@ -226,7 +218,6 @@ LEGAL_DICT_INPUTS = {"inspection_id", "dba_name", "aka_name", "license_",
                      "location_city","location_address", "location_zip",
                      "location_state"}
 
-
 def pull_cdp_health_api(output_csv, where_date=None, input_dict={}, limit=None,
                         legal_dict_inputs=LEGAL_DICT_INPUTS):
     """
@@ -331,7 +322,6 @@ def pull_cdp_health_api(output_csv, where_date=None, input_dict={}, limit=None,
     csv_file = open(output_csv, "w")
     csv_file.write(csv_data)
     csv_file.close()
-
 
 # Using "place" as a parameter query flags table. Then go to health, labour,
 # environmental, etc. tables and query those tables. 
