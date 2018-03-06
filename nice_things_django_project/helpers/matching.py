@@ -91,17 +91,13 @@ def extract_yelp_data(yelp_api_key=yelp_api_key, term=default_term,
     # obtain business information
     businesses = search_results['businesses']
     for i in businesses:
-        
         addresses.append(i['location']['display_address'][0])
         names.append(i['name'])
         # filter out businesses without zip codes
         if i['location']['zip_code'] != '':
             zip_code.append(i['location']['zip_code'])
         phone.append(i['phone'])
-        try:
-            price.append(i['price'])
-        except:
-            price.append("If you have to ask...")
+        price.append(i['price'])
         latitude.append(i['coordinates']['latitude'])
         longitude.append(i['coordinates']['longitude'])
 
@@ -373,7 +369,7 @@ def final_result(dict_from_views):
     term = dict_from_views['term']
     categories = dict_from_views['categories']
     price = dict_from_views['price']
-    location = dict_from_views['location'] + "Chicago"
+    location = dict_from_views['location']
     lim = 50
     sort = dict_from_views['sort']
     attributes = dict_from_views['attributes']
@@ -387,18 +383,6 @@ def final_result(dict_from_views):
     final_result = query_database(yelp_results, zip_filter, 
         lat_filter, long_filter)
 
-    return final_result 
+    return final_result
     
-
-
-
-
-
-
-
-
-
-
-
-
 
