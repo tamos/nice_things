@@ -19,7 +19,7 @@ from django.core.wsgi import get_wsgi_application
 os.chdir('../')
 os.environ['DJANGO_SETTINGS_MODULE'] = "nice_things_django_project.settings"
 application = get_wsgi_application()
-from itinerary.models import Food, Wages
+from itinerary.models import Food, Wages, Divvy
 from django_pandas.managers import DataFrameManager
 
 ##### YELP QUERY PARAMETERS #####
@@ -222,8 +222,22 @@ def get_filtered_wages_df(zip_filter, lat_filter, long_filter):
 
     return wages_df
 
+def get_filtered_divvy_df(lat_filter, long_filter):
+    divvy_filtered = Divvy.objects.filter(
+        latitude__range=(min(lat_filter), max(lat_filter)), 
+        longitude__range=(max(long_filter), min(long_filter)))
 
-def link_datasets(yelp_results, dj_df):
+    # cast django WAGES object as dataframe is there is data
+    if divvy_filtered.exists():
+        divvy_df = divvy_filtered.to_dataframe(fieldnames=['_id', 'name', 
+            'city', 'latitude', 'longitude', 'capacity'])
+        #divvy_df = divvy_df.rename(index=str, columns={  "street_addr_1_txt": "addr"})
+    else:
+        divvy_df = []
+
+    return divvy_df
+
+def link_datasets(yelp_results, dj_df, df_type="wages"):
     """
 	This functions compares Yelp results to database results and produces 
     the best matches based on computing the qgram score between the 
@@ -242,29 +256,33 @@ def link_datasets(yelp_results, dj_df):
     # set thresholds for comparing strings using qgram method
     name_thresh = 0.55
     addr_thresh = 0.55
-
-    # Indexation 
-    #indexer = rl.FullIndex()
-    # having issues with Block Index - CHECK
-    indexer = rl.BlockIndex(on='zip_code')
-    pairs = indexer.index(yelp_results, dj_df)
-
-    # make comparison between rows
     compare = rl.Compare()
-    compare.numeric('zip_code', 'zip_code', method='linear', 
-        scale=30.0, label='zip_score')
-    compare.string('name', 'name', method='qgram', 
-        threshold=name_thresh, label='name_score')
-    compare.string('addr', 'addr', method='qgram', 
-        threshold=addr_thresh, label='addr_score')
+    
+    # Indexation 
+    if df_type == "wages" or df_type == "food": 
+        indexer = rl.BlockIndex(on='zip_code')
+        compare.numeric('zip_code', 'zip_code', method='linear', 
+            scale=30.0, label='zip_score')
+        compare.string('name', 'name', method='qgram', 
+            threshold=name_thresh, label='name_score')
+        compare.string('addr', 'addr', method='qgram', 
+            threshold=addr_thresh, label='addr_score')     
+    else:
+        indexer = rl.FullIndex()
+    pairs = indexer.index(yelp_results, dj_df)
     compare.geo('latitude', 'longitude', 'latitude', 'longitude', 
-        method='linear', scale=30.0, label='coord_score')
+    method='linear', scale=30.0, label='coord_score')  
+
+    # compute record linkage scores
     features = compare.compute(pairs, yelp_results, dj_df)
 
     # Classification and final filtering
-    best_matches = features[(features['zip_score']==1.0) &
-    (features['name_score']==1.0) & (features['addr_score']==1.0) &
-    (features['coord_score']>=0.99)]
+    if df_type == "wages" or df_type == "food": 
+        best_matches = features[(features['zip_score']==1.0) &
+        (features['name_score']==1.0) & (features['addr_score']==1.0) &
+        (features['coord_score']>=0.99)]
+    else:
+        best_matches = features[(features['coord_score']>=0.99)]       
     # obtain the index values from best_matches
     index_array = best_matches.index.values
 
@@ -291,18 +309,21 @@ def query_database(yelp_results, zip_filter, lat_filter, long_filter):
     """
     # obtain details from Food Table
     food_df = get_filtered_food_df(zip_filter, lat_filter, long_filter)
-    food_link = link_datasets(yelp_results, food_df)
+    food_link = link_datasets(yelp_results, food_df, df_type="food")
     f_index_array, f_best_matches = food_link
     # obtain details from Wages Table
     wages_df = get_filtered_wages_df(zip_filter, lat_filter, long_filter)
-    wages_link = link_datasets(yelp_results, wages_df)
+    wages_link = link_datasets(yelp_results, wages_df, df_type="wages")
     w_index_array, w_best_matches = wages_link
-
+    # obntain details from Divvy table
+    divvy_df = get_filtered_divvy_df(lat_filter, long_filter)
+    divvy_link = link_datasets(yelp_results, divvy_df, df_type="divvy")
+    d_index_array, d_best_matches = divvy_link  
     # add relevant columns to yelp_results dataframe
     yelp_results['food_status'] = np.empty((len(yelp_results), 0)).tolist()
     yelp_results['food_date'] = np.empty((len(yelp_results), 0)).tolist()
     yelp_results['wages_violations'] = np.empty((len(yelp_results), 0)).tolist()
-    #yelp_results['wages_date'] = np.empty((len(yelp_results), 0)).tolist()
+    yelp_results['divvy_stations'] = np.empty((len(yelp_results), 0)).tolist()
 
     # Get details from FOOD table
     for index_pair in f_index_array:
@@ -348,8 +369,19 @@ def query_database(yelp_results, zip_filter, lat_filter, long_filter):
         
         # add to the yelp results data frame
         yelp_results['wages_violations'].iloc[yelp_index].append(t[2]) 
-        #yelp_results['wages_date'].iloc[yelp_index].append(t[3])
 
+    # get details for the DIVVY table
+    print(divvy_df)
+    for index_pair in d_index_array:
+        yelp_index, flag_index = index_pair[0], int(index_pair[1])
+        name = divvy_df.iloc[flag_index]['name']
+        
+        # ALREADY HAVE NAME ?? query the relevant database table
+        # d_name = Divvy.objects.get(name=name)
+        
+        # add to the yelp results data frame
+        yelp_results['divvy_stations'].iloc[yelp_index].append(name) 
+    
     return yelp_results
 
 
