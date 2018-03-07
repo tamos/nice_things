@@ -200,8 +200,8 @@ def update_enviro_chicago_tables(csv_path=ENVIRO_DIR):
         Splits a column in form Y (url)
         """
         
-        split_df = df_column.str.extract(r'(^Y) \((.*)\)', expand = True).fillna('False')
-        split_df.replace('Y', True, inplace = True) # make boolean
+        split_df = df_column.str.extract(r'(^Y) \((.*)\)', expand=True).fillna('False')
+        split_df.replace('Y', True, inplace=True)  # make boolean
         return split_df[0], split_df[1]
 
     def concatenate_address(row):

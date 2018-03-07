@@ -29,13 +29,13 @@ from django_pandas.managers import DataFrameManager
 #                               #
 #################################
 
-default_term = " " # can do a string of mult vals
-default_categories = " " # can do a string of mult vals
-default_price = "1, 2, 3" # can do a comma del. list of values
-default_location = "Lincoln Square, Chicago" # create drop down for this
+default_term = ""  # can do a string of mult vals
+default_categories = ""  # can do a string of mult vals
+default_price = "4"  #"1, 2, 3"  # can do a comma del. list of values
+default_location = "Hyde Park, Chicago"#"Lincoln Square, Chicago"  # create drop down for this
 default_lim = 10
-default_sort = "review_count" 
-default_attributes = "gender_neutral_restrooms"
+default_sort = "distance" #"review_count"
+default_attributes = ""#"gender_neutral_restrooms"
 # sorts by distance (other options are best_match, rating, review_count)
 
 # temporarily use Kevin's API Key (abstract this into another film)
@@ -64,7 +64,7 @@ def extract_yelp_data(yelp_api_key=yelp_api_key, term=default_term,
                     (options are: distance, best_match, rating,
                     review_count)
 
-    Ouputs:
+    Outputs:
         - yelp_results: a pandas dataframe containing the zip code,
                         name, address, of each potential result.
     """
@@ -91,15 +91,40 @@ def extract_yelp_data(yelp_api_key=yelp_api_key, term=default_term,
     # obtain business information
     businesses = search_results['businesses']
     for i in businesses:
-        addresses.append(i['location']['display_address'][0])
-        names.append(i['name'])
-        # filter out businesses without zip codes
-        if i['location']['zip_code'] != '':
-            zip_code.append(i['location']['zip_code'])
-        phone.append(i['phone'])
-        price.append(i['price'])
-        latitude.append(i['coordinates']['latitude'])
-        longitude.append(i['coordinates']['longitude'])
+        # print("LENGTH OF ADDRESSES:", len(addresses))
+        # print("LENGTH OF NAMES:", len(names))
+        # print("LENGTH OF ZIP:", len(zip_code))
+        # print("LENGTH OF LAT:", len(latitude))
+        # print("LENGTH OF LONG:", len(longitude))
+        # print("LENGTH OF PHONE:", len(phone))
+        # print("LENGTH OF PRICE:", len(price))
+        # print("=============================================")
+
+        # In case a Yelp business is missing a field:
+        try:
+            a_address = i['location']['display_address'][0]
+            a_name = i['name']
+            a_zip = i['location']['zip_code']
+            a_latitude = i['coordinates']['latitude']
+            a_longitude = i['coordinates']['longitude']
+            a_phone = i['phone']
+            a_price = i['price']
+
+            if a_address != "" and a_name != "" and a_zip != "" \
+                    and a_latitude != "" and a_longitude != "":
+                addresses.append(a_address)
+                names.append(a_name)
+                # filter out businesses without zip codes
+                # if i['location']['zip_code'] != '':
+                zip_code.append(a_zip)
+                latitude.append(a_latitude)
+                longitude.append(a_longitude)
+
+            phone.append(a_phone)
+            price.append(a_price)
+
+        except KeyError:
+            print("Key Error, some missing field from the Yelp return!")
 
     # cast into pandas dataframe
     yelp_results = pd.DataFrame()
@@ -122,20 +147,20 @@ def extract_yelp_data(yelp_api_key=yelp_api_key, term=default_term,
 
 def define_filters(yelp_results):
     """
-	This function creates filters based on the Yelp query results
-    we will use to query our database to obtain wages, food, etc. 
+    This function creates filters based on the Yelp query results
+    we will use to query our database to obtain wages, food, etc.
     The zip codes represented in the Yelp result and latitudes/longitudes
     within the range represented in the Yelp result will be defined
     as the filters for querying the database.
 
-	Input:
-		- yelp_results: a pandas dataframe of the Yelp query results
+    Input:
+        - yelp_results: a pandas dataframe of the Yelp query results
 
-	Ouput:
-		- zip_filter: a set of unique zip codes in the Yelp results
-		- latitude_filter: a set of unique truncated latitude coordinates
-		- longitude_filter: a a set of unique truncated longitude coordinates
-	"""
+    Output:
+        - zip_filter: a set of unique zip codes in the Yelp results
+        - latitude_filter: a set of unique truncated latitude coordinates
+        - longitude_filter: a a set of unique truncated longitude coordinates
+    """
     latitude_filter = set()
     longitude_filter = set()
     # obtain unique zip codes and cast as integers
@@ -162,18 +187,18 @@ def truncate_coordinate(coordinate):
 
 def get_filtered_food_df(zip_filter, lat_filter, long_filter):
     """
-	This function takes the zip code, latitude, and longitude filters
-	and queries the database to obtain information that fits within
+    This function takes the zip code, latitude, and longitude filters
+    and queries the database to obtain information that fits within
     those filters. A pandas dataframe of filtered database
-	information gets returned.
+    information gets returned.
 
-	Input:
-		- zip_filter: a set of zip codes in the Yelp results
-		- lat_filter: a set of truncated latitude coordinates
-		- long_filter: a set of truncated longitude coordinates
+    Input:
+        - zip_filter: a set of zip codes in the Yelp results
+        - lat_filter: a set of truncated latitude coordinates
+        - long_filter: a set of truncated longitude coordinates
 
     Output:
-    	- food_df: a pandas dataframe of food information
+        - food_df: a pandas dataframe of food information
     """
     # filter django Food object based on zip code, latitude, & longitude
     food_filtered = Food.objects.filter(zip_code__in=zip_filter, 
@@ -222,6 +247,7 @@ def get_filtered_wages_df(zip_filter, lat_filter, long_filter):
 
     return wages_df
 
+
 def get_filtered_divvy_df(lat_filter, long_filter):
     divvy_filtered = Divvy.objects.filter(
         latitude__range=(min(lat_filter), max(lat_filter)), 
@@ -237,10 +263,11 @@ def get_filtered_divvy_df(lat_filter, long_filter):
 
     return divvy_df
 
+
 def link_datasets(yelp_results, dj_df, df_type="wages"):
     """
-	This functions compares Yelp results to database results and produces 
-    the best matches based on computing the qgram score between the 
+    This functions compares Yelp results to database results and produces
+    the best matches based on computing the qgram score between the
     zip_code, business name, address strings, latitude, and longitude. 
 
     Inputs:
@@ -261,8 +288,8 @@ def link_datasets(yelp_results, dj_df, df_type="wages"):
     # Indexation 
     if df_type == "wages" or df_type == "food": 
         indexer = rl.BlockIndex(on='zip_code')
-        compare.numeric('zip_code', 'zip_code', method='linear', 
-            scale=30.0, label='zip_score')
+        compare.numeric('zip_code', 'zip_code', method='linear',
+                        scale=30.0, label='zip_score')
         compare.string('name', 'name', method='qgram', 
             threshold=name_thresh, label='name_score')
         compare.string('addr', 'addr', method='qgram', 
@@ -270,8 +297,8 @@ def link_datasets(yelp_results, dj_df, df_type="wages"):
     else:
         indexer = rl.FullIndex()
     pairs = indexer.index(yelp_results, dj_df)
-    compare.geo('latitude', 'longitude', 'latitude', 'longitude', 
-    method='linear', scale=30.0, label='coord_score')  
+    compare.geo('latitude', 'longitude', 'latitude', 'longitude',
+                method='linear', scale=30.0, label='coord_score')
 
     # compute record linkage scores
     features = compare.compute(pairs, yelp_results, dj_df)
@@ -315,7 +342,7 @@ def query_database(yelp_results, zip_filter, lat_filter, long_filter):
     wages_df = get_filtered_wages_df(zip_filter, lat_filter, long_filter)
     wages_link = link_datasets(yelp_results, wages_df, df_type="wages")
     w_index_array, w_best_matches = wages_link
-    # obntain details from Divvy table
+    # obtain details from Divvy table
     divvy_df = get_filtered_divvy_df(lat_filter, long_filter)
     divvy_link = link_datasets(yelp_results, divvy_df, df_type="divvy")
     d_index_array, d_best_matches = divvy_link  
@@ -354,7 +381,7 @@ def query_database(yelp_results, zip_filter, lat_filter, long_filter):
         yelp_results['food_status'].iloc[yelp_index].append(t[2]) 
         yelp_results['food_date'].iloc[yelp_index].append(t[3])
 
-   # Get details from WAGES table
+    # Get details from WAGES table
     for index_pair in w_index_array:
         yelp_index, flag_index = index_pair[0], int(index_pair[1])
         _id = wages_df.iloc[flag_index].case_id
@@ -371,7 +398,6 @@ def query_database(yelp_results, zip_filter, lat_filter, long_filter):
         yelp_results['wages_violations'].iloc[yelp_index].append(t[2]) 
 
     # get details for the DIVVY table
-    print(divvy_df)
     for index_pair in d_index_array:
         yelp_index, flag_index = index_pair[0], int(index_pair[1])
         name = divvy_df.iloc[flag_index]['name']

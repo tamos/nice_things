@@ -70,10 +70,10 @@ def index(request):
     return render(request, 'index.html', context)  # Render main page
 
 
-
 from dominate.tags import html, head, body, b
 from dominate.util import raw
 from dominate.document import document
+
 
 def point_content(results):
     """ This function takes the DataFrame of matched results and
@@ -92,7 +92,7 @@ def point_content(results):
         content = popup(i)
         output.append([content.latitude, content.longitude, content.to_html()])
         
-    output = mark_safe(json.dumps(output)) # make sure Django doesn't block it
+    output = mark_safe(json.dumps(output))  # make sure Django doesn't block it
 
     # References for json/marking safe:
     # https://stackoverflow.com/questions/4698220/django-template-convert-a-python-list-into-a-javascript-object
@@ -100,21 +100,16 @@ def point_content(results):
     return output
 
 
-
-
-"""
-This is a class which holds generates popup content in html
-should be in another file, but is giving me errors
-"""
-
 import dominate
 from dominate.tags import html, head, body, b, br
 from dominate.document import document 
 
 
 class popup(object):
-    
-
+    """
+    This is a class which holds generates popup content in html
+    should be in another file, but is giving me errors
+    """
     def __init__(self, result):
         self.name = result.name
         self.addr = result.addr
@@ -129,33 +124,39 @@ class popup(object):
         except:
             self.price = None
         try:
-            self.food_status = " ".join(result.food_status)
+            self.food_status = ", ".join(result.food_status)
         except:
             self.food_status = None
         try:
-            self.food_date = " ".join(result.food_date)
+            self.food_date = ", ".join(result.food_date)
         except:
             self.food_date = None
         try:
             self.wages_violations = " ".join(result.wages_violations)
         except:
             self.wages_violations = None
+        try:
+            self.divvy_stations = ", ".join(result.divvy_stations)
+        except:
+            self.divvy_stations = None
         
         self.rendered_html = document()
-        self.to_label = [(self.phone, ""), (self.price, ""), (self.food_status, "Food Inspections: "),
-                         (self.food_date, "Inspection Date: "),
-                         (self.wages_violations, "Recorded Bureau of Labor Violations: ")]
+        self.to_label = [(self.phone, ""), (self.price, ""),
+                         (self.food_status, b("Food Inspections: ")),
+                         (self.food_date, b("Inspection Date: ")),
+                         (self.wages_violations, b("Recorded Bureau of Labor Violations: ")),
+                         (self.divvy_stations, b("Nearby Divvy Stations: "))]
 
 # iterating from: https://stackoverflow.com/questions/25150955/python-iterating-through-object-attributes
     def to_html(self):
-        """ Renders to a STRING representation of html
-
         """
-        self.rendered_html.add(b(self.name)) # bold the name
-        self.rendered_html.add(br(), self.addr, br()) # next the address, br is line break
-        for attr, prefix in self.to_label: # catch nones?
+        Renders to a STRING representation of html
+        """
+        self.rendered_html.add(b(self.name))  # bold the name
+        self.rendered_html.add(br(), self.addr, br())  # next the address, br is line break
+        for attr, prefix in self.to_label:  # catch nones?
             if attr:
-                self.rendered_html.add(prefix, str(attr), br()) # loop through attributes and add
+                self.rendered_html.add(prefix, str(attr), br())  # loop through attributes and add
         return str(self.rendered_html)
             
 
