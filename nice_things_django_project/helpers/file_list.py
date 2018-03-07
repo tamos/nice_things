@@ -9,6 +9,7 @@ food_j2017_m2018 = "/data/cdp_food_2017_01_01_2018_03_04.csv"
 data_dir = "/data"
 helpers_dir = "/helpers"
 divvy_stats = "/data/Divvy_Stations_2017_Q3Q4.csv"
+enviro_stats = "/data/cdp_environment.csv"
 
 # Citation: https://stackoverflow.com/questions/51520/
 # how-to-get-an-absolute-file-path-in-python
