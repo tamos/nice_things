@@ -301,6 +301,7 @@ def link_datasets(yelp_results, dj_df, df_type="wages"):
     # set thresholds for comparing strings using qgram method
     name_thresh = 0.55
     addr_thresh = 0.55
+    strong_addr_thresh = 0.90
     compare = rl.Compare()
     
     # Indexation 
@@ -315,7 +316,7 @@ def link_datasets(yelp_results, dj_df, df_type="wages"):
     elif df_type == "enviro":
         indexer = rl.FullIndex()
         compare.string('addr', 'addr', method='qgram',
-                       threshold=addr_thresh, label='addr_score')
+                       threshold=strong_addr_thresh, label='addr_score')
     else:
         indexer = rl.FullIndex()
     pairs = indexer.index(yelp_results, dj_df)
