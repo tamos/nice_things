@@ -70,7 +70,7 @@ def index(request):
     return render(request, 'index.html', context)  # Render main page
 
 
-from dominate.tags import html, head, body, b
+from dominate.tags import html, head, body, b, a
 from dominate.util import raw
 from dominate.document import document
 
@@ -91,6 +91,7 @@ def point_content(results):
         # This is where we insert the marker content
         content = popup(i)
         output.append([content.latitude, content.longitude, content.to_html()])
+        print(content.to_html())
         
     output = mark_safe(json.dumps(output))  # make sure Django doesn't block it
 
@@ -132,7 +133,7 @@ class popup(object):
         except:
             self.food_date = None
         try:
-            self.wages_violations = " ".join(result.wages_violations)
+            self.wages_violations = ", ".join(result.wages_violations)
         except:
             self.wages_violations = None
         try:
@@ -144,7 +145,13 @@ class popup(object):
         except:
             self.env_complaints = None
         try:
+            # complaint_urls = []
+            # for link in result.env_complaints_url:
+            #     complaint_urls.append(a(link, href=link))
+            #self.env_complaints_url = ", ".join(complaint_urls)
+
             self.env_complaints_url = ", ".join(result.env_complaints_url)
+
         except:
             self.env_complaints_url = None
         try:

@@ -433,7 +433,7 @@ def query_database(yelp_results, zip_filter, lat_filter, long_filter):
         w_row = Wages.objects.get(case_id=_id)
 
         # obtain the wanted business information
-        violations = w_row.case_violtn_cnt
+        violations = str(w_row.case_violtn_cnt)
         name = w_row.trade_nm
 
         t = (flag_index, name, violations)
