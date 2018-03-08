@@ -271,9 +271,11 @@ def get_filtered_enviro_df(lat_filter, long_filter):
 
     # cast django ENVIRONMENT object as dataframe is there is data
     if enviro_filtered.exists():
-        enviro_df = enviro_filtered.to_dataframe(fieldnames=['longitude',
+        enviro_df = enviro_filtered.to_dataframe(fieldnames=['pk',
+                                                             'longitude',
                                                              'latitude',
                                                              'address'])
+        enviro_df = enviro_df.rename(index=str, columns={"address": "addr"})
     else:
         enviro_df = []
 
@@ -382,7 +384,10 @@ def query_database(yelp_results, zip_filter, lat_filter, long_filter):
     yelp_results['food_date'] = np.empty((len(yelp_results), 0)).tolist()
     yelp_results['wages_violations'] = np.empty((len(yelp_results), 0)).tolist()
     yelp_results['divvy_stations'] = np.empty((len(yelp_results), 0)).tolist()
-    yelp_results['enviro_violations'] = np.empty((len(yelp_results), 0)).tolist()
+    yelp_results['env_complaints'] = np.empty((len(yelp_results), 0)).tolist()
+    yelp_results['env_complaints_url'] = np.empty((len(yelp_results), 0)).tolist()
+    yelp_results['env_enforce'] = np.empty((len(yelp_results), 0)).tolist()
+    yelp_results['env_enforce_url'] = np.empty((len(yelp_results), 0)).tolist()
 
 
     # Get details from FOOD database table
@@ -441,21 +446,27 @@ def query_database(yelp_results, zip_filter, lat_filter, long_filter):
         # add to the yelp results data frame
         yelp_results['divvy_stations'].iloc[yelp_index].append(name)
 
-    # Get details from Envornment database table
+    # Get details from Environment database table
     for index_pair in e_index_array:
         yelp_index, flag_index = index_pair[0], int(index_pair[1])
-        _id = enviro_df.iloc[flag_index].pk
+        pk = enviro_df.iloc[flag_index].pk
+
         # query the relevant database table
-        w_row = Wages.objects.get(case_id=_id)
+        e_row = Env_Complaints.objects.get(pk=pk)
 
         # obtain the wanted business information
-        violations = w_row.case_violtn_cnt
-        name = w_row.trade_nm
+        complaints = e_row.complaints
+        complaints_url = e_row.complaints_url
+        enviro_enforcement = e_row.enviro_enforcement
+        enviro_enforcement_url = e_row.enviro_enforcement_url
 
-        t = (flag_index, name, violations)
+        #t = (flag_index, name, violations)
 
         # add to the yelp results data frame
-        yelp_results['wages_violations'].iloc[yelp_index].append(t[2])
+        yelp_results['env_complaints'].iloc[yelp_index].append(complaints)
+        yelp_results['env_complaints_url'].iloc[yelp_index].append(complaints_url)
+        yelp_results['env_enforce'].iloc[yelp_index].append(enviro_enforcement)
+        yelp_results['env_enforce_url'].iloc[yelp_index].append(enviro_enforcement_url)
     
     return yelp_results
 
@@ -487,8 +498,8 @@ def final_result(dict_from_views):
 
     zip_filter, lat_filter, long_filter = define_filters(yelp_results)
 
-    final_result = query_database(yelp_results, zip_filter, 
-        lat_filter, long_filter)
+    final_result = query_database(yelp_results, zip_filter,
+                                  lat_filter, long_filter)
 
     return final_result
     

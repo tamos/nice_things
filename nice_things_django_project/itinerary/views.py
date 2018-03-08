@@ -44,7 +44,7 @@ def index(request):
                 "term": "Chicago",
                 "categories": "bar",
                 "attributes": "",
-                "sort": "distance" }
+                "sort": "distance"}
 
         # Validate the inputs are legal:
         if form.is_valid():
@@ -139,13 +139,33 @@ class popup(object):
             self.divvy_stations = ", ".join(result.divvy_stations)
         except:
             self.divvy_stations = None
+        try:
+            self.env_complaints = ", ".join(result.env_complaints)
+        except:
+            self.env_complaints = None
+        try:
+            self.env_complaints_url = ", ".join(result.env_complaints_url)
+        except:
+            self.env_complaints_url = None
+        try:
+            self.env_enforce = ", ".join(result.env_enforce)
+        except:
+            self.env_enforce = None
+        try:
+            self.env_enforce_url = ", ".join(result.env_enforce_url)
+        except:
+            self.env_enforce_url = None
         
         self.rendered_html = document()
         self.to_label = [(self.phone, ""), (self.price, ""),
                          (self.food_status, b("Food Inspections: ")),
                          (self.food_date, b("Inspection Date: ")),
                          (self.wages_violations, b("Recorded Bureau of Labor Violations: ")),
-                         (self.divvy_stations, b("Nearby Divvy Stations: "))]
+                         (self.divvy_stations, b("Nearby Divvy Stations: ")),
+                         (self.env_complaints, b("Environmental Complaints: ")),
+                         (self.env_complaints_url, b("Complaints Links: ")),
+                         (self.env_enforce, b("Environmental Penalties Levied: ")),
+                         (self.env_enforce_url, b("Environmental Penalties Links: "))]
 
 # iterating from: https://stackoverflow.com/questions/25150955/python-iterating-through-object-attributes
     def to_html(self):
