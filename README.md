@@ -46,7 +46,7 @@ Recommended: https://postgresapp.com
 
 #### On Mac/Linux
 
-  ``` sudo -u postgres psql ```
+  In PostgreSQL
   
   ```CREATE USER nice_things LOGIN password ''; ```
   
@@ -58,15 +58,15 @@ Recommended: https://postgresapp.com
   
   ```python3 manage.py migrate```
   
-  Open the shell:
+  Open the shell with:
   
   ```python3 manage.py shell```
   
   ```import update_db```
   
-  ```update_db.update_food_table()```
+  ```update_db.update_databases()```
   
-  ```update_db.update_wages_table()```
+  Exit to terminal, and:
   
   ```python3 manage.py runserver```
   
@@ -75,5 +75,9 @@ Recommended: https://postgresapp.com
  
  
  Bureau of Labour Statistics: https://enforcedata.dol.gov/views/data_summary.php
+ 
+ 
+ City of Chicago Data Portal: https://data.cityofchicago.org
+ 
  
  
