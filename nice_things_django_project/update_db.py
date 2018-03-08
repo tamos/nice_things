@@ -14,7 +14,7 @@ os.environ['DJANGO_SETTINGS_MODULE'] = "nice_things_django_project.settings"
 application = get_wsgi_application()
 
 # Used to interact with database tables:
-from itinerary.models import Food, Wages, Divvy, Env_Complaints #, Env_Enforce
+from itinerary.models import Food, Wages, Divvy, Env_Complaints, Env_Enforce 
 
 # Find files directories:
 nice_things_django_project_dir = os.path.dirname(__file__)
@@ -29,6 +29,35 @@ DIVVY_DIR = "{}{}".format(nice_things_django_project_dir,
                                          file_list.divvy_stats)
 ENVIRO_DIR = "{}{}".format(nice_things_django_project_dir,
                                          file_list.enviro_stats)
+        
+ 
+def update_databases():
+    """ This function updates all databases. It stores exceptions and
+    writes them to the terminal in the format:
+        " Name of table: exception"
+    ** This function can take some time, but should only be run once.**
+    """
+    errors = []
+    try:
+        update_wages_table()
+    except Exception as e:
+        errors.append(("Wages Table: ", e))
+    try:
+        update_food_table()
+    except Exception as e:
+        errors.append(("Food Table: ", e))
+    try:
+        update_enviro_chicago_tables()
+    except Exception as e:
+        errors.append(("Enviro Violations Table: ", e))
+    try:
+        update_divvy_table()
+    except Exception as e:
+        errors.append(("Divvy Table: ", e))
+    finally:
+        for i in errors:
+            print(i, "\n")      
+
 
 
 def update_wages_table(csv_path=BLS_WAGES_GEOCODED_DIR,
@@ -200,13 +229,12 @@ def update_enviro_chicago_tables(csv_path=ENVIRO_DIR):
         Splits a column in form Y (url)
         """
         
-        split_df = df_column.str.extract(r'(^Y) \((.*)\)', expand=True).fillna('False')
-        split_df.replace('Y', True, inplace=True)  # make boolean
+        split_df = df_column.str.extract(r'(^Y) \((.*)\)', expand = True).fillna('False')
+        split_df.replace('Y', True, inplace = True) # make boolean
         return split_df[0], split_df[1]
 
     def concatenate_address(row):
         address_as_list = [str(row[i]) for i in cols_to_concat]
-        #address_as_list[0] = str(int(address_as_list[0]))
         return " ".join(address_as_list)
 
     def extract_coordinates(df):
@@ -217,14 +245,13 @@ def update_enviro_chicago_tables(csv_path=ENVIRO_DIR):
         # Ideally at this point we geocode the missing coordinates
         return lat, lon
 
-    df_dirty = pd.read_csv(filepath_or_buffer=csv_path).fillna('False')
+    df_dirty = pd.read_csv(filepath_or_buffer = csv_path).fillna('False')
     complaints, complaints_url = split_y_and_url(df_dirty['COMPLAINTS'])
     enviro_enforcement, enviro_enforcement_url = split_y_and_url(df_dirty['ENFORCEMENT'])
 
     cols_to_concat = ['STREET NUMBER FROM', 'DIRECTION', 'STREET NAME', 'STREET TYPE']
 
-    address = df_dirty.apply(func=concatenate_address, axis=1) # df_dirty['MAP LOCATION'].
-    print("THIS IS DF DIRTY:", df_dirty)
+    address = df_dirty.apply(func=concatenate_address, axis=1)
 
     latitude, longitude = extract_coordinates(df_dirty)
 
@@ -238,49 +265,39 @@ def update_enviro_chicago_tables(csv_path=ENVIRO_DIR):
         df['complaints_url'] = complaints_url
         df['enviro_enforcement'] = enviro_enforcement
         df['enviro_enforcement_url'] = enviro_enforcement_url
-        df['address'] = address
-        #df['city'] = "Chicago"
         df['latitude'] = latitude
         df['longitude'] = longitude
 
-        df = df.replace(to_replace='False', value=np.nan).dropna()
 
-        #df_complaints = df.copy().drop(['enviro_enforcement', 'enviro_enforcement_url'], axis=1)
-        #df_enviro = df.copy().drop(['complaints', 'complaints_url'], axis=1)
+        df_complaints = df.copy().drop(['enviro_enforcement', 'enviro_enforcement_url'], axis=1)
+        df_enviro = df.copy().drop(['complaints', 'complaints_url'], axis=1)
 
-        #df_complaints = df_complaints.replace(to_replace='False', value=np.nan).dropna()
-        #df_enviro = df_enviro.replace(to_replace='False', value=np.nan).dropna()
-        #print("DF COMPLAINTS:", df_complaints)
+        df_complaints = df_complaints.replace(to_replace='False', value=np.nan).dropna()
+        df_enviro = df_enviro.replace(to_replace='False', value=np.nan).dropna()
        
-        for index, row in df.iterrows():
+        for index, row in df_complaints.iterrows():
             # Prepare row names:
+            longitude_complaints = row["longitude"]
+            latitude_complaints = row["latitude"]
+            address_complaints = row["city"]
+            complaints_complaints = row["dpcapacity"]
+            complaints_url = row["latitude"]
 
-            complaints = row["complaints"]
-            complaints_url = row["complaints_url"]
-            enviro_enforcement = row["enviro_enforcement"]
-            enviro_enforcement_url = row["enviro_enforcement_url"]
-            address = row["address"]
-            #city = row["city"]
-            longitude = row["longitude"]
-            latitude = row["latitude"]
-
-            # Squirt the data into the db:
-            obj, created = Env_Complaints.objects.get_or_create(
-                longitude=longitude,
-                latitude=latitude,
-                address=address,
-                complaints=complaints,
-                complaints_url=complaints_url,
-                enviro_enforcement=enviro_enforcement,
-                enviro_enforcement_url=enviro_enforcement_url)
-
-            # # Squirt the data into the db:
-            # obj, created = Env_Enforce.objects.get_or_create(
-            #     longitude=longitude,
-            #     latitude=latitude,
-            #     address=address,
-            #     enviro_enforcement=enviro_enforcement,
-            #     enviro_enforcement_url=enviro_enforcement_url)
+        # Squirt the data into the db:
+        obj, created = Env_Complaints.objects.get_or_create(
+            longitude = longitude_complaints,
+            latitude = latitude_complaints,
+            address = address_complaints,
+            complaints = complaints_complaints,
+            complaints_url = complaints_url_complaints)
+            
+        # Squirt the data into the db:
+        obj, created = Env_Enforce.objects.get_or_create(
+            longitude = longitude_enforce,
+            latitude = latitude_enforce,
+            address = address_enforce,
+            enviro_enforcement = enviro_enforcement_enforce,
+            enviro_enforcement_url = enviro_enforcement_url_enforce)
             
 
 def update_divvy_table(csv_path=DIVVY_DIR):
