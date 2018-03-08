@@ -19,7 +19,7 @@ from django.core.wsgi import get_wsgi_application
 os.chdir('../')
 os.environ['DJANGO_SETTINGS_MODULE'] = "nice_things_django_project.settings"
 application = get_wsgi_application()
-from itinerary.models import Food, Wages, Divvy
+from itinerary.models import Food, Wages, Divvy, Env_Complaints
 from django_pandas.managers import DataFrameManager
 
 ##### YELP QUERY PARAMETERS #####
@@ -111,7 +111,8 @@ def extract_yelp_data(yelp_api_key=yelp_api_key, term=default_term,
             a_price = i['price']
 
             if a_address != "" and a_name != "" and a_zip != "" \
-                    and a_latitude != "" and a_longitude != "":
+                    and a_latitude != "" and a_longitude != "" and \
+                    a_phone != "" and a_price != "":
                 addresses.append(a_address)
                 names.append(a_name)
                 # filter out businesses without zip codes
@@ -119,9 +120,8 @@ def extract_yelp_data(yelp_api_key=yelp_api_key, term=default_term,
                 zip_code.append(a_zip)
                 latitude.append(a_latitude)
                 longitude.append(a_longitude)
-
-            phone.append(a_phone)
-            price.append(a_price)
+                phone.append(a_phone)
+                price.append(a_price)
 
         except KeyError:
             print("Key Error, some missing field from the Yelp return!")
@@ -264,6 +264,22 @@ def get_filtered_divvy_df(lat_filter, long_filter):
     return divvy_df
 
 
+def get_filtered_enviro_df(lat_filter, long_filter):
+    enviro_filtered = Env_Complaints.objects.filter(
+        latitude__range=(min(lat_filter), max(lat_filter)),
+        longitude__range=(max(long_filter), min(long_filter)))
+
+    # cast django ENVIRONMENT object as dataframe is there is data
+    if enviro_filtered.exists():
+        enviro_df = enviro_filtered.to_dataframe(fieldnames=['longitude',
+                                                             'latitude',
+                                                             'address'])
+    else:
+        enviro_df = []
+
+    return enviro_df
+
+
 def link_datasets(yelp_results, dj_df, df_type="wages"):
     """
     This functions compares Yelp results to database results and produces
@@ -293,7 +309,11 @@ def link_datasets(yelp_results, dj_df, df_type="wages"):
         compare.string('name', 'name', method='qgram', 
             threshold=name_thresh, label='name_score')
         compare.string('addr', 'addr', method='qgram', 
-            threshold=addr_thresh, label='addr_score')     
+            threshold=addr_thresh, label='addr_score')
+    elif df_type == "enviro":
+        indexer = rl.FullIndex()
+        compare.string('addr', 'addr', method='qgram',
+                       threshold=addr_thresh, label='addr_score')
     else:
         indexer = rl.FullIndex()
     pairs = indexer.index(yelp_results, dj_df)
@@ -305,11 +325,14 @@ def link_datasets(yelp_results, dj_df, df_type="wages"):
 
     # Classification and final filtering
     if df_type == "wages" or df_type == "food": 
-        best_matches = features[(features['zip_score']==1.0) &
-        (features['name_score']==1.0) & (features['addr_score']==1.0) &
-        (features['coord_score']>=0.99)]
+        best_matches = features[(features['zip_score'] == 1.0) &
+        (features['name_score'] == 1.0) & (features['addr_score'] == 1.0) &
+        (features['coord_score'] >= 0.99)]
+    elif df_type == "enviro":
+        best_matches = features[(features['addr_score'] == 1.0) &
+                                (features['coord_score'] >= 0.99)]
     else:
-        best_matches = features[(features['coord_score']>=0.99)]       
+        best_matches = features[(features['coord_score'] >= 0.99)]
     # obtain the index values from best_matches
     index_array = best_matches.index.values
 
@@ -338,21 +361,31 @@ def query_database(yelp_results, zip_filter, lat_filter, long_filter):
     food_df = get_filtered_food_df(zip_filter, lat_filter, long_filter)
     food_link = link_datasets(yelp_results, food_df, df_type="food")
     f_index_array, f_best_matches = food_link
+
     # obtain details from Wages Table
     wages_df = get_filtered_wages_df(zip_filter, lat_filter, long_filter)
     wages_link = link_datasets(yelp_results, wages_df, df_type="wages")
     w_index_array, w_best_matches = wages_link
+
     # obtain details from Divvy table
     divvy_df = get_filtered_divvy_df(lat_filter, long_filter)
     divvy_link = link_datasets(yelp_results, divvy_df, df_type="divvy")
-    d_index_array, d_best_matches = divvy_link  
+    d_index_array, d_best_matches = divvy_link
+
+    # obtain details from Enviro table
+    enviro_df = get_filtered_enviro_df(lat_filter, long_filter)
+    enviro_link = link_datasets(yelp_results, enviro_df, df_type="enviro")
+    e_index_array, e_best_matches = enviro_link
+
     # add relevant columns to yelp_results dataframe
     yelp_results['food_status'] = np.empty((len(yelp_results), 0)).tolist()
     yelp_results['food_date'] = np.empty((len(yelp_results), 0)).tolist()
     yelp_results['wages_violations'] = np.empty((len(yelp_results), 0)).tolist()
     yelp_results['divvy_stations'] = np.empty((len(yelp_results), 0)).tolist()
+    yelp_results['enviro_violations'] = np.empty((len(yelp_results), 0)).tolist()
 
-    # Get details from FOOD table
+
+    # Get details from FOOD database table
     for index_pair in f_index_array:
         yelp_index, flag_index = index_pair[0], int(index_pair[1])
         _id = food_df.iloc[flag_index].inspection_id
@@ -381,7 +414,7 @@ def query_database(yelp_results, zip_filter, lat_filter, long_filter):
         yelp_results['food_status'].iloc[yelp_index].append(t[2]) 
         yelp_results['food_date'].iloc[yelp_index].append(t[3])
 
-    # Get details from WAGES table
+    # Get details from WAGES database table
     for index_pair in w_index_array:
         yelp_index, flag_index = index_pair[0], int(index_pair[1])
         _id = wages_df.iloc[flag_index].case_id
@@ -406,7 +439,23 @@ def query_database(yelp_results, zip_filter, lat_filter, long_filter):
         # d_name = Divvy.objects.get(name=name)
         
         # add to the yelp results data frame
-        yelp_results['divvy_stations'].iloc[yelp_index].append(name) 
+        yelp_results['divvy_stations'].iloc[yelp_index].append(name)
+
+    # Get details from Envornment database table
+    for index_pair in e_index_array:
+        yelp_index, flag_index = index_pair[0], int(index_pair[1])
+        _id = enviro_df.iloc[flag_index].pk
+        # query the relevant database table
+        w_row = Wages.objects.get(case_id=_id)
+
+        # obtain the wanted business information
+        violations = w_row.case_violtn_cnt
+        name = w_row.trade_nm
+
+        t = (flag_index, name, violations)
+
+        # add to the yelp results data frame
+        yelp_results['wages_violations'].iloc[yelp_index].append(t[2])
     
     return yelp_results
 
