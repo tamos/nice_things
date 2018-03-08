@@ -18,8 +18,8 @@ CATEGORY_CHOICES = (
     ("restaurants", 'Drink'))
 
 SORT_CHOICES = (
-    ("distance", "How far?"),
-    ("review_count", "No. Yelp Reviews"),
+    ("distance", "Distance"),
+    ("review_count", "# of Yelp Reviews"),
     ("rating", "Yelp Rating"),
     ("best_match", "Most Relevant"))
 
