@@ -277,7 +277,7 @@ def get_filtered_enviro_df(lat_filter, long_filter):
                                                              'address'])
         enviro_df = enviro_df.rename(index=str, columns={"address": "addr"})
     else:
-        enviro_df = []
+        enviro_df = pd.DataFrame()
 
     return enviro_df
 
@@ -319,6 +319,7 @@ def link_datasets(yelp_results, dj_df, df_type="wages"):
                        threshold=strong_addr_thresh, label='addr_score')
     else:
         indexer = rl.FullIndex()
+    print(type(dj_df), "DF")
     pairs = indexer.index(yelp_results, dj_df)
     compare.geo('latitude', 'longitude', 'latitude', 'longitude',
                 method='linear', scale=30.0, label='coord_score')
@@ -377,8 +378,12 @@ def query_database(yelp_results, zip_filter, lat_filter, long_filter):
 
     # obtain details from Enviro table
     enviro_df = get_filtered_enviro_df(lat_filter, long_filter)
-    enviro_link = link_datasets(yelp_results, enviro_df, df_type="enviro")
-    e_index_array, e_best_matches = enviro_link
+    print("PRINT ENVIRO DF", enviro_df)
+    try:
+        enviro_link = link_datasets(yelp_results, enviro_df, df_type="enviro")
+        e_index_array, e_best_matches = enviro_link
+    except:
+        e_index_array = []
 
     # add relevant columns to yelp_results dataframe
     yelp_results['food_status'] = np.empty((len(yelp_results), 0)).tolist()
