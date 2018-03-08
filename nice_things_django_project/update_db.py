@@ -14,7 +14,7 @@ os.environ['DJANGO_SETTINGS_MODULE'] = "nice_things_django_project.settings"
 application = get_wsgi_application()
 
 # Used to interact with database tables:
-from itinerary.models import Food, Wages, Divvy, Env_Complaints, Env_Enforce 
+from itinerary.models import Food, Wages, Divvy, Env_Complaints#, Env_Enforce 
 
 # Find files directories:
 nice_things_django_project_dir = os.path.dirname(__file__)
@@ -34,7 +34,7 @@ ENVIRO_DIR = "{}{}".format(nice_things_django_project_dir,
 def update_databases():
     """ This function updates all databases. It stores exceptions and
     writes them to the terminal in the format:
-        " Name of table: exception"
+        "( Name of table: exception )"
     ** This function can take some time, but should only be run once.**
     """
     errors = []
