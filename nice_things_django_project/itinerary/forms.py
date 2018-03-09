@@ -1,7 +1,6 @@
 from django import forms
 from django.utils.encoding import force_text
 from django.utils.html import format_html
-from django.utils.safestring import mark_safe
 
 
 PRICE_CHOICES = (
@@ -25,7 +24,7 @@ SORT_CHOICES = (
 
 
 class ItineraryInputsForm(forms.Form):
-    loc = forms.CharField(max_length=100,
+    location = forms.CharField(max_length=100,
                                   required=True,
                                  widget=forms.TextInput(
                                       attrs={"class": "w3-input w3-border",
@@ -50,7 +49,7 @@ class ItineraryInputsForm(forms.Form):
                                           attrs={"display": "inline-block"}
                                       ),
                                       choices=CATEGORY_CHOICES)
-    sort_by = forms.MultipleChoiceField(required=False,
+    sort = forms.MultipleChoiceField(required=False,
                                       widget=forms.CheckboxSelectMultiple(
                                           attrs={"display": "inline-block"}
                                       ),

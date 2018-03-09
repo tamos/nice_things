@@ -21,15 +21,20 @@ os.chdir('helpers')
 import helpers.matching as matching   # has to be a better way to do this
 os.chdir( '../')
 
+import dominate
+from dominate.tags import html, head, body, b, br
+from dominate.document import document 
+
 
 def index(request):
-    """ This function is the main view. It either takes users' inputs
+    """
+    This function is the main view. It either takes users' inputs
     or renders a map with the results.
     Inputs:
-        - request: the Django request object
+        - request (request object): the Django request object
 
     Outputs:
-        - redirects users to either the main page (index.html) or a map (map.html)
+        - redirects users to either the main page (index.html) or a results map (map.html)
     """
     context = {}
     # Process user inputs:
@@ -37,8 +42,7 @@ def index(request):
         # Instantiate form we created in forms.py
         form = ItineraryInputsForm(request.GET)
 
-        # Convert form input into dictionary for search.py:
-        # Place defaults
+        # Insert defaults into a dictionary
         args = {"location": "Chicago",
                 "price": "1,2,3,4",
                 "term": "Chicago",
@@ -48,62 +52,53 @@ def index(request):
 
         # Validate the inputs are legal:
         if form.is_valid():
-            args["location"] = form.cleaned_data["loc"]
-            args["price"] = form.cleaned_data["price"]
-            args["term"] = form.cleaned_data["term"]
-            args["categories"] = form.cleaned_data["categories"]
-            args["attributes"] = form.cleaned_data["attributes"]
-            args["sort"] = form.cleaned_data["sort_by"]
-            
-            # Go get results, render as json and output
+            for i in form.__dict__['fields']:
+                args[i] = form.cleaned_data[i]
+
+           # Go get results, render as json and output
             results = matching.final_result(args) 
             if results.shape[0] > 0: 
-                output = point_content(results)  # place the info we want into json
-                return render(request, 'map.html', {'output':output}) # render the map       
+                output = point_content(results)  # Place the info we want into json
+                return render(request, 'map.html', {'output':output})  # Render the map       
+
             # Return to main page if we get no results
             else:
-                form = ItineraryInputsForm() 
+               form = ItineraryInputsForm() 
     else:
         form = ItineraryInputsForm()  
-        
+
+    # If this is the first time, render the main page
     context["form"] = form
-    return render(request, 'index.html', context)  # Render main page
-
-
-from dominate.tags import html, head, body, b, a
-from dominate.util import raw
-from dominate.document import document
+    return render(request, 'index.html', context)
 
 
 def point_content(results):
-    """ This function takes the DataFrame of matched results and
+    """
+    This function takes the DataFrame of matched results and
     places them into a list in the form (latitude, longitude, content)
     which is then used to generate the points on a map.
 
-    Inputs:
+    Input:
         - results (DataFrame): object where each row is a single business
-    Outputs:
-        - output (json): a json object which is passed to render in
-        a dictionary to be made into a Javascript array in map.html
+        
+    Output:
+        - output (json): a json object which is added to a list
+          to be made into a Javascript array in map.html
     """
     output = []
-    for i in results.itertuples():
-        # This is where we insert the marker content
+    for i in results.itertuples():  # Insert marker content
         content = popup(i)
         output.append([content.latitude, content.longitude, content.to_html()])
-        print(content.to_html())
         
-    output = mark_safe(json.dumps(output))  # make sure Django doesn't block it
+    output = mark_safe(json.dumps(output))  # Make sure Django doesn't block it
 
     # References for json/marking safe:
-    # https://stackoverflow.com/questions/4698220/django-template-convert-a-python-list-into-a-javascript-object
-    # https://stackoverflow.com/questions/739942/how-to-pass-an-array-in-django-to-a-template-and-use-it-with-javascript#739974
+    # https://stackoverflow.com/questions/4698220/django-template-convert-
+    # a-python-list-into-a-javascript-object
+    # https://stackoverflow.com/questions/739942/how-to-pass-an-array-in
+    # -django-to-a-template-and-use-it-with-javascript#739974
+
     return output
-
-
-import dominate
-from dominate.tags import html, head, body, b, br
-from dominate.document import document 
 
 
 class popup(object):
@@ -145,13 +140,7 @@ class popup(object):
         except:
             self.env_complaints = None
         try:
-            # complaint_urls = []
-            # for link in result.env_complaints_url:
-            #     complaint_urls.append(a(link, href=link))
-            #self.env_complaints_url = ", ".join(complaint_urls)
-
             self.env_complaints_url = ", ".join(result.env_complaints_url)
-
         except:
             self.env_complaints_url = None
         try:
@@ -164,26 +153,39 @@ class popup(object):
             self.env_enforce_url = None
         
         self.rendered_html = document()
+        
+        # This is a list of attributes and their specified prefix
         self.to_label = [(self.phone, ""), (self.price, ""),
-                         (self.food_status, b("Food Inspections: ")),
-                         (self.food_date, b("Inspection Date: ")),
-                         (self.wages_violations, b("Recorded Bureau of Labor Violations: ")),
-                         (self.divvy_stations, b("Nearby Divvy Stations: ")),
-                         (self.env_complaints, b("Environmental Complaints: ")),
-                         (self.env_complaints_url, b("Complaints Links: ")),
-                         (self.env_enforce, b("Environmental Penalties Levied: ")),
-                         (self.env_enforce_url, b("Environmental Penalties Links: "))]
+                         (self.food_status, "Food Inspections: "),
+                         (self.food_date, "Inspection Date: "),
+                         (self.wages_violations, "Recorded Bureau of Labor Violations: "),
+                         (self.divvy_stations, "Nearby Divvy Stations: "),
+                         (self.env_complaints, "Environmental Complaints: "),
+                         (self.env_complaints_url, "Complaints Links: "),
+                         (self.env_enforce, "Environmental Penalties Levied: "),
+                         (self.env_enforce_url, "Environmental Penalties Links: ")]
 
-# iterating from: https://stackoverflow.com/questions/25150955/python-iterating-through-object-attributes
     def to_html(self):
         """
-        Renders to a STRING representation of html
+        This method renders html to a string which is then passed as the
+        popup label.
+
+        Inputs:
+            - the popup object
+
+        Outputs:
+            - rendered_html (str): html, cast to a string, for the popup label
         """
-        self.rendered_html.add(b(self.name))  # bold the name
-        self.rendered_html.add(br(), self.addr, br())  # next the address, br is line break
-        for attr, prefix in self.to_label:  # catch nones?
+        self.rendered_html.add(b(self.name))  # Bold the name
+        # Next the address, br() is line break
+        self.rendered_html.add(br(), self.addr, br())
+        
+        for attr, prefix in self.to_label:
             if attr:
-                self.rendered_html.add(prefix, str(attr), br())  # loop through attributes and add
+                # Loop through and bold prefixes, render attributes as strings
+                # and add to the document
+                self.rendered_html.add(b(prefix), str(attr), br())
+
         return str(self.rendered_html)
             
 
