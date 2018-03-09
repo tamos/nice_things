@@ -25,7 +25,7 @@ from django_pandas.managers import DataFrameManager
 default_term = "farmers market"  # can do a string of mult vals
 default_categories = ""  # can do a string of mult vals
 default_price = "1,2,3"  #"1, 2, 3"  # can do a comma del. list of values
-default_location = "The Loop, Chicago"#"Lincoln Square, Chicago"  # create drop down for this
+default_location = "The Loop, Chicago" #"Lincoln Square, Chicago"  # create drop down for this
 default_lim = 50
 default_sort = "best_match" #"review_count"
 default_attributes = ""#"gender_neutral_restrooms"
