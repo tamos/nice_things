@@ -36,14 +36,14 @@ var mapboxTiles = L.tileLayer('https://api.mapbox.com/styles/v1/tylerauchic/cjee
 // create an array of our values we want to plot
  var results = {{ output | safe }} //  From: https://stackoverflow.com/questions/739942/how-to-pass-an-array-in-django-to-a-template-and-use-it-with-javascript#739974
  
- var focuslat = results[1][0]
- var focuslon = results[1][1]
+ var focuslat = results[0][0]
+ var focuslon = results[0][1]
     
 
 // put down the land cover, colours, etc.
 var map = L.map('map')
     .addLayer(mapboxTiles)
-    .setView([focuslat, focuslon], 15); // the focal point of the map
+    .setView([focuslat, focuslon], 12); // the focal point of the map
     
     
     

@@ -166,10 +166,10 @@ class Env_Complaints(models.Model):
     latitude = models.FloatField(default=None)
     objects = DataFrameManager()
     address = models.CharField(max_length=200) # need to concatentate strings for this
-    complaints = models.BooleanField() # complaints in the CDPH Environmental Complaints data
-    complaints_url = models.URLField() # link to the complaint
-    enviro_enforcement = models.BooleanField()  # CDPH Enviro. Enforcement data
-    enviro_enforcement_url = models.URLField()  # link to enviro information
+    complaints = models.BooleanField(default = None) # complaints in the CDPH Environmental Complaints data
+    complaints_url = models.URLField(default = None) # link to the complaint
+    enviro_enforcement = models.BooleanField(default = None)  # CDPH Enviro. Enforcement data
+    enviro_enforcement_url = models.URLField(default = None)  # link to enviro information
 
 
 class Divvy(models.Model):
