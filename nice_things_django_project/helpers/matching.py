@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
 import pandas as pd
 #from api_keys import yelp
@@ -200,21 +199,7 @@ def get_filtered_food_df(zip_filter, lat_filter, long_filter):
 
     Output:
         - food_df: a pandas dataframe of food inspection information
-    """
-##    # filter django Food object based on zip code, latitude, & longitude
-##    food_filtered = Food.objects.filter(zip_code__in=zip_filter, 
-##        latitude__range=(min(lat_filter), max(lat_filter)), 
-##        longitude__range=(max(long_filter), min(long_filter)))
-##
-##    # cast django FOOD object as dataframe if there is data
-##    if food_filtered.exists():
-##        food_df = food_filtered.to_dataframe(fieldnames=['zip_code', 
-##            'aka_name', 'address', 'inspection_id', 'latitude', 'longitude'])
-##        food_df = food_df.rename(index=str, columns={"aka_name": "name", 
-##            "address": "addr"})
-##    else:
-##        food_df = []
-##        
+    """       
     df_field_names = ['zip_code', 'aka_name', 'address', 'inspection_id',
                       'latitude', 'longitude']
     rename_to ={"aka_name": "name", "address": "addr"}
@@ -240,20 +225,6 @@ def get_filtered_wages_df(zip_filter, lat_filter, long_filter):
         - wages_df: a pandas dataframe of Bureau of Labour Statistics
                     information
     """
-##    #filter django Wages object based on zip code, latitude, & longitude
-##    wages_filtered = Wages.objects.filter(zip_code__in=zip_filter, 
-##        latitude__range=(min(lat_filter), max(lat_filter)), 
-##        longitude__range=(max(long_filter), min(long_filter)))
-##
-##    # cast django WAGES object as dataframe if there is data
-##    if wages_filtered.exists():
-##        wages_df = wages_filtered.to_dataframe(fieldnames=['zip_code', 
-##            'trade_nm', 'street_addr_1_txt', 'case_id', 'latitude', 
-##            'longitude'])
-##        wages_df = wages_df.rename(index=str, columns={"zip_cd": "zip_code", 
-##            "trade_nm": "name", "street_addr_1_txt": "addr"})
-##    else:
-##        wages_df = []
 
     df_field_names =['zip_code', 
             'trade_nm', 'street_addr_1_txt', 'case_id', 'latitude', 'longitude']
@@ -280,28 +251,13 @@ def get_filtered_divvy_df(lat_filter, long_filter):
     Output:
         - divvy_df: a pandas dataframe of Divvy bike station information
     """
-    #filter django divvy object based on latitude & longitude    
-    divvy_filtered = Divvy.objects.filter(
-        latitude__range=(min(lat_filter), max(lat_filter)), 
-        longitude__range=(max(long_filter), min(long_filter)))
-
-    # cast django DIVVY object as dataframe if there is data
-    if divvy_filtered.exists():
-        divvy_df = divvy_filtered.to_dataframe(fieldnames=['_id', 'name', 
-            'city', 'latitude', 'longitude', 'capacity'])
-    else:
-        divvy_df = []
-
     
     df_field_names =['_id', 'name', 'city', 'latitude', 'longitude', 'capacity']
     rename_to = None
     
     df =  filter_df(Divvy, df_field_names, rename_to, latitude__range=(min(lat_filter),
                 max(lat_filter)), longitude__range=(max(long_filter), min(long_filter)))
-    print("TEST DIV", df.equals(divvy_df))
-    
-
-    return divvy_df
+    return df
 
 
 def get_filtered_enviro_df(lat_filter, long_filter):
@@ -319,22 +275,14 @@ def get_filtered_enviro_df(lat_filter, long_filter):
         - enviro_df: a pandas dataframe of environmental complaints and
                     enforcement information
     """
-    #filter django enviro object based on latitude\ & longitude 
-    enviro_filtered = Env_Complaints.objects.filter(
-        latitude__range=(min(lat_filter), max(lat_filter)),
-        longitude__range=(max(long_filter), min(long_filter)))
-
-    # cast django ENVIRONMENT object as dataframe if there is data
-    if enviro_filtered.exists():
-        enviro_df = enviro_filtered.to_dataframe(fieldnames=['pk',
-                                                             'longitude',
-                                                             'latitude',
-                                                             'address'])
-        enviro_df = enviro_df.rename(index=str, columns={"address": "addr"})
-    else:
-        enviro_df = pd.DataFrame()
-
-    return enviro_df
+        
+    df_field_names = ['pk', 'longitude', 'latitude','address']
+    rename_to = {"address": "addr"}
+    
+    df =  filter_df(Env_Complaints, df_field_names, rename_to,
+                    latitude__range=(min(lat_filter), max(lat_filter)),
+                    longitude__range=(max(long_filter), min(long_filter)))
+    return df
 
 
 def link_datasets(yelp_results, dj_df, df_type="wages"):
@@ -395,16 +343,23 @@ def link_datasets(yelp_results, dj_df, df_type="wages"):
     # compute record linkage scores
     features = compare.compute(pairs, yelp_results, dj_df)
 
+    # set classification thresholds
+    zip_classif_thresh = 1.0
+    addr_classif_thresh = 1.0
+    coord_classif_thresh = 0.99
+    name_classif_thresh = 1.0
+
     # Classification and final filtering
     if df_type == "wages" or df_type == "food": 
-        best_matches = features[(features['zip_score'] == 1.0) &
-        (features['name_score'] == 1.0) & (features['addr_score'] == 1.0) &
-        (features['coord_score'] >= 0.99)]
+        best_matches = features[(features['zip_score'] == zip_classif_thresh) &
+        (features['name_score'] == name_classif_thresh) &
+        (features['addr_score'] == addr_classif_thresh) &
+        (features['coord_score'] >= coord_classif_thresh)]
     elif df_type == "enviro":
-        best_matches = features[(features['addr_score'] == 1.0) &
-                                (features['coord_score'] >= 0.99)]
+        best_matches = features[(features['addr_score'] == addr_classif_thresh) &
+                                (features['coord_score'] >= coord_classif_thresh)]
     else:
-        best_matches = features[(features['coord_score'] >= 0.99)]
+        best_matches = features[(features['coord_score'] >= coord_classif_thresh)]
     
     # obtain the index values from best_matches
     index_array = best_matches.index.values
@@ -431,14 +386,15 @@ def query_db_food(yelp_results, zip_filter, lat_filter, long_filter):
         - yelp_results: a dataframe of Yelp results with food inspection
                         information and date columns added
     """
+    size_results = len(yelp_results)
     # obtain details from Food Table
     food_df = get_filtered_food_df(zip_filter, lat_filter, long_filter)
     food_link = link_datasets(yelp_results, food_df, df_type="food")
     f_index_array, f_best_matches = food_link
 
     # add columns to yelp_results dataframe
-    yelp_results['food_status'] = np.empty((len(yelp_results), 0)).tolist()
-    yelp_results['food_date'] = np.empty((len(yelp_results), 0)).tolist()
+    for i in ['food_status', 'food_date']:
+        yelp_results[i] = np.empty((size_results, 0)).tolist()
 
     # Get details from FOOD database table
     for index_pair in f_index_array:
@@ -484,13 +440,14 @@ def query_db_wages(yelp_results, zip_filter, lat_filter, long_filter):
         - yelp_results: a dataframe of Yelp results with labour violations
                         count column added
     """
+    size_results = len(yelp_results)
     # obtain details from Wages Table
     wages_df = get_filtered_wages_df(zip_filter, lat_filter, long_filter)
     wages_link = link_datasets(yelp_results, wages_df, df_type="wages")
     w_index_array, w_best_matches = wages_link
     
     # add columns to yelp_results dataframe
-    yelp_results['wages_violations'] = np.empty((len(yelp_results), 
+    yelp_results['wages_violations'] = np.empty((size_results, 
         0)).tolist()
 
     # Get details from WAGES database table
@@ -526,13 +483,14 @@ def query_db_divvy(yelp_results, lat_filter, long_filter):
         - yelp_results: a dataframe of Yelp results with nearest Divvy bike
                         station location column added
     """
+    size_results = len(yelp_results)
     # obtain details from Divvy table
     divvy_df = get_filtered_divvy_df(lat_filter, long_filter)
     divvy_link = link_datasets(yelp_results, divvy_df, df_type="divvy")
     d_index_array, d_best_matches = divvy_link
 
     # add columns to yelp_results dataframe
-    yelp_results['divvy_stations'] = np.empty((len(yelp_results), 
+    yelp_results['divvy_stations'] = np.empty((size_results, 
         0)).tolist()
 
     # get details for the DIVVY table
@@ -562,6 +520,8 @@ def query_db_enviro(yelp_results, lat_filter, long_filter):
                         complaint, complaint url, enforcement, and 
                         enforcement url columns added
     """
+    size_results = len(yelp_results)
+    
     # obtain details from Enviro table
     enviro_df = get_filtered_enviro_df(lat_filter, long_filter)
     try:
@@ -571,13 +531,8 @@ def query_db_enviro(yelp_results, lat_filter, long_filter):
         e_index_array = []
 
     # add columns to yelp_results dataframe
-    yelp_results['env_complaints'] = np.empty((len(yelp_results), 
-        0)).tolist()
-    yelp_results['env_complaints_url'] = np.empty((len(yelp_results), 
-        0)).tolist()
-    yelp_results['env_enforce'] = np.empty((len(yelp_results), 0)).tolist()
-    yelp_results['env_enforce_url'] = np.empty((len(yelp_results), 
-        0)).tolist()
+    for i in ['env_complaints', 'env_complaints_url', 'env_enforce', 'env_enforce_url']:
+        yelp_results[i] = np.empty((size_results, 0)).tolist()
 
     # Get details from Environment database table
     for index_pair in e_index_array:
