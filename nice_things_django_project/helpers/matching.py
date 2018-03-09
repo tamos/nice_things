@@ -572,9 +572,9 @@ def final_result(dict_from_views):
 
     Input:
         - dict_from_views: a dictionary of user inputs
+    
     Output:
-        - final_result a pandas dataframe
-
+        - final_result: a pandas dataframe
     """
     term = dict_from_views['term']
     categories = dict_from_views['categories']
