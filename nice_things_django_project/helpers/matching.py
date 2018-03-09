@@ -1,10 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on Sat Feb 17 20:17:53 2018
 
-@author: ty & ks
-"""
 import pandas as pd
 #from api_keys import yelp
 from jellyfish import jaro_distance
@@ -97,9 +93,9 @@ def extract_yelp_data(yelp_api_key=yelp_api_key, term=default_term,
             a_phone = i['phone']
             a_price = i['price']
 
-            if a_address != "" and a_name != "" and a_zip != "" \
-                    and a_latitude != "" and a_longitude != "" and \
-                    a_phone != "" and a_price != "":
+            if all([a_address != "", a_name != "",  a_zip != "", 
+                    a_latitude != "",  a_longitude != "", 
+                    a_phone != "", a_price != ""]):
                 addresses.append(a_address)
                 names.append(a_name)
                 zip_code.append(a_zip)
@@ -168,6 +164,28 @@ def truncate_coordinate(coordinate):
     return trunc_coordinate
 
 
+
+def filter_df(target_model, df_field_names, rename_to = None, **kwargs):
+    """
+    This is kwarg implement of filter
+    needs:
+    target_model 
+    kwargs : filter_kwargs = keywords to use for filtering
+    df_feild_names = the labels you want from the django model
+    rename_to = if you wnat to rename any of the features
+       
+    """
+    filtered = target_model.objects.filter(**kwargs)
+    # cast to df
+    if filtered.exists():
+        df = filtered.to_dataframe(fieldnames=df_field_names)
+        if rename_to:
+            df.rename(index = str, columns = rename_to, inplace = True)
+    else:
+        df = []
+    return df
+
+
 def get_filtered_food_df(zip_filter, lat_filter, long_filter):
     """
     This function takes the zip code, latitude, and longitude filters
@@ -183,22 +201,28 @@ def get_filtered_food_df(zip_filter, lat_filter, long_filter):
     Output:
         - food_df: a pandas dataframe of food inspection information
     """
-    # filter django Food object based on zip code, latitude, & longitude
-    food_filtered = Food.objects.filter(zip_code__in=zip_filter, 
-        latitude__range=(min(lat_filter), max(lat_filter)), 
-        longitude__range=(max(long_filter), min(long_filter)))
-
-    # cast django FOOD object as dataframe if there is data
-    if food_filtered.exists():
-        food_df = food_filtered.to_dataframe(fieldnames=['zip_code', 
-            'aka_name', 'address', 'inspection_id', 'latitude', 'longitude'])
-        food_df = food_df.rename(index=str, columns={"aka_name": "name", 
-            "address": "addr"})
-    else:
-        food_df = []
-        
-    return food_df
-    
+##    # filter django Food object based on zip code, latitude, & longitude
+##    food_filtered = Food.objects.filter(zip_code__in=zip_filter, 
+##        latitude__range=(min(lat_filter), max(lat_filter)), 
+##        longitude__range=(max(long_filter), min(long_filter)))
+##
+##    # cast django FOOD object as dataframe if there is data
+##    if food_filtered.exists():
+##        food_df = food_filtered.to_dataframe(fieldnames=['zip_code', 
+##            'aka_name', 'address', 'inspection_id', 'latitude', 'longitude'])
+##        food_df = food_df.rename(index=str, columns={"aka_name": "name", 
+##            "address": "addr"})
+##    else:
+##        food_df = []
+##        
+    df_field_names = ['zip_code', 'aka_name', 'address', 'inspection_id',
+                      'latitude', 'longitude']
+    rename_to ={"aka_name": "name", "address": "addr"}
+    df =  filter_df(Food, df_field_names, rename_to, zip_code__in=zip_filter, 
+                    latitude__range=(min(lat_filter), max(lat_filter)), 
+                    longitude__range=(max(long_filter), min(long_filter)))
+    return df
+            
 
 def get_filtered_wages_df(zip_filter, lat_filter, long_filter):
     """
@@ -216,22 +240,30 @@ def get_filtered_wages_df(zip_filter, lat_filter, long_filter):
         - wages_df: a pandas dataframe of Bureau of Labour Statistics
                     information
     """
-    #filter django Wages object based on zip code, latitude, & longitude
-    wages_filtered = Wages.objects.filter(zip_code__in=zip_filter, 
+##    #filter django Wages object based on zip code, latitude, & longitude
+##    wages_filtered = Wages.objects.filter(zip_code__in=zip_filter, 
+##        latitude__range=(min(lat_filter), max(lat_filter)), 
+##        longitude__range=(max(long_filter), min(long_filter)))
+##
+##    # cast django WAGES object as dataframe if there is data
+##    if wages_filtered.exists():
+##        wages_df = wages_filtered.to_dataframe(fieldnames=['zip_code', 
+##            'trade_nm', 'street_addr_1_txt', 'case_id', 'latitude', 
+##            'longitude'])
+##        wages_df = wages_df.rename(index=str, columns={"zip_cd": "zip_code", 
+##            "trade_nm": "name", "street_addr_1_txt": "addr"})
+##    else:
+##        wages_df = []
+
+    df_field_names =['zip_code', 
+            'trade_nm', 'street_addr_1_txt', 'case_id', 'latitude', 'longitude']
+    rename_to ={"zip_cd": "zip_code","trade_nm": "name", "street_addr_1_txt": "addr"}
+    
+    df =  filter_df(Wages, df_field_names, rename_to, zip_code__in=zip_filter, 
         latitude__range=(min(lat_filter), max(lat_filter)), 
         longitude__range=(max(long_filter), min(long_filter)))
-
-    # cast django WAGES object as dataframe if there is data
-    if wages_filtered.exists():
-        wages_df = wages_filtered.to_dataframe(fieldnames=['zip_code', 
-            'trade_nm', 'street_addr_1_txt', 'case_id', 'latitude', 
-            'longitude'])
-        wages_df = wages_df.rename(index=str, columns={"zip_cd": "zip_code", 
-            "trade_nm": "name", "street_addr_1_txt": "addr"})
-    else:
-        wages_df = []
-
-    return wages_df
+    
+    return df
 
 
 def get_filtered_divvy_df(lat_filter, long_filter):
@@ -259,6 +291,15 @@ def get_filtered_divvy_df(lat_filter, long_filter):
             'city', 'latitude', 'longitude', 'capacity'])
     else:
         divvy_df = []
+
+    
+    df_field_names =['_id', 'name', 'city', 'latitude', 'longitude', 'capacity']
+    rename_to = None
+    
+    df =  filter_df(Divvy, df_field_names, rename_to, latitude__range=(min(lat_filter),
+                max(lat_filter)), longitude__range=(max(long_filter), min(long_filter)))
+    print("TEST DIV", df.equals(divvy_df))
+    
 
     return divvy_df
 
@@ -587,7 +628,8 @@ def final_result(dict_from_views):
     yelp_results = extract_yelp_data(yelp_api_key=yelp_api_key, term=term, 
         categories=categories, price=price, location=location, limit=lim, 
         sort_by=sort, attributes=attributes)
-
+    
+    # We use filters to narrow down the area of interest
     zip_filter, lat_filter, long_filter = define_filters(yelp_results)
 
     final_result = query_db_food(yelp_results, zip_filter, lat_filter, 
