@@ -38,7 +38,7 @@ class Popup(object):
               that will be passed into a javascript array. See self.to_html()
               
             - to_label (list of tuples): a list in the form:
-                (attribute, <prefix>)
+                (attribute, prefix)
         """
         self.name = result.name
         self.addr = result.addr
