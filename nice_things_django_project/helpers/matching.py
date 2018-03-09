@@ -22,13 +22,6 @@ application = get_wsgi_application()
 from itinerary.models import Food, Wages, Divvy, Env_Complaints
 from django_pandas.managers import DataFrameManager
 
-##### YELP QUERY PARAMETERS #####
-#                               #
-# THE DEFAULT VALUES BELOW ARE  #
-#  DETERMINED BY USER INPUTS    #
-#                               #
-#################################
-
 default_term = "farmers market"  # can do a string of mult vals
 default_categories = ""  # can do a string of mult vals
 default_price = "1,2,3"  #"1, 2, 3"  # can do a comma del. list of values
@@ -434,7 +427,7 @@ def query_db_food(yelp_results, zip_filter, lat_filter, long_filter):
     return yelp_results
 
 
-def query_db_labour(yelp_results, zip_filter, lat_filter, long_filter):
+def query_db_wages(yelp_results, zip_filter, lat_filter, long_filter):
     """
     This function takes the best matches between the Yelp results and the
     database query and fetches the details from the labour violations
@@ -600,7 +593,7 @@ def final_result(dict_from_views):
     final_result = query_db_food(yelp_results, zip_filter, lat_filter, 
                                 long_filter)
 
-    final_result = query_db_labour(yelp_results, zip_filter, lat_filter, 
+    final_result = query_db_wages(yelp_results, zip_filter, lat_filter, 
                                 long_filter)
 
     final_result = query_db_divvy(yelp_results, lat_filter, long_filter)
