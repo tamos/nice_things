@@ -1,5 +1,3 @@
-from django.http import HttpResponse, HttpResponseRedirect
-from django.urls import reverse
 import sys
 from django.shortcuts import render
 from itinerary.forms import ItineraryInputsForm
@@ -15,12 +13,8 @@ os.environ['DJANGO_SETTINGS_MODULE'] = "nice_things_django_project.settings"
 application = get_wsgi_application()
 # https://stackoverflow.com/questions/40206569/
 # django-model-doesnt-declare-an-explicit-app-label:
-from itinerary.models import Food, Wages
 from django.utils.html import format_html, mark_safe
-os.chdir('helpers')
-import helpers.matching as matching   # has to be a better way to do this
-os.chdir( '../')
-
+from helpers import matching
 from itinerary.popup import Popup
 
 
