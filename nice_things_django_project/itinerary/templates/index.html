@@ -1,6 +1,14 @@
-{% load staticfiles %}
+
+
 <!DOCTYPE html>
-<!-- Based on: https://www.w3schools.com/w3css/w3css_templates.asp -->
+
+{% load staticfiles %}
+
+
+<!-- This entire document is based on: https://www.w3schools.com/w3css/w3css_templates.asp
+It has been heavily modified, mostly through deletion and substitution. Some insertions (checkboxes) have been made. W3Schools tutorials and examples were used extensively. https://www.w3schools.com.  -->
+
+
 <html>
 
 <title>We Can Have Nice Things</title>
@@ -11,6 +19,11 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 <script defer src="https://use.fontawesome.com/releases/v5.0.8/js/all.js"></script>
 <style>
+
+
+<!-- Create checkboxes -->
+
+
 body,h1,h2,h3,h4,h5,h6 {font-family: "Raleway", Arial, Helvetica, sans-serif}
 .myLink {display: none}
 
@@ -88,29 +101,24 @@ ul.categorychecklist li {
     transform: rotate(45deg);
 }
 </style>
-<!-- <body class="w3-dark-grey"> -->
+
+
+
 <body class="w3-black">
 
-
-
-<!-- Navigation Bar -->
-<!--<div class="w3-bar w3-white w3-border-bottom w3-xlarge">
-  <a href="#" class="w3-bar-item w3-button w3-text-red w3-hover-red"><b><i class="fa fa-map-marker w3-margin-right"></i>Logo</b></a>
-  <a href="#" class="w3-bar-item w3-button w3-right w3-hover-red w3-text-grey"><i class="fa fa-search"></i></a>
-</div>
--->
 <!-- Header -->
 <header class="w3-display-container w3-content w3-hide-small" style="max-width:1500px">
-  <!-- images used (open access) from https://www.pexels.com/photo/table-in-vintage-restaurant-6267/ -->
+  <!-- image used (open access) from https://www.pexels.com/photo/table-in-vintage-restaurant-6267/ -->
   <img src="{% static "/menu-restaurant-vintage-table.jpg" %}" align="middle" alt="Hipster Restaurant" width="100%" height="100%" />
   <div class="w3-display-middle" style="width:90%">
     <div class="w3-bar w3-black">
-      <button class="w3-bar-item w3-button tablink" onclick="openLink(event, 'Drink');">We Can Have Nice Things</button>
+      
+      <button class="w3-bar-item w3-button tablink" onclick="openLink(event, 'Tab');">We Can Have Nice Things        </button>
       
     </div>
 
     <!-- Tabs -->
-    <div id="Drink" class="w3-container w3-white w3-padding-16 myLink">
+    <div id="Tab" class="w3-container w3-white w3-padding-16 myLink">
 
             <form method="get">
                 {% csrf_token %}
@@ -119,37 +127,42 @@ ul.categorychecklist li {
                   <label>Where? </label>
                   {{ form.location }}
                   </div>
+                  
                   <div class="w3-quarter">
                   <label>How much? </label>
                   {{ form.price }}
                   </div>
                 
                   <div class="w3-quarter">
-                <label>Sort by: </label>
-                {{ form.sort }}
-                </div>
-                </div>
-                <div class="w3-quarter">
-                <label>What kind? </label>
-                {{ form.categories }}
-                </div>
-              </div>
-                <div class="w3=row">
-                <label>Gender Neutral Restrooms: </label>
-                {{ form.attributes }}
-                </div>
-                <div class="w3-rest">
-                <label> Don't make us guess... </label>
-                {{ form.term }}
-                </div>
+                  <label>Sort by: </label>
+                  {{ form.sort }}
+                  </div>
+                  </div>
+                
+                
+                  <div class="w3-quarter">
+                  <label>What kind? </label>
+                  {{ form.categories }}
+                  </div>
+                  </div>
+                
+                  <div class="w3=row">
+                  <label>Gender Neutral Restrooms: </label>
+                  {{ form.attributes }}
+                  </div>
+                
+                  <div class="w3-rest">
+                  <label> Don't make us guess... </label>
+                  {{ form.term }}
+                  </div>
+                
+                
                 <p><input type="submit" value="Find" class="w3-button w3-dark-grey"/></p>
             </form>
       </div>
     </div>
-
-
-
     </div>
+    
 </header>
 
 <script>

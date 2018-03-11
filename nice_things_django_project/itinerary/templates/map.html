@@ -1,12 +1,20 @@
 
   <!DOCTYPE html>
-<!-- Based on an example from https://maptimeboston.github.io/leaflet-intro/ and a tutorial at http://leafletjs.com/examples.html  and  http://www.d3noob.org/2014/02/adding-multiple-markers-to-leafletjs-map.html-->
+<!-- Based on an example from https://maptimeboston.github.io/leaflet-intro/ and a tutorial at http://leafletjs.com/examples.html  and  http://www.d3noob.org/2014/02/adding-multiple-markers-to-leafletjs-map.html
+
+This document borrows extensively from the examples cited above. -->
+
+
 {% load leaflet_tags %}
-{% load geojson_tags %}
+
+
 <html>
 <head>
+  
 {% leaflet_js %}
 {% leaflet_css %}
+
+
     <title>Find Your Nice Things</title>
     
     <meta charset="utf-8" />
@@ -20,7 +28,7 @@
 </head>
 <body>
 
-    <div id="map" ></div>
+<div id="map" ></div>
 
 
 <script>
@@ -28,13 +36,15 @@
 // get access to the underlying images and mapping data
 L.mapbox.accessToken = 'pk.eyJ1IjoidHlsZXJhdWNoaWMiLCJhIjoiY2plM2w3dHl4MmR1azJxcDkyaGdrZmYxNiJ9.NcAoPbMiSoUeWiIzuYh9tg';
 
-// Replace 'mapbox.streets' with your map id.
+// Replace 'mapbox.streets' with map id
 var mapboxTiles = L.tileLayer('https://api.mapbox.com/styles/v1/tylerauchic/cjeeqb93c6ji92sphqmidupsk/tiles/256/{z}/{x}/{y}?access_token=' + L.mapbox.accessToken, {
     attribution: '© <a href="https://www.mapbox.com/feedback/">Mapbox</a> © <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
 });
 
 // create an array of our values we want to plot
- var results = {{ output | safe }} //  From: https://stackoverflow.com/questions/739942/how-to-pass-an-array-in-django-to-a-template-and-use-it-with-javascript#739974
+ var results = {{ output | safe }} 
+ 
+ //  From: https://stackoverflow.com/questions/739942/how-to-pass-an-array-in-django-to-a-template-and-use-it-with-javascript#739974
  
  var focuslat = results[0][0]
  var focuslon = results[0][1]
@@ -43,15 +53,15 @@ var mapboxTiles = L.tileLayer('https://api.mapbox.com/styles/v1/tylerauchic/cjee
 // put down the land cover, colours, etc.
 var map = L.map('map')
     .addLayer(mapboxTiles)
-    .setView([focuslat, focuslon], 12); // the focal point of the map
+    .setView([focuslat, focuslon], 13); // the focal point of the map
     
     
     
 // add points to the map
   for (var i = 0; i < results.length; i++) {
-   marker = new L.marker([results[i][0],results[i][1]]) // lat, lon and red marker
+   marker = new L.marker([results[i][0],results[i][1]]) // lat, lon
     .bindPopup(results[i][2]) // content
-    .addTo(map);
+    .addTo(map); // add the marker
   }
 
     </script>
