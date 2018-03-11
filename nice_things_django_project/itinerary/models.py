@@ -173,7 +173,7 @@ class Env_Complaints(models.Model):
 
 
 class Divvy(models.Model):
-    _id = models.PositiveIntegerField(primary_key=True)
+    station_id = models.PositiveIntegerField(primary_key=True)
     name = models.CharField(max_length=200)
     city = models.CharField(max_length=200)
     longitude = models.FloatField(default=None)

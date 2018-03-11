@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+
+# Authors: Kevin Sun, Tyler Amos, Alexander Tyan
+
 import os
 import sys
 nice_things_django_project_dir = os.path.dirname(__file__)
@@ -253,7 +256,7 @@ def get_filtered_divvy_df(lat_filter, long_filter):
         - df: a pandas dataframe of Divvy bike station information
     """
     
-    df_field_names = ['_id', 'name', 'city', 'latitude', 'longitude', 
+    df_field_names = ['station_id', 'name', 'city', 'latitude', 'longitude', 
                     'capacity']
     rename_to = None
     
@@ -407,13 +410,10 @@ def query_db_food(yelp_results, zip_filter, lat_filter, long_filter):
     # Get details from FOOD database table
     for index_pair in f_index_array:
         yelp_index, flag_index = index_pair[0], int(index_pair[1])
-        _id = food_df.iloc[flag_index].inspection_id
+        insp_id = food_df.iloc[flag_index].inspection_id
         # query the relevant database table
-        f_row = Food.objects.get(inspection_id=_id)
+        f_row = Food.objects.get(inspection_id=insp_id)
         result = f_row.results
-
-        # obtain the business name
-        name = f_row.aka_name
 
         # obtain date and format the date 
         d = str(f_row.inspection_date.day)
@@ -460,13 +460,12 @@ def query_db_wages(yelp_results, zip_filter, lat_filter, long_filter):
     # Get details from WAGES database table
     for index_pair in w_index_array:
         yelp_index, flag_index = index_pair[0], int(index_pair[1])
-        _id = wages_df.iloc[flag_index].case_id
+        case_id = wages_df.iloc[flag_index].case_id
         # query the relevant database table
-        w_row = Wages.objects.get(case_id=_id)
+        w_row = Wages.objects.get(case_id=case_id)
 
         # obtain the wanted business information
         violations = str(w_row.case_violtn_cnt)
-        name = w_row.trade_nm
         
         # add to the yelp results data frame
         yelp_results['wages_violations'].iloc[yelp_index].append(violations) 
@@ -566,6 +565,7 @@ def query_db_enviro(yelp_results, lat_filter, long_filter):
                                 append(enviro_enforcement_url)
     
     return yelp_results
+
 
 def final_result(dict_from_views):
     """
