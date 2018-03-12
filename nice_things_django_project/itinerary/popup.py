@@ -44,9 +44,10 @@ class Popup(object):
             - to_label (list of tuples): a list in the form:
                 (attribute, prefix)
         """
-        result = check_right_format(result)  # ensure the right type
+        result = check_is_Series(result)  # ensure the right type
         
-        # require these fields
+        ### REQUIRED FIELDS ###
+        
         straight_no_default = ["name", "addr", "latitude", "longitude"]
         
         for i in straight_no_default: # loop through row's contents
@@ -57,7 +58,9 @@ class Popup(object):
                               "env_complaints_url", "env_enforce",
                               "env_enforce_url"]
         
-        # lists with none as the default, joined by ", "
+        ### FIELDS WHICH ARE LISTS ###
+        # joined by ", " with none as the default
+        
         for i in lists_to_be_joined:
             try:
                self.__dict__[i] = ", ".join(result[i])
@@ -66,7 +69,9 @@ class Popup(object):
 
         leftovers = ["phone", "price"]
 
+        ### ITEMS WHICH REQUIRE NO ACTION, JUST ADD THEM TO OUTPUT ####
         # items which require no action, just add to the output
+        
         for i in leftovers:
             try:
                 self.__dict__[i] = result[i]
@@ -77,6 +82,7 @@ class Popup(object):
         
         # This is a list of attributes and their specified prefix
         # this is what is written in to the popup
+        
         self.to_label = [(self.phone, ""), (self.price, ""),
                          (self.food_status, "Food Inspections: "),
                          (self.food_date, "Inspection Date: "),
@@ -115,7 +121,7 @@ class Popup(object):
 
 ### Helper function ####
             
-def check_right_format(result):
+def check_is_Series(result):
     """
     Ensures we get inputs in the right format.
 
@@ -130,9 +136,9 @@ def check_right_format(result):
     if type(result) == Series:  # ready for liftoff
         return result
     elif type(result) == tuple: # correct the issue
-        return check_right_format(result[1])
+        return check_is_Series(result[1])
     else:  # issue is not fixable
-        raise TypeError("Popup() received the wrong data type")
-    
+        raise TypeError("Received the wrong data type, try iterrows()")
+
             
 
