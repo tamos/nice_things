@@ -66,10 +66,10 @@ class Divvy(models.Model):
     This is a model for Divvy bike-share station location data.
     See README.md for details.
     """
-    _id = models.PositiveIntegerField(primary_key=True) 
-    name = models.CharField(max_length=200)  # name of the divvy station
-    city = models.CharField(max_length=200)  # city
-    longitude = models.FloatField(default=None) 
+    station_id = models.PositiveIntegerField(primary_key=True)
+    name = models.CharField(max_length=200)
+    city = models.CharField(max_length=200)
+    longitude = models.FloatField(default=None)
     latitude = models.FloatField(default=None)
     capacity = models.PositiveIntegerField()  # number of bikes available
     objects = DataFrameManager()
