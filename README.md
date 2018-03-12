@@ -18,6 +18,7 @@ Repository for CAPP 30122 Winter 2018 Project
  * record_linkage: http://recordlinkage.readthedocs.io
  
  * yelpapi: https://github.com/gfairchild/yelpapi
+    * This package was updated by the group and submitted as a pull request. See https://github.com/gfairchild/yelpapi/pull/8
  
  * pandas: https://pandas.pydata.org
  
