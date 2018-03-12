@@ -7,7 +7,7 @@ Repository for CAPP 30122 Winter 2018 Project
   * Tyler Amos (tamos)
   
   
-# Dependencies:
+# Dependencies
 
  * django-geojson: https://django-geojson.readthedocs.io/en/latest/installation.html
 
@@ -35,13 +35,13 @@ Mapbox (for tile layers): https://www.mapbox.com
 Chicago Data Portal: https://data.cityofchicago.org
   
   
-# Set up:
+# Set up
 
-## 1. Install PostgreSQL
+### 1. Install PostgreSQL
 
 Recommended: https://postgresapp.com
 
-## 2. Now create a PostgrSQL user nice_things. In PostgreSQL:
+### 2. Now create a PostgrSQL user nice_things. In PostgreSQL:
   
   CREATE USER nice_things LOGIN password '';
 
@@ -58,13 +58,13 @@ You may need to specify a password. If that happens, go to nice_things_django_pr
   
   CREATE DATABASE nice_things_db OWNER nice_things;
   
-## 3. Leave PostgresSQL running and now, in a new terminal:
+### 3. Leave PostgresSQL running and now, in a new terminal:
   
   python3 manage.py makemigrations
   
   python3 manage.py migrate
   
-## 4. Open the shell with:
+### 4. Open the shell with:
   
   python3 manage.py shell
   
@@ -72,17 +72,28 @@ You may need to specify a password. If that happens, go to nice_things_django_pr
   
   update_db.update_database()
   
-## 5. Exit to terminal, and:
+### 5. Exit to terminal, and:
   
   python3 manage.py runserver
   
-## 6. Enjoy your nice things. 
+### 6. Enjoy your nice things. 
 
 
 
-  
+# Code Attribution
+
+Due to the design of the project, all areas of code were worked on by all members. 
+
+
+# References
+
+1. Python documentation (python.org)
+2. W3Schools (w3schools.com)
+3. Leaflet (leafletjs.com)
+4. For each package or API used, our code draws from examples and tutorials provided in the documentation.
+5. When external resources, e.g., StackOverflow were consulted, they are cited in the code. 
+
 # Data Sources
- 
  
  #### Bureau of Labor Wage and Hour Compliance Data: https://enforcedata.dol.gov/views/data_summary.php
  
