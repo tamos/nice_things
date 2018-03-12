@@ -57,7 +57,7 @@ class Popup(object):
                               "env_complaints_url", "env_enforce",
                               "env_enforce_url"]
         
-        # lists with none as the default
+        # lists with none as the default, joined by ", "
         for i in lists_to_be_joined:
             try:
                self.__dict__[i] = ", ".join(result[i])
@@ -66,16 +66,17 @@ class Popup(object):
 
         leftovers = ["phone", "price"]
 
-        # items which require no action
+        # items which require no action, just add to the output
         for i in leftovers:
             try:
                 self.__dict__[i] = result[i]
             except:
-                self.__dict[i] = None
+                self.__dict__[i] = None
               
         self.rendered_html = document()
         
         # This is a list of attributes and their specified prefix
+        # this is what is written in to the popup
         self.to_label = [(self.phone, ""), (self.price, ""),
                          (self.food_status, "Food Inspections: "),
                          (self.food_date, "Inspection Date: "),
@@ -126,7 +127,7 @@ def check_right_format(result):
         from the row.
 
     """
-    if type(result) == Series:
+    if type(result) == Series:  # ready for liftoff
         return result
     elif type(result) == tuple: # correct the issue
         return check_right_format(result[1])
