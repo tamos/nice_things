@@ -23,13 +23,13 @@ nice_things_django_project_dir = os.path.dirname(__file__)
 sys.path.insert(0, nice_things_django_project_dir)
 from helpers import file_list, geocoding
 
-BLS_WAGES_GEOCODED_DIR = "{}{}".format(nice_things_django_project_dir,
+BLS_WAGES_GEOCODED_CSV = "{}{}".format(nice_things_django_project_dir,
                                        file_list.labor_stats_geocoded)
-CDP_FOOD_INPSPECTIONS_DIR = "{}{}".format(nice_things_django_project_dir,
+CDP_FOOD_INPSPECTIONS_CSV = "{}{}".format(nice_things_django_project_dir,
                                          file_list.food_j2017_m2018)
-DIVVY_DIR = "{}{}".format(nice_things_django_project_dir,
+DIVVY_CSV = "{}{}".format(nice_things_django_project_dir,
                                          file_list.divvy_stats)
-ENVIRO_DIR = "{}{}".format(nice_things_django_project_dir,
+ENVIRO_CSV = "{}{}".format(nice_things_django_project_dir,
                                          file_list.enviro_stats)
 
 
@@ -183,9 +183,10 @@ def update_db_table(csv_path, db_table_to_update):
 
     elif db_table_to_update == "Wages":
         df.rename(columns={"zip_cd": "zip_code"}, inplace=True)
+
     elif db_table_to_update == "Divvy":
         df.rename(columns={"dpcapacity": "capacity"}, inplace=True)
-        df.rename(columns={"id": "_id"}, inplace=True)
+        df.rename(columns={"id": "station_id"}, inplace=True)
     # For enviro data, split the complaints/enforcement fields into bool and
     # url, concatenate address into a string, and add latitude and
     # longitude columns:
@@ -203,10 +204,10 @@ def update_db_table(csv_path, db_table_to_update):
         model.objects.get_or_create(**row_to_dict)
 
 
-def update_database(wages_csv=BLS_WAGES_GEOCODED_DIR,
-                    food_csv=CDP_FOOD_INPSPECTIONS_DIR,
-                    divvy_csv=DIVVY_DIR,
-                    enviro_csv=ENVIRO_DIR):
+def update_database(wages_csv=BLS_WAGES_GEOCODED_CSV,
+                    food_csv=CDP_FOOD_INPSPECTIONS_CSV,
+                    divvy_csv=DIVVY_CSV,
+                    enviro_csv=ENVIRO_CSV):
     """
     Updates all database tables
 
