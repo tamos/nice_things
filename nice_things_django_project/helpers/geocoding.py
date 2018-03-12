@@ -9,8 +9,9 @@ Modified on Sat Feb 17 22:10:17 2018 by Sasha
 Modified on Fri Mar 02 17:34:17 2018 by Sasha
 Modified on Fri Mar 12 14:27:33 2018 by Sasha
 
-
-This file contains functions for geocoding our address data.
+This file contains functions for geocoding our address data. BLS csv addresses
+are not geocoded, but we need coordinates for later record linkage. These
+function do that.
 """
 from random import uniform
 import requests
@@ -119,7 +120,7 @@ def geocode_bls_addresses(output_csv=DEFAULT_GEOCODED_PATH,
         zip_cd = row[use_cols[6]]
         case_violtn_cnt = row[use_cols[7]]
 
-        # Geocode:
+        # Geocode (Print to see progress):
         print("ATTEMPTING TO GEOCODE ADDRESS", geocode_counter, ":")
         print(street_addr_1_txt, cty_nm, st_cd, zip_cd)
         latitude, longitude = geocode_using_opencagedata(
