@@ -78,7 +78,7 @@ def point_content(results):
           to be made into a Javascript array in map.html
     """
     output = []
-    for i in results.itertuples():  # Insert marker content
+    for i in results.iterrows():  # Insert marker content
         content = Popup(i)
         output.append([content.latitude, content.longitude, content.to_html()])
         

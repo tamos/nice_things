@@ -1,17 +1,22 @@
-# This is the Popup class
+# This class is used to fill the popup on the map
 
 import dominate
 from dominate.tags import html, head, body, b, br
 from dominate.document import document
+from pandas.core.series import Series
+
+
 
 class Popup(object):
     """
     This is a popup which will be displayed on the result map.
-    """
+    """     
     
     def __init__(self, result):
         """
-        This instantiates a Popup object.
+        This instantiates a Popup object from a single DataFrame row's data.
+        That is the 1-index element in a single row from the method
+        self.iterrows()
         
         Attributes:
             - name (str): the name of the business
@@ -36,55 +41,38 @@ class Popup(object):
                environmental enforcements
             - rendered_html (str): a string of which contains html code
               that will be passed into a javascript array. See self.to_html()
-              
             - to_label (list of tuples): a list in the form:
                 (attribute, prefix)
         """
-        self.name = result.name
-        self.addr = result.addr
-        self.latitude = result.latitude
-        self.longitude = result.longitude
-        try:
-            self.phone = result.phone
-        except:
-            self.phone = None
-        try:
-            self.price = result.price
-        except:
-            self.price = None
-        try:
-            self.food_status = ", ".join(result.food_status)
-        except:
-            self.food_status = None
-        try:
-            self.food_date = ", ".join(result.food_date)
-        except:
-            self.food_date = None
-        try:
-            self.wages_violations = ", ".join(result.wages_violations)
-        except:
-            self.wages_violations = None
-        try:
-            self.divvy_stations = ", ".join(result.divvy_stations)
-        except:
-            self.divvy_stations = None
-        try:
-            self.env_complaints = ", ".join(result.env_complaints)
-        except:
-            self.env_complaints = None
-        try:
-            self.env_complaints_url = ", ".join(result.env_complaints_url)
-        except:
-            self.env_complaints_url = None
-        try:
-            self.env_enforce = ", ".join(result.env_enforce)
-        except:
-            self.env_enforce = None
-        try:
-            self.env_enforce_url = ", ".join(result.env_enforce_url)
-        except:
-            self.env_enforce_url = None
+        result = check_right_format(result)  # ensure the right type
         
+        # require these fields
+        straight_no_default = ["name", "addr", "latitude", "longitude"]
+        
+        for i in straight_no_default: # loop through row's contents
+                self.__dict__[i]= result[i]
+
+        lists_to_be_joined = ["food_status", "food_date", "wages_violations",
+                              "divvy_stations", "env_complaints",
+                              "env_complaints_url", "env_enforce",
+                              "env_enforce_url"]
+        
+        # lists with none as the default
+        for i in lists_to_be_joined:
+            try:
+               self.__dict__[i] = ", ".join(result[i])
+            except:
+                self.__dict__[i] = None
+
+        leftovers = ["phone", "price"]
+
+        # items which require no action
+        for i in leftovers:
+            try:
+                self.__dict__[i] = result[i]
+            except:
+                self.__dict[i] = None
+              
         self.rendered_html = document()
         
         # This is a list of attributes and their specified prefix
@@ -97,6 +85,7 @@ class Popup(object):
                          (self.env_complaints_url, "Complaints Links: "),
                          (self.env_enforce, "Environmental Penalties Levied: "),
                          (self.env_enforce_url, "Environmental Penalties Links: ")]
+
 
     def to_html(self):
         """
@@ -120,7 +109,29 @@ class Popup(object):
                 self.rendered_html.add(b(prefix), str(attr), br())
 
         return str(self.rendered_html)
-            
 
-        
+
+
+### Helper function ####
+            
+def check_right_format(result):
+    """
+    Ensures we get inputs in the right format.
+
+    Input:
+        - result (as described in Popup.__init__)
+
+    Output:
+        - The result, correctly formatted as the 1-index element
+        from the row.
+
+    """
+    if type(result) == Series:
+        return result
+    elif type(result) == tuple: # correct the issue
+        return check_right_format(result[1])
+    else:  # issue is not fixable
+        raise TypeError("Popup() received the wrong data type")
+    
+            
 
