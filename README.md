@@ -10,7 +10,7 @@ Repository for CAPP 30122 Winter 2018 Project
 
 ### 1. Install PostgreSQL
 
-Follow the instructions on django-girls for PostgreSQL install (NOTE: For creating the database user and the database, follow step 2 in this ReadME):
+Follow the instructions on django-girls for PostgreSQL install (NOTE: For creating the database user and the database, follow step 2 in this README):
 
 https://tutorial-extensions.djangogirls.org/en/optional_postgresql_installation/
 

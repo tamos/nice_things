@@ -1,10 +1,12 @@
-# This class is used to fill the popup on the map
+"""
+ORIGINAL (using dominate documentation)
 
-import dominate
+Authors: Tyler Amos
+"""
+
 from dominate.tags import html, head, body, b, br
 from dominate.document import document
 from pandas.core.series import Series
-
 
 
 class Popup(object):
@@ -93,7 +95,6 @@ class Popup(object):
                          (self.env_enforce, "Environmental Penalties Levied: "),
                          (self.env_enforce_url, "Environmental Penalties Links: ")]
 
-
     def to_html(self):
         """
         This method renders html to a string which is then passed as the
@@ -118,9 +119,9 @@ class Popup(object):
         return str(self.rendered_html)
 
 
-
 ### Helper function ####
-            
+
+
 def check_is_Series(result):
     """
     Ensures we get inputs in the right format.
@@ -135,7 +136,7 @@ def check_is_Series(result):
     """
     if type(result) == Series:  # ready for liftoff
         return result
-    elif type(result) == tuple: # correct the issue
+    elif type(result) == tuple:  # correct the issue
         return check_is_Series(result[1])
     else:  # issue is not fixable
         raise TypeError("Received the wrong data type, try iterrows()")
