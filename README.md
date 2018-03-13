@@ -39,11 +39,9 @@ cd to your local clone of the repository nice_things and run:
 
 pip3 install -r requirements.txt
 
-or 
+Or if you are on the UChicago Student Ubuntu VM:
 
-sudo -H ip3 install -r requirements.txt
-
-if on the UChicago Student Ubuntu VM
+sudo -H pip3 install -r requirements.txt
   
 ### 3. Leave PostgresSQL running and now, in a new terminal:
   
@@ -73,11 +71,11 @@ Due to the design of the project, all areas of code were worked on by all member
 
 # References
 
-1. Python documentation (python.org)
-2. W3Schools (w3schools.com)
-3. Leaflet (leafletjs.com)
-4. For each package or API used, our code draws from examples and tutorials provided in the documentation.
-5. When external resources, e.g., StackOverflow were consulted, they are cited in the code. 
+* Python documentation (python.org)
+* W3Schools (w3schools.com)
+* Leaflet (leafletjs.com)
+* For each package or API used, our code draws from examples and tutorials provided in the documentation.
+* When external resources, e.g., StackOverflow were consulted, they are cited in the code. 
 
 # Data Sources
  
@@ -103,8 +101,6 @@ Due to the design of the project, all areas of code were worked on by all member
 
 Q3 and Q4 data for 2017 was used to identify the locations of Divvy stations. The data was provided with the trips dataset which can be downloaded above. The data used in this repository was downloaded on March 5, 2018.
  
- 
-   
 # Python Modules and Tools Used:
 
  * yelpapi: https://github.com/gfairchild/yelpapi
