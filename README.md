@@ -8,6 +8,8 @@ Repository for CAPP 30122 Winter 2018 Project
 
 ### Overall code description:
 
+This django web app takes user-defined inputs and searches for bars/restaurants and other businesses based on those inputs. It returns information about that business, including information on issues users care about (e.g., labour code violations). Armed with this information, users can make better decisions about where they spend their money. 
+
 The project is implemented in Django. Every time a user uses the front-end (html in `index.html`, interacting with Django forms in `forms.py`, with html requests processed by `views.py`), the code makes an API request to Yelp to find relevant businesses according to that search criteria. The package used for Yelp API was deprecated, but Tyler Amos updated it via a GitHub contribution (details below in "Python Modules and Tools Used").
 
 The program then does record linkage with data in the database (Yelp request and matching code is in `matching.py`). During the project set-up, the database schema is constructed using Django models (`models.py`, with database access settings stored in `settings.py`). We populate the database from CSV files using `update_db.py`. The CSVs are from sources listed in the Data Sources section at the end of this `README.md`. These sources present "social consciousness" data that may be interesting to 
