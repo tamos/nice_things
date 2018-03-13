@@ -8,31 +8,18 @@ Repository for CAPP 30122 Winter 2018 Project
 
 ### Overall code description:
 
-The project is implemented in Django. Every time a user uses the front-end (html in `index.html`, interacting with Django forms in `forms.py`, with html requests
-processed by `views.py`), the code makes an API request to Yelp to find relevant businesses 
-according to that search criteria. The package used for Yelp API was deprecated, but Tyler Amos 
-updated it via a GitHub contribution (details below in "Python Modules and Tools Used").
+The project is implemented in Django. Every time a user uses the front-end (html in `index.html`, interacting with Django forms in `forms.py`, with html requests processed by `views.py`), the code makes an API request to Yelp to find relevant businesses according to that search criteria. The package used for Yelp API was deprecated, but Tyler Amos updated it via a GitHub contribution (details below in "Python Modules and Tools Used").
 
-The program then does record linkage with data in the database (Yelp request and matching code is in `matching.py`). 
-During the project set-up, the database schema is constructed using Django models (`models.py`, with database access 
-settings stored in `settings.py`). We populate the database from CSV files using `update_db.py`.
-The CSVs are from sources listed in the Data Sources section at the end of this `README.md`. 
-These sources present "social consciousness" data that may be interesting to 
-a user, such as establishments' environment, labour, and food records, as well as nearby 
-Divvy bike stations.
+The program then does record linkage with data in the database (Yelp request and matching code is in `matching.py`). During the project set-up, the database schema is constructed using Django models (`models.py`, with database access settings stored in `settings.py`). We populate the database from CSV files using `update_db.py`. The CSVs are from sources listed in the Data Sources section at the end of this `README.md`. These sources present "social consciousness" data that may be interesting to 
+a user, such as establishments' environment, labour, and food records, as well as nearby Divvy bike stations.
 
-Once matches are made with the Yelp results, the user is redirected to search results 
-rendered by `map.html` in conjunction with `forms.py` and html request handler `views.py`.
+Once matches are made with the Yelp results, the user is redirected to search results rendered by `map.html` in conjunction with `forms.py` and html request handler `views.py`.
 
 ### Set up:
 
 ### 1. Install dependencies:
 
-`cd` into your local clone of the repository nice_things, where requirements.txt
- is located. If you are using UChicago's student Ubuntu VM, we recommend installing and following the 
-rest of the instructions using sudo's -H flag 
-(e.g. `sudo -H apt-get install postgresql postgresql-contrib` for PostgreSQL 
-installation later). If ON UChicago's Student Ubuntu VM, enter :
+`cd` into your local clone of the repository nice_things, where requirements.txt is located. If you are using UChicago's student Ubuntu VM, we recommend installing and following the  rest of the instructions using sudo's -H flag  (e.g. `sudo -H apt-get install postgresql postgresql-contrib` for PostgreSQL installation later). If on UChicago's Student Ubuntu VM, enter :
 
 `sudo -H pip3 install -r requirements.txt`
 
@@ -44,9 +31,7 @@ Otherwise, enter:
 
 ### 2. Install PostgreSQL
 
-Follow the instructions on django-girls (URL below) for PostgreSQL install according to your OS. 
-(NOTE: For creating the database user and the database, follow step 3 in this README
- instead of django-girls).
+Follow the instructions on django-girls (URL below) for PostgreSQL install according to your OS. (NOTE: For creating the database user and the database, follow step 3 in this README instead of django-girls).
 
 `https://tutorial-extensions.djangogirls.org/en/optional_postgresql_installation/`
 
@@ -72,9 +57,7 @@ If ON UChicago's Student Ubuntu VM, enter :
 
 You should see `CREATE ROLE` in the console if the user was created successfully.
 
-If ON UChicago's Student Ubuntu VM, you also need to specify the "uccs" password 
-to Django settings. To do so, go to `nice_things/nice_things_django_project/settings.py`
- and change the `DATABASES` variable's line:
+If ON UChicago's Student Ubuntu VM, you also need to specify the "uccs" password to Django settings. To do so, go to `nice_things/nice_things_django_project/settings.py`and change the `DATABASES` variable's line:
 
 `'PASSWORD': ''`
   
@@ -96,15 +79,11 @@ Start PostgreSQL server. In UChicago's Student Ubuntu VM terminal:
 
 `sudo -H /etc/init.d/postgresql start`
 
-If you are on MacOS and installed Postgres.app from django-girls instructions
-in step 2, you can start this installed app and start server from there. Otherwise, 
-enter this into your terminal:
+If you are on MacOS and installed Postgres.app from django-girls instructions in step 2, you can start this installed app and start server from there. Otherwise, enter this into your terminal:
 
 `sudo /etc/init.d/postgresql start`
 
-Leave the server running and in a NEW terminal window, `cd` to 
-`nice_things/nice_things_django_project/`, where `manage.py` is and 
-enter:
+Leave the server running and in a NEW terminal window, `cd` to `nice_things/nice_things_django_project/`, where `manage.py` is and enter:
   
 `python3 manage.py makemigrations`
 
@@ -128,8 +107,7 @@ Then:
   
 `update_db.update_database()`
 
-This will populate our nice_things_db with the data in the CSV files (stored 
-in the `data` folder). Once that's done, you may `exit()` the shell.
+This will populate our nice_things_db with the data in the CSV files (stored in the `data` folder). Once that's done, you may `exit()` the shell.
   
 ### 6. Let's start our Django development server to see our app in action:
   
@@ -139,20 +117,26 @@ In the same folder, where `manage.py` is, enter in terminal:
   
 ### 7. Enjoy your nice things: 
 
-Copy the address (something like `http://127.0.0.1:8000/` from the command in 
- step 6) into your web browser and try some search queries. Note that it is important Here are some example t
+Copy the address (something like `http://127.0.0.1:8000/` from the command in step 6) into your web browser and try some search queries. When you search for results in Los Angeles or Miami, you will get the base results (address, name, location on a map) but none of our supplemental data. At present, supplemental data is only provided for Chicago.
+
+#### Queries to Try:
+
+Where: "Hyde Park"
+Search Term ("Don't make us guess.."): "burgers"
+
+Where: "Pilsen"
+Search Term: "bar"
+Sort by: Yelp Rating
+What kind: Drink
 
 # Code Attribution
 
-Due to the design of the project, all areas of code were worked on by all members. See 
-lists of "Authors" in respective Python code files for all contributors. We use the 
-following authorship scheme:
+Due to the design of the project, all areas of code were worked on by all members. See lists of "Authors" in respective Python code files for all contributors. Primary authorship is enumerated below. We use the following authorship scheme:
 
 "DIRECT COPY"  ~ Generated by installed package (Django or other) and few edits made
                
 
-"MODIFIED"     ~ Generated by installed package (Django or other) and meaningful edits made   OR   
-heavily utilized template(s) provided by tutorial sessions (TA- or Django-generated)                                     
+"MODIFIED"     ~ Generated by installed package (Django or other) and meaningful edits made   OR   heavily utilized template(s) provided by tutorial sessions (TA- or Django-generated)                                     
 
 "ORIGINAL"     ~ Original code or heavily modified given structure 
 
@@ -231,8 +215,8 @@ Q3 and Q4 data for 2017 was used to identify the locations of Divvy stations. Th
  * django-leaflet: https://django-leaflet.readthedocs.io
 
  * record_linkage: http://recordlinkage.readthedocs.io
- 
- 
+
+ See requirements.txt for a full list of modules.
  
  # All API keys are provided in the Gitlab repository (tylera). The main APIs used are:
 
@@ -244,5 +228,3 @@ Chicago Data Portal: https://data.cityofchicago.org
 
 Yelp: https://www.yelp.com/developers
   
- 
- 
