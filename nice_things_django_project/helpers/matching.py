@@ -1,6 +1,11 @@
 #!/usr/bin/env python3
 
-# Authors: Kevin Sun, Tyler Amos, Alexander Tyan
+"""
+ORIGINAL (with the help of Python documentation and unless noted otherwise
+in function docstrings)
+
+Authors: Kevin Sun, Tyler Amos, Alexander Tyan
+"""
 
 import os
 import sys
@@ -9,29 +14,17 @@ sys.path.insert(0, nice_things_django_project_dir)
 import pandas as pd
 from api_keys import yelp
 from yelpapi import YelpAPI
-from itertools import product
 import recordlinkage as rl
 import numpy as np
-from dateutil import parser
 from django.core.wsgi import get_wsgi_application
 os.chdir('../')
 os.environ['DJANGO_SETTINGS_MODULE'] = "nice_things_django_project.settings"
 application = get_wsgi_application()
 from itinerary.models import Food, Wages, Divvy, Env_Complaints
-from django_pandas.managers import DataFrameManager
 
-default_term = "farmers market"
-default_categories = ""
-default_price = "1,2,3,4"
-default_location = "The Loop, Chicago" 
-default_lim = 50
-default_sort = "best_match"
-default_attributes = "gender_neutral_restrooms"
 
-def extract_yelp_data(yelp_api_key=yelp, term=default_term, 
-    categories=default_categories, price=default_price, 
-    location=default_location, limit=default_lim, sort_by=default_sort,
-    attributes=default_attributes):
+def extract_yelp_data(term, categories, price, location,
+                      limit, sort_by, attributes, yelp_api_key=yelp):
     """
     This function takes search results (a dictionary) and obtains the 
     name, zip code, address of the possible restaurant matches in the
@@ -42,7 +35,7 @@ def extract_yelp_data(yelp_api_key=yelp, term=default_term,
         - term: a string of search terms input by the user
         - lat: a float representing either a user's current location 
                 latitude or their desired location latitude
-        - long: a float representing either a user's current location 
+        - long: a float representing either a user's current location
                 longitude or their desired location longitude
         - limit: an integer of maximum number of Yelp results that
                     will be returned from the query
@@ -152,8 +145,15 @@ def define_filters(yelp_results):
 
 def truncate_coordinate(coordinate):
     """
+    Author: https://stackoverflow.com/questions/783897/truncating-floats-in-python
     This is function truncates coordinates to 3-decimal places.
-	"""
+
+    Inputs:
+        - coordinate: float, of latitude or longitude
+
+    Outputs:
+        - trunc_coordinate: float, truncated latitude or longitude
+    """
     s = '{}'.format(coordinate)
     i, p, d = s.partition('.')
     trunc_coordinate = '.'.join([i, (d+'0'*3)[:3]])
@@ -161,7 +161,7 @@ def truncate_coordinate(coordinate):
     return trunc_coordinate
 
 
-def filter_df(target_model, df_field_names, rename_to = None, **kwargs):
+def filter_df(target_model, df_field_names, rename_to=None, **kwargs):
     """
     This function filters dataframe
     
@@ -173,14 +173,13 @@ def filter_df(target_model, df_field_names, rename_to = None, **kwargs):
     
     Output: 
         - df: a pandas dataframe of filtered database information
-       
     """
     filtered = target_model.objects.filter(**kwargs)
     # cast to df
     if filtered.exists():
         df = filtered.to_dataframe(fieldnames=df_field_names)
         if rename_to:
-            df.rename(index = str, columns = rename_to, inplace = True)
+            df.rename(index=str, columns=rename_to, inplace=True)
     else:
         df = []
     
@@ -205,9 +204,9 @@ def get_filtered_food_df(zip_filter, lat_filter, long_filter):
     df_field_names = ['zip_code', 'aka_name', 'address', 'inspection_id',
                       'latitude', 'longitude']
     rename_to = {"aka_name": "name", "address": "addr"}
-    df =  filter_df(Food, df_field_names, rename_to, zip_code__in=zip_filter, 
-                    latitude__range=(min(lat_filter), max(lat_filter)), 
-                    longitude__range=(max(long_filter), min(long_filter)))
+    df = filter_df(Food, df_field_names, rename_to, zip_code__in=zip_filter,
+                   latitude__range=(min(lat_filter), max(lat_filter)),
+                   longitude__range=(max(long_filter), min(long_filter)))
     
     return df
             
@@ -228,15 +227,14 @@ def get_filtered_wages_df(zip_filter, lat_filter, long_filter):
         - df: a pandas dataframe of Bureau of Labour Statistics
                     information
     """
-
     df_field_names = ['zip_code', 'trade_nm', 'street_addr_1_txt', 'case_id', 
                     'latitude', 'longitude']
     rename_to = {"zip_cd": "zip_code","trade_nm": "name", 
                     "street_addr_1_txt": "addr"}
     
-    df =  filter_df(Wages, df_field_names, rename_to, zip_code__in=zip_filter, 
-        latitude__range=(min(lat_filter), max(lat_filter)), 
-        longitude__range=(max(long_filter), min(long_filter)))
+    df = filter_df(Wages, df_field_names, rename_to, zip_code__in=zip_filter,
+                   latitude__range=(min(lat_filter), max(lat_filter)),
+                   longitude__range=(max(long_filter), min(long_filter)))
     
     return df
 
@@ -256,13 +254,13 @@ def get_filtered_divvy_df(lat_filter, long_filter):
         - df: a pandas dataframe of Divvy bike station information
     """
     
-    df_field_names = ['station_id', 'name', 'city', 'latitude', 'longitude', 
-                    'capacity']
+    df_field_names = ['station_id', 'name', 'city', 'latitude', 'longitude',
+                      'capacity']
     rename_to = None
     
-    df =  filter_df(Divvy, df_field_names, rename_to, 
-        latitude__range=(min(lat_filter), max(lat_filter)), 
-        longitude__range=(max(long_filter), min(long_filter)))
+    df = filter_df(Divvy, df_field_names, rename_to,
+                   latitude__range=(min(lat_filter), max(lat_filter)),
+                   longitude__range=(max(long_filter), min(long_filter)))
 
     return df
 
@@ -286,15 +284,16 @@ def get_filtered_enviro_df(lat_filter, long_filter):
     df_field_names = ['pk', 'longitude', 'latitude', 'address']
     rename_to = {"address": "addr"}
     
-    df =  filter_df(Env_Complaints, df_field_names, rename_to,
-                    latitude__range=(min(lat_filter), max(lat_filter)),
-                    longitude__range=(max(long_filter), min(long_filter)))
+    df = filter_df(Env_Complaints, df_field_names, rename_to,
+                   latitude__range=(min(lat_filter), max(lat_filter)),
+                   longitude__range=(max(long_filter), min(long_filter)))
     
     return df
 
 
 def link_datasets(yelp_results, dj_df, df_type="wages"):
     """
+    (Assisted by Record Linkage Toolkit library and documentation)
     This functions compares the Yelp query results to database results and 
     produces the best matches based on computing the qgram score. Depending
     on the specific database table characteristics the qgram calculation
@@ -324,13 +323,13 @@ def link_datasets(yelp_results, dj_df, df_type="wages"):
     # Labour & Food data comparisons to Yelp are made on zip, business name,
     # and address
     if df_type == "wages" or df_type == "food": 
-        indexer = rl.BlockIndex(on='zip_code') # block on zip code
+        indexer = rl.BlockIndex(on='zip_code')  # block on zip code
         compare.numeric('zip_code', 'zip_code', method='linear',
                         scale=30.0, label='zip_score')
-        compare.string('name', 'name', method='qgram', 
-            threshold=name_thresh, label='name_score')
-        compare.string('addr', 'addr', method='qgram', 
-            threshold=addr_thresh, label='addr_score')
+        compare.string('name', 'name', method='qgram',
+                       threshold=name_thresh, label='name_score')
+        compare.string('addr', 'addr', method='qgram',
+                       threshold=addr_thresh, label='addr_score')
     
     # Environmental data comparisons to Yelp are made on address
     elif df_type == "enviro":
@@ -360,9 +359,9 @@ def link_datasets(yelp_results, dj_df, df_type="wages"):
     # Classification and final filtering
     if df_type == "wages" or df_type == "food": 
         best_matches = features[(features['zip_score'] == zip_classif_thresh) &
-        (features['name_score'] == name_classif_thresh) &
-        (features['addr_score'] == addr_classif_thresh) &
-        (features['coord_score'] >= coord_classif_thresh)]
+                                (features['name_score'] == name_classif_thresh) &
+                                (features['addr_score'] == addr_classif_thresh) &
+                                (features['coord_score'] >= coord_classif_thresh)]
     elif df_type == "enviro":
         best_matches = features[(features['addr_score'] == addr_classif_thresh) &
                                 (features['coord_score'] >= coord_classif_thresh)]
@@ -497,8 +496,7 @@ def query_db_divvy(yelp_results, lat_filter, long_filter):
         d_index_array = []
 
     # add columns to yelp_results dataframe
-    yelp_results['divvy_stations'] = np.empty((size_results, 
-        0)).tolist()
+    yelp_results['divvy_stations'] = np.empty((size_results, 0)).tolist()
 
     # get details for the DIVVY table
     for index_pair in d_index_array:
@@ -558,11 +556,11 @@ def query_db_enviro(yelp_results, lat_filter, long_filter):
         # add to the yelp results data frame
         yelp_results['env_complaints'].iloc[yelp_index].append(complaints)
         yelp_results['env_complaints_url'].iloc[yelp_index].\
-                                append(complaints_url)
+            append(complaints_url)
         yelp_results['env_enforce'].iloc[yelp_index].\
-                                append(enviro_enforcement)
+            append(enviro_enforcement)
         yelp_results['env_enforce_url'].iloc[yelp_index].\
-                                append(enviro_enforcement_url)
+            append(enviro_enforcement_url)
     
     return yelp_results
 
@@ -588,18 +586,19 @@ def final_result(dict_from_views):
     sort = dict_from_views['sort']
     attributes = dict_from_views['attributes']
 
-    yelp_results = extract_yelp_data(yelp_api_key=yelp, term=term, 
-        categories=categories, price=price, location=location, limit=lim, 
-        sort_by=sort, attributes=attributes)
+    yelp_results = extract_yelp_data(yelp_api_key=yelp, term=term,
+                                     categories=categories, price=price,
+                                     location=location, limit=lim,
+                                     sort_by=sort, attributes=attributes)
     
     # We use filters to narrow down the area of interest
     zip_filter, lat_filter, long_filter = define_filters(yelp_results)
 
-    final_result = query_db_food(yelp_results, zip_filter, lat_filter, 
-                                long_filter)
+    final_result = query_db_food(yelp_results, zip_filter, lat_filter,
+                                 long_filter)
 
-    final_result = query_db_wages(final_result, zip_filter, lat_filter, 
-                                long_filter)
+    final_result = query_db_wages(final_result, zip_filter, lat_filter,
+                                  long_filter)
 
     final_result = query_db_divvy(final_result, lat_filter, long_filter)
 

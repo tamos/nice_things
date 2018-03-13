@@ -1,4 +1,9 @@
 #!/usr/bin/env python3
+"""
+ORIGINAL (with help from Django and used libraries documentation)
+
+Authors: Tyler Amos, Alexander Tyan
+"""
 import os
 import pandas as pd
 from dateutil import parser
@@ -16,13 +21,14 @@ os.environ['DJANGO_SETTINGS_MODULE'] = "nice_things_django_project.settings"
 application = get_wsgi_application()
 
 # Used to interact with database tables:
-from itinerary.models import Food, Wages, Divvy, Env_Complaints
+#from itinerary.models import Food, Wages, Divvy, Env_Complaints
 
 # Find files directories:
 nice_things_django_project_dir = os.path.dirname(__file__)
 sys.path.insert(0, nice_things_django_project_dir)
 from helpers import file_list, geocoding
 
+# Default paths to static csv's from APIs and direct downloads:
 BLS_WAGES_GEOCODED_CSV = "{}{}".format(nice_things_django_project_dir,
                                        file_list.labor_stats_geocoded)
 CDP_FOOD_INPSPECTIONS_CSV = "{}{}".format(nice_things_django_project_dir,
@@ -35,16 +41,15 @@ ENVIRO_CSV = "{}{}".format(nice_things_django_project_dir,
 
 def split_y_and_url(df_column):
     """
-    Helper to preprocess_enviro_df. Splits a column in form Y (url)
+    Helper to preprocess_enviro_df. Splits a column in form <"Y"><url>
 
     Inputs:
         - df_column: df series, representing a column like "Y <url>"
-        - comp_or_enf: string, "complaints" or "enforcement", for renaming
-        the split columns
 
     Outputs:
-        - split_df: Pandas dataframe, (<bool of complaint or enforcement>,
-        <url string of complaint or enforcement>)
+        - split_df: Pandas dataframe, with columns
+        <bool of complaint or enforcement>,
+        <url string of complaint or enforcement>
     """
     # Split "Y" from the URL and convert "Y" to True's
     split_df = df_column.str.extract(r'(^Y) \((.*)\)', expand=True)
@@ -88,7 +93,7 @@ def preprocess_enviro_df(enviro_df):
     updating the nice_things db.
 
     Inputs:
-        - enviro_df: pandas dfof the original cdp environment file
+        - enviro_df: pandas df of the original cdp environment file
         - output_csv_path: string, directory path for the processed csv file
 
     Outputs:
@@ -114,14 +119,14 @@ def preprocess_enviro_df(enviro_df):
     return df
 
 
-# Squirt the data into the db, using atomic transactions, rolls back all
-# db changes if at least one transaction was unsuccessful:
+# Squirt the data into the db, using atomic transactions; rolls back all
+# current db changes if at least one transaction was unsuccessful:
 # (https://docs.djangoproject.com/en/2.0/topics/db/transactions/#
 # django.db.transaction.atomic):
 @transaction.atomic
 def update_db_table(csv_path, db_table_to_update):
     """
-    Updates a in the nice_things db.
+    Updates a table in the nice_things db.
 
     Inputs:
         - csv_path: string, csv path file to the data with which to update db
@@ -131,6 +136,7 @@ def update_db_table(csv_path, db_table_to_update):
     Outputs:
         - no return, update the db_table_to_update table in nice_things db
     """
+    print("Updating {} Table...".format(db_table_to_update))
     # Determine the model
     # (https://stackoverflow.com/questions/411810/how-do-i-retrieve-a-django-
     # model-class-dynamically/28380435):
@@ -175,6 +181,9 @@ def update_db_table(csv_path, db_table_to_update):
     # Some general data pre-processing; column renaming, time formatting:
     if db_table_to_update == "Food":
         # To conform date-time formats:
+        # Consulted (https://stackoverflow.com/questions/7065164/
+        # how-to-make-an-unaware-datetime-timezone-aware-in-python/28173891)
+        # and Pandas docs
         df["inspection_date"] = df["inspection_date"].apply(func=parser.parse)
         df["inspection_date"] = df["inspection_date"].apply(
             func=timezone.make_aware, args=(pytz.UTC, ))
@@ -192,6 +201,9 @@ def update_db_table(csv_path, db_table_to_update):
     # longitude columns:
     elif db_table_to_update == "Env_Complaints":
         df = preprocess_enviro_df(df)
+    else:
+        print("BAD INPUT FOR db_table_to_update!!!")
+        return
 
     # Doing PostgreSQL injection row by row (slow) because bulk inject doesn't
     # work for our environmental table because it has automatically generated
@@ -200,8 +212,13 @@ def update_db_table(csv_path, db_table_to_update):
         # Prepare row for a **kwargs input
         # (https://docs.djangoproject.com/en/2.0/ref/models/querysets/#get-or-create):
         row_to_dict = row.to_dict()
-        # Squirt the data into the db:
+        # Squirt the data into the db (help from
+        # https://stackoverflow.com/questions/21986194/how-to-pass-dictionary-
+        # items-as-function-arguments-in-python)
+        # get_or_create() should avoid creating duplicate records:
         model.objects.get_or_create(**row_to_dict)
+
+    print("Updated {} Table!".format(db_table_to_update))
 
 
 def update_database(wages_csv=BLS_WAGES_GEOCODED_CSV,
@@ -209,21 +226,24 @@ def update_database(wages_csv=BLS_WAGES_GEOCODED_CSV,
                     divvy_csv=DIVVY_CSV,
                     enviro_csv=ENVIRO_CSV):
     """
-    Updates all database tables
+    Updates all database tables; may take a while to run depending on how big
+    the CSV files are.
 
     Inputs:
         - wages_csv: str, BLS Labour Violations csv path
         - food_csv: str, CDP Food Inspections csv path
         - divvy_csv: str, Chicago Divvy stations csv path
-        - enviro_csv: str, CDP Enviroment violations csv path
+        - enviro_csv: str, CDP Environment violations csv path
 
     Outputs:
         - no return, updates all database tables
     """
+    print("Updating nice_things_db... Give me a moment...")
     update_db_table(csv_path=wages_csv, db_table_to_update="Wages")
     update_db_table(csv_path=food_csv, db_table_to_update="Food")
     update_db_table(csv_path=divvy_csv, db_table_to_update="Divvy")
     update_db_table(csv_path=enviro_csv, db_table_to_update="Env_Complaints")
+    print("All tables in nice_things_db updated!")
 
 
 

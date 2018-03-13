@@ -1,3 +1,7 @@
+"""
+ORIGINAL
+"""
+
 from pathlib import Path
 
 # These are paths relative to "/nice_things_django_project" directory:
@@ -14,4 +18,4 @@ enviro_stats = "/data/cdp_environment.csv"
 # Citation: https://stackoverflow.com/questions/51520/
 # how-to-get-an-absolute-file-path-in-python
 # This gets absolute path of "/nice_things_django_project/file_list" directory:
-nice_things_django_project_dir = str(Path(__file__).resolve())
+#nice_things_django_project_dir = str(Path(__file__).resolve())

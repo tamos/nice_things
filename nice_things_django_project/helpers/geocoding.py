@@ -1,13 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Fri Feb  9 12:34:16 2018
+ORIGINAL (with the help of API and Python documentation)
 
-@author: ty
-
-Modified on Sat Feb 17 22:10:17 2018 by Sasha
-Modified on Fri Mar 02 17:34:17 2018 by Sasha
-Modified on Fri Mar 12 14:27:33 2018 by Sasha
+Tyler Amos, Alexander Tyan
 
 This file contains functions for geocoding our address data. BLS csv addresses
 are not geocoded, but we need coordinates for later record linkage. These
