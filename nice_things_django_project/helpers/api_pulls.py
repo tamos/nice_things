@@ -3,12 +3,18 @@ ORIGINAL (with assistance from Python and requests documentation and
 https://dev.socrata.com/docs/app-tokens.html for Socrata API)
 
 Authors: Alexander Tyan
+
+Description: functions for CDP API pulls. Note that CDP's environmental data
+is only available in a lookup format (e.g. table where one can find a
+violation then one must follow the url to go to another CDP table). So this
+environmental CSV ("cdp_environment.csv" in the "data" folder) was a direct
+download from the CDP, without using the API.
 """
 import requests
 import sys
 import os
 
-# Find files directories:
+# Find files directories (from PA3):
 nice_things_django_project_dir = os.path.join(os.path.dirname(__file__), '..')
 sys.path.insert(0, nice_things_django_project_dir)
 from helpers import api_keys
@@ -17,7 +23,7 @@ LEGAL_DICT_INPUTS = {"inspection_id", "dba_name", "aka_name", "license_",
                      "facility_type", "risk", "address", "city", "state",
                      "zip", "inspection_date", "inspection_type", "results",
                      "violations", "latitude", "longitude", "location",
-                     "location_city","location_address", "location_zip",
+                     "location_city", "location_address", "location_zip",
                      "location_state"}
 
 
@@ -35,7 +41,8 @@ def pull_cdp_health_api(output_csv, where_date=None, input_dict={}, limit=None,
 
         - input_dict: dictionary of params for what fields from the dataset
         to include and how to filter them. Dict keys are strings. For full field
-        interpretation see "cdp_food_inspections_description.pdf"
+        interpretation see "cdp_food_inspections_description.pdf" in the
+        "data" folder
         Options for keys:
             inspection_id: number
             dba_name: text, all capital letters
