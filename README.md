@@ -5,69 +5,124 @@ Repository for CAPP 30122 Winter 2018 Project
   * Alexander Tyan (AlexanderTyan)
   * Kevin Sun (Sun-Kev)
   * Tyler Amos (tamos)
-  
-# Set up
 
-### 1. Install PostgreSQL
+### 1. Install dependencies:
 
-Follow the instructions on django-girls for PostgreSQL install (NOTE: For creating the database user and the database, follow step 2 in this README):
+`cd` into your local clone of the repository nice_things, where requirements.txt
+ is located. If you are using UChicago's student Ubuntu VM, we recommend installing and following the 
+rest of the instructions using sudo's -H flag 
+(e.g. `sudo -H apt-get install postgresql postgresql-contrib` for PostgreSQL 
+installation later). If ON UChicago's Student Ubuntu VM, enter :
 
-https://tutorial-extensions.djangogirls.org/en/optional_postgresql_installation/
+`sudo -H pip3 install -r requirements.txt`
 
+Otherwise, enter:
 
-### 2. Now create a PostgrSQL user nice_things. In PostgreSQL:
-  
-  CREATE USER nice_things LOGIN password '';
+`pip3 install -r requirements.txt`
 
-You may need to specify a password. If that happens, go to nice_things_django_project/settings.py and change the following line:
+(We are assuming you have pip3 already installed)
 
-  'PASSWORD': ''
-  
-  To:
-  
-  'PASSWORD': 'uccs'
-  
- And then try:
- 
-  CREATE USER nice_things LOGIN password 'uccs';
-  
-  CREATE DATABASE nice_things_db OWNER nice_things;
-  
-### 3. Install dependencies:
+### 2. Install PostgreSQL
 
-cd to your local clone of the repository nice_things and run:
+Follow the instructions on django-girls (URL below) for PostgreSQL install according to your OS. 
+(NOTE: For creating the database user and the database, follow step 3 in this README
+ instead of django-girls).
 
-pip3 install -r requirements.txt
+`https://tutorial-extensions.djangogirls.org/en/optional_postgresql_installation/`
 
-Or if you are on the UChicago Student Ubuntu VM:
+### 3. Let's create a PostgreSQL user nice_things and our nice_things_db database:
 
-sudo -H pip3 install -r requirements.txt
+Let's go to psql. If ON UChicago's Student Ubuntu VM, enter into terminal:
+
+`sudo -H -u postgres psql`
+
+Otherwise:
+
+`sudo -u postgres psql`
+
+Now, we should see the command line starting with something like `postgres=#`.
+
+Now, let's create the database user. If NOT ON UChicago's Student Ubuntu VM, enter:
+
+`CREATE USER nice_things;`
+
+If ON UChicago's Student Ubuntu VM, enter :
   
-### 3. Leave PostgresSQL running and now, in a new terminal:
+`CREATE USER nice_things LOGIN password 'uccs';`
+
+You should see `CREATE ROLE` in the console if the user was created successfully.
+
+If ON UChicago's Student Ubuntu VM, you also need to specify the "uccs" password 
+to Django settings. To do so, go to `nice_things/nice_things_django_project/settings.py`
+ and change the `DATABASES` variable's line:
+
+`'PASSWORD': ''`
   
-  python3 manage.py makemigrations
+to:
   
-  python3 manage.py migrate
+`'PASSWORD': 'uccs'`
   
-### 4. Open the Django manage.py shell:
+Next, let's create the database owned by our new nice_things user. Back in our 
+`psql`, enter: 
   
-  python3 manage.py shell
+`CREATE DATABASE nice_things_db OWNER nice_things;`
+
+If the database was created successfully, you should see `CREATE DATABASE`
+in the console.
+
+### 4. Let's start our PostgreSQL server and create the schema (which our project predefined in Django's models.py) in nice_things_db database:
+
+Start PostgreSQL server. In UChicago's Student Ubuntu VM terminal:
+
+`sudo -H /etc/init.d/postgresql start`
+
+If you are on MacOS and installed Postgres.app from django-girls instructions
+in step 2, you can start this installed app and start server from there. Otherwise, 
+enter this into your terminal:
+
+`sudo /etc/init.d/postgresql start`
+
+Leave the server running and in a NEW terminal window, `cd` to 
+`nice_things/nice_things_django_project/`, where `manage.py` is and 
+enter:
   
-### 5. Run the following commands:
+`python3 manage.py makemigrations`
+
+Once that is done running, enter:
   
-  import update_db
+`python3 manage.py migrate`
+
+This will have created our database schema.
   
-  update_db.update_database()
+### 5. Let's now push all of our data into the nice_things_db database. 
+
+Open the Django manage.py shell (in the same directory as in step 4):
   
-### 6. Exit to terminal, and:
+`python3 manage.py shell`
   
-  python3 manage.py runserver
+Once in the python shell, let's run:
+  
+`import update_db`
+
+Then:
+  
+`update_db.update_database()`
+
+This will populate our nice_things_db with the data in the CSV files (stored 
+in the `data` folder). Once that's done, you may `exit()` the shell.
+  
+### 6. Let's start our Django development server to see our app in action:
+  
+In the same folder, where `manage.py` is, enter in terminal:
+
+`python3 manage.py runserver`
   
 ### 7. Enjoy your nice things. 
 
 # Code Attribution
 
-Due to the design of the project, all areas of code were worked on by all members. 
+Due to the design of the project, all areas of code were worked on by all members. See 
+lists of "Authors" in respective Python code files for principal contributors.
 
 # References
 
