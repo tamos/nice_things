@@ -4,7 +4,7 @@ ORIGINAL (using dominate documentation)
 Authors: Tyler Amos
 """
 
-from dominate.tags import html, head, body, b, br
+from dominate.tags import b, br
 from dominate.document import document
 from pandas.core.series import Series
 
@@ -52,12 +52,12 @@ class Popup(object):
         
         straight_no_default = ["name", "addr", "latitude", "longitude"]
         
-        for i in straight_no_default: # loop through row's contents
-                self.__dict__[i]= result[i]
+        for i in straight_no_default:  # loop through row's contents
+                self.__dict__[i] = result[i]
 
         lists_to_be_joined = ["food_status", "food_date", "wages_violations",
-                              "divvy_stations", "env_complaints",
-                              "env_complaints_url", "env_enforce",
+                              "divvy_stations",
+                              "env_complaints_url",
                               "env_enforce_url"]
         
         ### FIELDS WHICH ARE LISTS ###
@@ -69,7 +69,7 @@ class Popup(object):
             except:
                 self.__dict__[i] = None
 
-        leftovers = ["phone", "price"]
+        leftovers = ["phone", "price", "env_complaints", "env_enforce"]
 
         ### ITEMS WHICH REQUIRE NO ACTION, JUST ADD THEM TO OUTPUT ####
         # items which require no action, just add to the output
@@ -87,11 +87,11 @@ class Popup(object):
         
         self.to_label = [(self.phone, ""), (self.price, ""),
                          (self.food_status, "Food Inspections: "),
-                         (self.food_date, "Inspection Date: "),
+                         (self.food_date, "Food Inspection Dates: "),
                          (self.wages_violations, "Recorded Bureau of Labor Violations: "),
                          (self.divvy_stations, "Nearby Divvy Stations: "),
                          (self.env_complaints, "Environmental Complaints: "),
-                         (self.env_complaints_url, "Complaints Links: "),
+                         (self.env_complaints_url, "Environmental Complaints Links: "),
                          (self.env_enforce, "Environmental Penalties Levied: "),
                          (self.env_enforce_url, "Environmental Penalties Links: ")]
 
@@ -111,7 +111,9 @@ class Popup(object):
         self.rendered_html.add(br(), self.addr, br())
         
         for attr, prefix in self.to_label:
+            print("PREFIX:", prefix, "ATTRIBUTE:", attr)
             if attr:
+                print("PREFIX:", prefix, "ATTRIBUTE:", attr)
                 # Loop through and bold prefixes, render attributes as strings
                 # and add to the document
                 self.rendered_html.add(b(prefix), str(attr), br())
