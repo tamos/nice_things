@@ -3,7 +3,6 @@ django-geojson==2.11.0
 django-leaflet==0.23.0
 django-pandas==0.5.1
 dominate==2.3.1
-leaflet==0.0.3
 pandas==0.20.3
 pathlib2==2.3.0
 psycopg2==2.7.3.2
