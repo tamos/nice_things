@@ -40,13 +40,19 @@ Chicago Data Portal: https://data.cityofchicago.org
 
 ### 1. Install PostgreSQL
 
-Recommended: https://postgresapp.com
+Follow the instructions on django-girls for PostgreSQL install (NOTE: For creating 
+
+the database user and the database, follow step 2 in this Readme):
+
+https://tutorial-extensions.djangogirls.org/en/optional_postgresql_installation/
+
 
 ### 2. Now create a PostgrSQL user nice_things. In PostgreSQL:
   
   CREATE USER nice_things LOGIN password '';
 
 You may need to specify a password. If that happens, go to nice_things_django_project/settings.py and change the following line:
+
   'PASSWORD': ''
   
   To:
@@ -58,6 +64,18 @@ You may need to specify a password. If that happens, go to nice_things_django_pr
   CREATE USER nice_things LOGIN password 'uccs';
   
   CREATE DATABASE nice_things_db OWNER nice_things;
+  
+### 3. Install dependencies:
+
+cd to your local clone of the repository nice_things and run:
+
+pip3 install -r requirements.txt
+
+or 
+
+sudo -H ip3 install -r requirements.txt
+
+if on the UChicago Student Ubuntu VM
   
 ### 3. Leave PostgresSQL running and now, in a new terminal:
   
