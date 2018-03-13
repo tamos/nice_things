@@ -51,20 +51,21 @@ if on the UChicago Student Ubuntu VM
   
   python3 manage.py migrate
   
-### 4. Open the shell with:
+### 4. Open the Django manage.py shell:
   
   python3 manage.py shell
+  
+### 5. Run the following commands:
   
   import update_db
   
   update_db.update_database()
   
-### 5. Exit to terminal, and:
+### 6. Exit to terminal, and:
   
   python3 manage.py runserver
   
-### 6. Enjoy your nice things. 
-
+### 7. Enjoy your nice things. 
 
 # Code Attribution
 
