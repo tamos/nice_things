@@ -1,7 +1,6 @@
 # MODIFIED (https://pip.pypa.io/en/stable/user_guide/)
 # Authors: Alexander Tyan
 Django==2.0.2
-django-geojson==2.11.0
 django-leaflet==0.23.0
 django-pandas==0.5.1
 dominate==2.3.1
