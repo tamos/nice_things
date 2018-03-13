@@ -41,7 +41,7 @@ class Popup(object):
               levied against this business
             - env_enforce_url (str): the url of the csv file which details
                environmental enforcements
-            - rendered_html (str): a string of which contains html code
+            - rendered_html (str): a string which contains html code
               that will be passed into a javascript array. See self.to_html()
             - to_label (list of tuples): a list in the form:
                 (attribute, prefix)
