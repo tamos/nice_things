@@ -33,7 +33,7 @@ Otherwise, enter:
 
 ### 2. Install PostgreSQL
 
-Follow the instructions on django-girls (URL below) for PostgreSQL install according to your OS. (NOTE: For creating the database user and the database, follow step 3 in this README instead of django-girls).
+Follow the instructions on django-girls (URL below) for PostgreSQL install according to your OS. Don't forget to use sudo's -H flag in `sudo -H apt-get install postgresql postgresql-contrib` if you are on UChicago's Student VM Ubuntu. (NOTE: For creating the database user and the database, follow step 3 in this README instead of django-girls)
 
 `https://tutorial-extensions.djangogirls.org/en/optional_postgresql_installation/`
 
@@ -73,7 +73,7 @@ Next, let's create the database owned by our new nice_things user. Back in our
 `CREATE DATABASE nice_things_db OWNER nice_things;`
 
 If the database was created successfully, you should see `CREATE DATABASE`
-in the console.
+in the console. You may now exit `psql` by typing `\q`.
 
 ### 4. Let's start our PostgreSQL server and create the schema (which our project predefined in Django's models.py) in nice_things_db database:
 
