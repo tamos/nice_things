@@ -12,10 +12,16 @@ This django web app takes user-defined inputs and searches for bars/restaurants 
 
 The project is implemented in Django. Every time a user uses the front-end (html in `index.html`, interacting with Django forms in `forms.py`, with html requests processed by `views.py`), the code makes an API request to Yelp to find relevant businesses according to that search criteria. The package used for Yelp API was deprecated, but Tyler Amos updated it via a GitHub contribution (details below in "Python Modules and Tools Used").
 
-The program then does record linkage with data in the database (Yelp request and matching code is in `matching.py`). During the project set-up, the database schema is constructed using Django models (`models.py`, with database access settings stored in `settings.py`). We populate the database from CSV files using `update_db.py`. The CSVs are from sources listed in the Data Sources section at the end of this `README.md`. These sources present "social consciousness" data that may be interesting to 
-a user, such as establishments' environment, labour, and food records, as well as nearby Divvy bike stations.
+The program then does record linkage with data in the PostgreSQL database (Yelp request and matching code is in `matching.py`). During the project set-up, the database schema is constructed using Django models (`models.py`, with database access settings stored in `settings.py`). We populate the database from CSV files using `update_db.py`. The CSVs are from sources listed in the Data Sources section at the end of this `README.md`. These sources present "social consciousness" data that may be interesting to 
+a user, such as establishments' environment, labour, and food record violations, as well as nearby Divvy bike stations.
 
 Once matches are made with the Yelp results, the user is redirected to search results rendered by `map.html` in conjunction with `forms.py` and html request handler `views.py`.
+
+#### Points to note:
+
+* BLS Labour Violations data CSV did not have geocoded coordinates for the addresses, but we needed them for record matching purposes. The code that geocodes this CSV is found in `geocoding.py`.
+
+* `file_list.py` is a file storing relative paths to different CSV datasets. Our code uses it to navigate to the right CSVs. For instance, `update_db.py` is a code that pushes data from these CSVs into the nice_things_db PostgreSQL database.
 
 ### Set up:
 
@@ -119,14 +125,14 @@ In the same folder, where `manage.py` is, enter in terminal:
   
 ### 7. Enjoy your nice things: 
 
-Copy the address (something like `http://127.0.0.1:8000/` from the command in step 6) into your web browser and try some search queries. When you search for results in Los Angeles or Miami, you will get the base results (address, name, location on a map) but none of our supplemental data. At present, supplemental data is only provided for Chicago.
+Copy the address (something like `http://127.0.0.1:8000/` from the command in step 6) into your web browser and try some search queries. When you search for results in Los Angeles or Miami, you will get the base results (address, name, location on a map) but none of our supplemental data. At present, supplemental data is only provided for Chicago. Also note that Sort By is used by Yelp to prioritize its search result.
 
 #### Queries to Try:
 
-Where: "Hyde Park"
+Where: "Hyde Park, Chicago"
 Search Term ("Don't make us guess.."): "burgers"
 
-Where: "Pilsen"
+Where: "Pilsen, Chicago"
 Search Term: "bar"
 Sort by: Yelp Rating
 What kind: Drink
