@@ -4,7 +4,7 @@
 ORIGINAL (with the help of Python documentation and unless noted otherwise
 in function docstrings)
 
-Authors: Kevin Sun, Tyler Amos, Alexander Tyan
+Authors: Kevin Sun (Primary), Tyler Amos (Secondary), Alexander Tyan (Support)
 """
 
 import os
