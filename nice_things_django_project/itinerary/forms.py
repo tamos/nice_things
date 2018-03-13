@@ -27,6 +27,10 @@ SORT_CHOICES = (
 
 
 class ItineraryInputsForm(forms.Form):
+    """
+    This is the input form displayed in index.html. It includes boxes to
+    take text input, or checkboxes to take boolean values.
+    """
     location = forms.CharField(max_length=100, required=True,
                                widget=forms.TextInput(
                                    attrs={"class": "w3-input w3-border",
