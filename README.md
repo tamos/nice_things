@@ -6,43 +6,11 @@ Repository for CAPP 30122 Winter 2018 Project
   * Kevin Sun (Sun-Kev)
   * Tyler Amos (tamos)
   
-  
-# Dependencies
-
- * django-geojson: https://django-geojson.readthedocs.io/en/latest/installation.html
-
- * leaflet: http://leafletjs.com
-
- * django-leaflet: https://django-leaflet.readthedocs.io
-
- * record_linkage: http://recordlinkage.readthedocs.io
- 
- * yelpapi: https://github.com/gfairchild/yelpapi
-    * This package was updated by the group and submitted as a pull request. See https://github.com/gfairchild/yelpapi/pull/8
- 
- * pandas: https://pandas.pydata.org
- 
- * requests: http://docs.python-requests.org/en/master/
- 
- * dominate: https://github.com/Knio/dominate
-
-
-# Sign up for the following APIs:
-
-Google Maps: https://developers.google.com/maps/documentation/geocoding/intro
-
-Mapbox (for tile layers): https://www.mapbox.com
-
-Chicago Data Portal: https://data.cityofchicago.org
-  
-  
 # Set up
 
 ### 1. Install PostgreSQL
 
-Follow the instructions on django-girls for PostgreSQL install (NOTE: For creating 
-
-the database user and the database, follow step 2 in this Readme):
+Follow the instructions on django-girls for PostgreSQL install (NOTE: For creating the database user and the database, follow step 2 in this ReadME):
 
 https://tutorial-extensions.djangogirls.org/en/optional_postgresql_installation/
 
@@ -71,11 +39,9 @@ cd to your local clone of the repository nice_things and run:
 
 pip3 install -r requirements.txt
 
-or 
+Or if you are on the UChicago Student Ubuntu VM:
 
-sudo -H ip3 install -r requirements.txt
-
-if on the UChicago Student Ubuntu VM
+sudo -H pip3 install -r requirements.txt
   
 ### 3. Leave PostgresSQL running and now, in a new terminal:
   
@@ -83,34 +49,33 @@ if on the UChicago Student Ubuntu VM
   
   python3 manage.py migrate
   
-### 4. Open the shell with:
+### 4. Open the Django manage.py shell:
   
   python3 manage.py shell
+  
+### 5. Run the following commands:
   
   import update_db
   
   update_db.update_database()
   
-### 5. Exit to terminal, and:
+### 6. Exit to terminal, and:
   
   python3 manage.py runserver
   
-### 6. Enjoy your nice things. 
-
-
+### 7. Enjoy your nice things. 
 
 # Code Attribution
 
 Due to the design of the project, all areas of code were worked on by all members. 
 
-
 # References
 
-1. Python documentation (python.org)
-2. W3Schools (w3schools.com)
-3. Leaflet (leafletjs.com)
-4. For each package or API used, our code draws from examples and tutorials provided in the documentation.
-5. When external resources, e.g., StackOverflow were consulted, they are cited in the code. 
+* Python documentation (python.org)
+* W3Schools (w3schools.com)
+* Leaflet (leafletjs.com)
+* For each package or API used, our code draws from examples and tutorials provided in the documentation.
+* When external resources, e.g., StackOverflow were consulted, they are cited in the code. 
 
 # Data Sources
  
@@ -136,7 +101,36 @@ Due to the design of the project, all areas of code were worked on by all member
 
 Q3 and Q4 data for 2017 was used to identify the locations of Divvy stations. The data was provided with the trips dataset which can be downloaded above. The data used in this repository was downloaded on March 5, 2018.
  
+# Python Modules and Tools Used:
+
+ * yelpapi: https://github.com/gfairchild/yelpapi
+    * This package was updated by the group and submitted as a pull request. See https://github.com/gfairchild/yelpapi/pull/8
+ 
+ * pandas: https://pandas.pydata.org
+ 
+ * requests: http://docs.python-requests.org/en/master/
+ 
+ * dominate: https://github.com/Knio/dominate
+ 
+  * django-geojson: https://django-geojson.readthedocs.io/en/latest/installation.html
+
+ * leaflet: http://leafletjs.com
+
+ * django-leaflet: https://django-leaflet.readthedocs.io
+
+ * record_linkage: http://recordlinkage.readthedocs.io
  
  
+ 
+ # All API keys are provided in the Gitlab repository (tylera). The main APIs used are:
+
+Google Maps: https://developers.google.com/maps/documentation/geocoding/intro
+
+Mapbox (for vector tile layers): https://www.mapbox.com
+
+Chicago Data Portal: https://data.cityofchicago.org
+
+Yelp: https://www.yelp.com/developers
+  
  
  
