@@ -6,26 +6,6 @@ Repository for CAPP 30122 Winter 2018 Project
   * Kevin Sun (Sun-Kev)
   * Tyler Amos (tamos)
   
-  
-# Dependencies
-
- * django-geojson: https://django-geojson.readthedocs.io/en/latest/installation.html
-
- * leaflet: http://leafletjs.com
-
- * django-leaflet: https://django-leaflet.readthedocs.io
-
- * record_linkage: http://recordlinkage.readthedocs.io
- 
- * yelpapi: https://github.com/gfairchild/yelpapi
-    * This package was updated by the group and submitted as a pull request. See https://github.com/gfairchild/yelpapi/pull/8
- 
- * pandas: https://pandas.pydata.org
- 
- * requests: http://docs.python-requests.org/en/master/
- 
- * dominate: https://github.com/Knio/dominate
-  
 # Set up
 
 ### 1. Install PostgreSQL
@@ -88,11 +68,9 @@ if on the UChicago Student Ubuntu VM
 ### 6. Enjoy your nice things. 
 
 
-
 # Code Attribution
 
 Due to the design of the project, all areas of code were worked on by all members. 
-
 
 # References
 
@@ -127,11 +105,33 @@ Due to the design of the project, all areas of code were worked on by all member
 Q3 and Q4 data for 2017 was used to identify the locations of Divvy stations. The data was provided with the trips dataset which can be downloaded above. The data used in this repository was downloaded on March 5, 2018.
  
  
- # All API keys are provided in the Gitlab repository (tylera). 
+   
+# Python Modules and Tools Used:
+
+ * yelpapi: https://github.com/gfairchild/yelpapi
+    * This package was updated by the group and submitted as a pull request. See https://github.com/gfairchild/yelpapi/pull/8
+ 
+ * pandas: https://pandas.pydata.org
+ 
+ * requests: http://docs.python-requests.org/en/master/
+ 
+ * dominate: https://github.com/Knio/dominate
+ 
+  * django-geojson: https://django-geojson.readthedocs.io/en/latest/installation.html
+
+ * leaflet: http://leafletjs.com
+
+ * django-leaflet: https://django-leaflet.readthedocs.io
+
+ * record_linkage: http://recordlinkage.readthedocs.io
+ 
+ 
+ 
+ # All API keys are provided in the Gitlab repository (tylera). The main APIs used are:
 
 Google Maps: https://developers.google.com/maps/documentation/geocoding/intro
 
-Mapbox (for tile layers): https://www.mapbox.com
+Mapbox (for vector tile layers): https://www.mapbox.com
 
 Chicago Data Portal: https://data.cityofchicago.org
 
