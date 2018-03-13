@@ -47,15 +47,20 @@ def index(request):
             for i in form.__dict__['fields']:
                 args[i] = form.cleaned_data[i]
 
-           # Go get results, render as json and output
-            results = matching.final_result(args) 
-            if results.shape[0] > 0: 
-                output = point_content(results)  # Place the info we want into json
-                return render(request, 'map.html', {'output':output})  # Render the map       
-
+            # Go get results, render as json and output;
+            # catch errors for bad inputs, such as "Canada" for places:
+            try:
+                results = matching.final_result(args)
+                if results.shape[0] > 0:
+                    output = point_content(results)  # Place the info we want into json
+                    return render(request, 'map.html', {'output':output})  # Render the map
             # Return to main page if we get no results
-            else:
-               form = ItineraryInputsForm() 
+                else:
+                    form = ItineraryInputsForm()
+            except Exception as e:
+                print("BAD USER INPUT! Error:", e)
+                form = ItineraryInputsForm()
+
     else:
         form = ItineraryInputsForm()  
 
