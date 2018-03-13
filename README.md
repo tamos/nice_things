@@ -25,16 +25,6 @@ Repository for CAPP 30122 Winter 2018 Project
  * requests: http://docs.python-requests.org/en/master/
  
  * dominate: https://github.com/Knio/dominate
-
-
-# Sign up for the following APIs:
-
-Google Maps: https://developers.google.com/maps/documentation/geocoding/intro
-
-Mapbox (for tile layers): https://www.mapbox.com
-
-Chicago Data Portal: https://data.cityofchicago.org
-  
   
 # Set up
 
@@ -42,7 +32,7 @@ Chicago Data Portal: https://data.cityofchicago.org
 
 Follow the instructions on django-girls for PostgreSQL install (NOTE: For creating 
 
-the database user and the database, follow step 2 in this Readme):
+the database user and the database, follow step 2 in this ReadME):
 
 https://tutorial-extensions.djangogirls.org/en/optional_postgresql_installation/
 
@@ -137,6 +127,15 @@ Due to the design of the project, all areas of code were worked on by all member
 Q3 and Q4 data for 2017 was used to identify the locations of Divvy stations. The data was provided with the trips dataset which can be downloaded above. The data used in this repository was downloaded on March 5, 2018.
  
  
- 
+ # All API keys are provided in the Gitlab repository (tylera). 
+
+Google Maps: https://developers.google.com/maps/documentation/geocoding/intro
+
+Mapbox (for tile layers): https://www.mapbox.com
+
+Chicago Data Portal: https://data.cityofchicago.org
+
+Yelp: https://www.yelp.com/developers
+  
  
  
